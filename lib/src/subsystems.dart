@@ -33,6 +33,7 @@ class SubsystemsServer extends ProtoSocket {
 
 	@override
 	void onMessage(WrappedMessage wrapper) { 
+    // logger.info("hi");
 		if (wrapper.name == DriveData().messageName) {
 			drive.mergeFromBuffer(wrapper.data);
 		} else if (wrapper.name == RoverPosition().messageName) {
