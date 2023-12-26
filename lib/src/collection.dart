@@ -10,7 +10,7 @@ final subsystemsAddress = InternetAddress("192.168.1.20");
 /// A collection of all the different services used by the autonomy program.
 class AutonomyCollection {
 	/// A server to communicate with the dashboard.
-	final AutonomyServer dashboard = AutonomyServer(port: 8003);
+	final AutonomyServer dashboard = AutonomyServer(port: 8004);
 	/// A server to communicate with the subsystems.
 	late final SubsystemsServer subsystems; 
 	/// A helper class to handle driving the rover.
@@ -19,11 +19,11 @@ class AutonomyCollection {
 	/// Initializes the rover, overriding the [subsystems] server if [tankMode] is true.
 	Future<void> init({required bool tankMode}) async {
 		subsystems = SubsystemsServer(
-			port: 8001,
+			port: 8006,
 			address: tankMode ? InternetAddress.loopbackIPv4 : subsystemsAddress,
 		);
 		await subsystems.init();
-		// await dashboard.init();
+		await dashboard.init();
 		drive.init();
 	}
 }

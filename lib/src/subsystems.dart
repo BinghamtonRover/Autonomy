@@ -38,6 +38,7 @@ class SubsystemsServer extends ProtoSocket {
 			drive.mergeFromBuffer(wrapper.data);
 		} else if (wrapper.name == RoverPosition().messageName) {
 			position.mergeFromBuffer(wrapper.data);
+      print("Got a position: $position");
 		}
 	}
 }
