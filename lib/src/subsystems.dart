@@ -11,7 +11,10 @@ class SubsystemsServer extends ProtoSocket {
 	final position = RoverPosition();
 	/// The state of the drive subsystem.
 	final drive = DriveData();
-
+  // RGB from RealSense (ROVER_FRONT)
+  final rgbframe = VideoData();
+  // Depth from RealSense (AUTONOMY_DEPTH)
+  final depthframe = VideoData();
 	/// Opens a connection to the subsystems program.
 	SubsystemsServer({required super.port, required InternetAddress address}) : super(
 		device: Device.AUTONOMY,
@@ -33,12 +36,19 @@ class SubsystemsServer extends ProtoSocket {
 
 	@override
 	void onMessage(WrappedMessage wrapper) { 
-    // logger.info("hi");
+     logger.info("hi");
 		if (wrapper.name == DriveData().messageName) {
 			drive.mergeFromBuffer(wrapper.data);
 		} else if (wrapper.name == RoverPosition().messageName) {
 			position.mergeFromBuffer(wrapper.data);
       print("Got a position: $position");
-		}
+		} else if (wrapper.name == VideoData().messageName){
+      final message = VideoData.fromBuffer(wrapper.data);
+      if (message.details.name == CameraName.ROVER_FRONT){
+        rgbframe.mergeFromBuffer(wrapper.data);
+      } else if (message.details.name == CameraName.AUTONOMY_DEPTH){
+        depthframe.mergeFromBuffer(wrapper.data);
+      }
+    }
 	}
 }
