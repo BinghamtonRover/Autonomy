@@ -1,7 +1,7 @@
 import "package:burt_network/burt_network.dart";
 
 /// A server to handle incoming [AutonomyCommand]s and send [AutonomyData]s.
-class AutonomyServer extends ServerSocket {
+class AutonomyServer extends RoverServer {
   /// Creates an autonomy server at the given port.
   AutonomyServer({
     required super.port,
@@ -9,6 +9,9 @@ class AutonomyServer extends ServerSocket {
 
   @override
   void onMessage(WrappedMessage wrapper) {
-    logger.info("Received message: $wrapper");
+    logger.info("Received message: ${wrapper.name}");
   }
+
+  @override
+  void restart() { }
 }
