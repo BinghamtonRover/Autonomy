@@ -19,7 +19,6 @@ class SimulatorServer extends RoverServer {
   @override
   Future<void> onConnect(SocketInfo source) async {
     super.onConnect(source);
-    await Future<void>.delayed(const Duration(milliseconds: 5));
     final message = AutonomyData(
       destination: GpsCoordinates(latitude: 3, longitude: 1),
       state: AutonomyState.DRIVING,
@@ -35,13 +34,14 @@ class SimulatorServer extends RoverServer {
       ],
     );
     sendMessage(message);
+    simulator.simulate().ignore();
   }
 
   @override
   void restart() { }
 
   void sendDone() {
-    final message = AutonomyData(state: AutonomyState.AT_DESTINATION);
+    final message = AutonomyData(state: AutonomyState.AT_DESTINATION, task: AutonomyTask.AUTONOMY_TASK_UNDEFINED);
     sendMessage(message);
   }
 }
