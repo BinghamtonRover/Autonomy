@@ -1,4 +1,6 @@
-import "package:autonomy/simulator.dart";
+// ignore_for_file: cascade_invocations
+
+import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
 extension on GpsCoordinates {
@@ -15,41 +17,45 @@ final north = GpsCoordinates(latitude: 1);
 final west = GpsCoordinates(longitude: -1);
 final south = GpsCoordinates(latitude: -1);
 
-class DriveSimulator {
-  void handleCommand(DriveCommand command) => switch (command.direction) {
-    DriveDirection.DRIVE_DIRECTION_FORWARD => goForward(),
-    DriveDirection.DRIVE_DIRECTION_LEFT => turnLeft(),
-    DriveDirection.DRIVE_DIRECTION_RIGHT => turnRight(),
-    DriveDirection.DRIVE_DIRECTION_STOP => stop(),
-    _ => null,
-  };
+class DriveSimulator extends DriveInterface {
+  DriveSimulator({required super.collection});
 
+  @override
   void goForward() {
-    final position = simulator.gps.position.gps;
-    final orientation = simulator.imu.orientation.orientation;
-    final newPosition = position + switch (orientation.z) {
+    final position = collection.gps.coordinates;
+    final heading = collection.imu.heading;
+    final newPosition = position + switch (heading) {
       0 => north,
       90 => west,
       180 => south,
       270 => east,
       // ignore: flutter_style_todos
       // TODO: Handle *ranges*, not just plain values
-      _ => throw StateError("IMU is in invalid orientation: ${orientation.z} degrees"),
+      _ => throw StateError("IMU is in invalid orientation: $heading degrees"),
     };
-    logger.debug("Going forward");
-    logger.trace("  Old position: ${position.prettyPrint()}");
-    logger.trace("  Orientation: ${orientation.z}");
-    logger.trace("  New position: ${newPosition.prettyPrint()}");
-    simulator.gps.position = RoverPosition(gps: newPosition);
+    collection.logger.debug("Going forward");
+    collection.logger.trace("  Old position: ${position.prettyPrint()}");
+    collection.logger.trace("  Orientation: $heading");
+    collection.logger.trace("  New position: ${newPosition.prettyPrint()}");
+    collection.gps.update(newPosition);
   }
 
+  @override
   void turnLeft() {
-    simulator.imu.update(90);
+    collection.logger.debug("Turning left");
+    final heading = collection.imu.heading;
+    final orientation = Orientation(z: heading + 90);
+    collection.imu.update(orientation);
   }
 
+  @override
   void turnRight() {
-    simulator.imu.update(-90);
+    collection.logger.debug("Turning right");
+    final heading = collection.imu.heading;
+    final orientation = Orientation(z: heading - 90);
+    collection.imu.update(orientation);
   }
 
+  @override
   void stop() { }
 }

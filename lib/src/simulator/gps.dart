@@ -1,24 +1,11 @@
-import "dart:async";
-import "package:autonomy/simulator.dart";
 import "package:burt_network/generated.dart";
+import "package:autonomy/interfaces.dart";
 
-class GpsSimulator {
-  static const reportInterval = Duration(milliseconds: 250);
+import "reporter.dart";
+
+class GpsSimulator extends GpsInterface with ValueReporter {
+  GpsSimulator({required super.collection});
   
-  RoverPosition position = RoverPosition(
-    gps: GpsCoordinates(latitude: 0, longitude: 0),
-  );
-
-  Timer? timer;
-
-  Future<void> init() async { 
-    timer = Timer.periodic(reportInterval, (timer) => reportPosition());
-  }
-
-  void dispose() => timer?.cancel();
-
-  void reportPosition() {
-    // logger.trace("Sending lat=${position.gps.latitude}, long=${position.gps.longitude}");
-    simulator.server.sendMessage(position);
-  }
+  @override
+  RoverPosition getMessage() => RoverPosition(gps: coordinates);
 }

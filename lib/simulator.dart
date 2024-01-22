@@ -1,3 +1,9 @@
+export "src/simulator/drive.dart";
+export "src/simulator/gps.dart";
+export "src/simulator/imu.dart";
+export "src/simulator/server.dart";
+
+import "package:autonomy/interfaces.dart";
 import "package:burt_network/logging.dart";
 
 import "src/simulator/drive.dart";
@@ -5,46 +11,61 @@ import "src/simulator/gps.dart";
 import "src/simulator/imu.dart";
 import "src/simulator/server.dart";
 
-class AutonomySimulator {
-  final server = SimulatorServer(port: 8001);
-  final gps = GpsSimulator();
-  final imu = ImuSimulator();
-  final drive = DriveSimulator();
+class AutonomySimulator extends AutonomyInterface {
+  @override
+  late final SimulatorServer server = SimulatorServer(port: 8001, collection: this);
 
+  @override
+  late final GpsSimulator gps = GpsSimulator(collection: this);
+
+  @override
+  late final ImuSimulator imu = ImuSimulator(collection: this);
+
+  @override
+  late final DriveSimulator drive = DriveSimulator(collection: this);
+
+  @override
+  late final BurtLogger logger = BurtLogger(socket: server);
+
+  @override
   Future<void> init() async {
     await server.init();
-    await gps.init();
-    await imu.init();
+    gps.init();
+    imu.init();
   }
 
-  Future<void> simulate() async {  // Starts at (0, 0), North
-    simulator.drive.turnRight();  // (0, 0), East
-    await Future<void>.delayed(const Duration(seconds: 1));
-    simulator.drive.goForward();  // (0, 1), East
-    await Future<void>.delayed(const Duration(seconds: 1));
-    simulator.drive.goForward();  // (0, 2), East
-    await Future<void>.delayed(const Duration(seconds: 1));
+  @override
+  Future<void> dispose() async {
+    await server.dispose();
+    gps.dispose();
+    imu.dispose();
+  }
 
-    simulator.drive.turnLeft();  // (0, 2), North
-    await Future<void>.delayed(const Duration(seconds: 1));
-    simulator.drive.goForward();  // (1, 2), North
-    await Future<void>.delayed(const Duration(seconds: 1));
-    simulator.drive.goForward();  // (2, 2), North
-    await Future<void>.delayed(const Duration(seconds: 1));
+  Future<void> testDrive({bool delay = true}) async {  // Starts at (0, 0), North
+    drive.turnRight();  // (0, 0), East
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
+    drive.goForward();  // (0, 1), East
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
+    drive.goForward();  // (0, 2), East
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
+
+    drive.turnLeft();  // (0, 2), North
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
+    drive.goForward();  // (1, 2), North
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
+    drive.goForward();  // (2, 2), North
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
     
-    simulator.drive.turnLeft();  // (2, 2), West
-    await Future<void>.delayed(const Duration(seconds: 1));
-    simulator.drive.goForward();  // (2, 1) West
-    await Future<void>.delayed(const Duration(seconds: 1));
+    drive.turnLeft();  // (2, 2), West
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
+    drive.goForward();  // (2, 1) West
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
 
-    simulator.drive.turnRight();
-    await Future<void>.delayed(const Duration(seconds: 1));
-    simulator.drive.goForward();
-    await Future<void>.delayed(const Duration(seconds: 1));
+    drive.turnRight();  // (2, 1), North
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
+    drive.goForward();  // (3, 1), North
+    if (delay) await Future<void>.delayed(const Duration(seconds: 1));
 
-    simulator.server.sendDone();
+    server.sendDone();
   }
 }
-
-final simulator = AutonomySimulator();
-final logger = BurtLogger(socket: simulator.server);

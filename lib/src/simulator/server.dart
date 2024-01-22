@@ -4,15 +4,18 @@ import "package:autonomy/simulator.dart";
 final driveName = DriveCommand().messageName;
 
 class SimulatorServer extends RoverServer {
+  final AutonomySimulator collection;
+
   SimulatorServer({
     required super.port, 
+    required this.collection,
   }) : super(device: Device.SUBSYSTEMS);
   
   @override
   void onMessage(WrappedMessage wrapper) {
     if (wrapper.name == driveName) {
       final command = DriveCommand.fromBuffer(wrapper.data);
-      simulator.drive.handleCommand(command);
+      collection.drive.handleCommand(command);
     }
   }
 
@@ -34,7 +37,7 @@ class SimulatorServer extends RoverServer {
       ],
     );
     sendMessage(message);
-    simulator.simulate().ignore();
+    collection.testDrive().ignore();
   }
 
   @override

@@ -26,7 +26,6 @@ analyzer:
     strict-raw-types: true
 
   exclude: 
-    - test/**.dart
 
 linter:
   rules:

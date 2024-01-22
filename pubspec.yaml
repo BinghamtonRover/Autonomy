@@ -12,7 +12,9 @@ dependencies:
     git: https://github.com/BinghamtonRover/OpenCV-FFI.git
   burt_network: 
     git: https://github.com/BinghamtonRover/Dart-Networking.git
-  rpi_gpio: ^0.8.1
+  a_star:
+    path: D:/Flutter/Packages/astar
+  meta: ^1.11.0
 
 dev_dependencies:
   test: ^1.21.0
