@@ -1,3 +1,4 @@
+export "src/interfaces/a_star.dart";
 export "src/interfaces/autonomy.dart";
 export "src/interfaces/drive.dart";
 export "src/interfaces/gps.dart";

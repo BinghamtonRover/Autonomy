@@ -2,6 +2,11 @@ import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
 extension OrientationUtils on Orientation {
+  static final north = Orientation(z: 0);
+  static final west = Orientation(z: 90);
+  static final south = Orientation(z: 180);
+  static final east = Orientation(z: 270);
+  
   double get heading => z;
   
   bool get isEmpty => x == 0 && y == 0 && z == 0;

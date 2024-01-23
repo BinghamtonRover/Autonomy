@@ -19,9 +19,9 @@ abstract class DriveInterface extends Service {
   Future<void> turnRight();
   Future<void> stop();
 
-  Future<void> followPath(PathfindingResult path) async {
-    for (final direction in path.directions) {
-      await goDirection(direction);
+  Future<void> followPath(List<AutonomyTransition> path) async {
+    for (final transition in path) {
+      await goDirection(transition.direction);
     }
   }
 }
