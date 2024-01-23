@@ -1,21 +1,18 @@
 import "package:burt_network/burt_network.dart";
-import "package:autonomy/simulator.dart";
+import "package:autonomy/interfaces.dart";
 
 final driveName = DriveCommand().messageName;
 
-class SimulatorServer extends RoverServer {
-  final AutonomySimulator collection;
-
+class SimulatorServer extends ServerInterface {
   SimulatorServer({
-    required super.port, 
-    required this.collection,
-  }) : super(device: Device.SUBSYSTEMS);
+    required super.collection,
+  }) : super();
   
   @override
   void onMessage(WrappedMessage wrapper) {
     if (wrapper.name == driveName) {
       final command = DriveCommand.fromBuffer(wrapper.data);
-      collection.drive.handleCommand(command);
+      collection.drive.goDirection(command.direction);
     }
   }
 
@@ -37,7 +34,6 @@ class SimulatorServer extends RoverServer {
       ],
     );
     sendMessage(message);
-    collection.testDrive().ignore();
   }
 
   @override

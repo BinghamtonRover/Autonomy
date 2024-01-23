@@ -1,7 +1,11 @@
-import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
+import "package:autonomy/interfaces.dart";
 
-class GpsInterface {
+extension GpsCoordinatesUtils on GpsCoordinates {
+  bool get isEmpty => latitude == 0 && longitude == 0;
+}
+
+abstract class GpsInterface extends Service {
   final AutonomyInterface collection;
   GpsInterface({required this.collection});
   

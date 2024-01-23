@@ -9,7 +9,7 @@ mixin ValueReporter {
 
   Timer? timer;
   static const reportInterval = Duration(milliseconds: 250);
-  void init() => timer = Timer.periodic(reportInterval, (timer) => reportValue());
-  void dispose() => timer?.cancel();
+  Future<void> init() async => timer = Timer.periodic(reportInterval, (timer) => reportValue());
+  Future<void> dispose() async => timer?.cancel();
   void reportValue() => collection.server.sendMessage(getMessage());
 }

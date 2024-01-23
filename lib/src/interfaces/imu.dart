@@ -3,7 +3,8 @@ import "package:burt_network/generated.dart";
 
 extension OrientationUtils on Orientation {
   double get heading => z;
-  set heading(double value) => z = value;
+  
+  bool get isEmpty => x == 0 && y == 0 && z == 0;
   
   Orientation clampHeading() {
     var adjustedHeading = heading;
@@ -16,7 +17,7 @@ extension OrientationUtils on Orientation {
   Orientation turnRight() => Orientation(z: heading - 90).clampHeading();
 }
 
-class ImuInterface {
+abstract class ImuInterface extends Service {
   final AutonomyInterface collection;
   ImuInterface({required this.collection});
 

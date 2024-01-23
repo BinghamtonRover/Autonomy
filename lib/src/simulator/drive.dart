@@ -21,7 +21,7 @@ class DriveSimulator extends DriveInterface {
   DriveSimulator({required super.collection});
 
   @override
-  void goForward() {
+  Future<void> goForward() async {
     final position = collection.gps.coordinates;
     final heading = collection.imu.heading;
     final newPosition = position + switch (heading) {
@@ -41,7 +41,7 @@ class DriveSimulator extends DriveInterface {
   }
 
   @override
-  void turnLeft() {
+  Future<void> turnLeft() async  {
     collection.logger.debug("Turning left");
     final heading = collection.imu.heading;
     final orientation = Orientation(z: heading + 90);
@@ -49,7 +49,7 @@ class DriveSimulator extends DriveInterface {
   }
 
   @override
-  void turnRight() {
+  Future<void> turnRight() async  {
     collection.logger.debug("Turning right");
     final heading = collection.imu.heading;
     final orientation = Orientation(z: heading - 90);
@@ -57,5 +57,5 @@ class DriveSimulator extends DriveInterface {
   }
 
   @override
-  void stop() { }
+  Future<void> stop() async => collection.logger.debug("Stopping");
 }

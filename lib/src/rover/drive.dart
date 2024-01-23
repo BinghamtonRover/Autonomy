@@ -6,9 +6,9 @@ class RoverDrive extends DriveInterface {
   RoverDrive({required super.collection});
 
 	/// Initializes the rover's drive subsystems.
-	void init() => setThrottle(0.3);
+	@override Future<void> init() async => setThrottle(0.3);
 	/// Stops the rover from driving.
-	void dispose() => setThrottle(0);
+	@override Future<void> dispose() async => setThrottle(0);
 
 	/// Sets the max speed of the rover. 
 	/// 
@@ -37,8 +37,8 @@ class RoverDrive extends DriveInterface {
 		collection.server.sendMessage(command);
 	}
 
-  @override void goForward() { }
-  @override void turnLeft() { }
-  @override void turnRight() { }
-  @override void stop() { }
+  @override Future<void> goForward() async { }
+  @override Future<void> turnLeft() async { }
+  @override Future<void> turnRight() async { }
+  @override Future<void> stop() async { }
 }
