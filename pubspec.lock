@@ -12,10 +12,10 @@ packages:
   a_star:
     dependency: "direct main"
     description:
-      path: "D:\\Flutter\\Packages\\astar"
+      path: "D:/Flutter/Packages/astar"
       relative: false
     source: path
-    version: "1.0.0"
+    version: "1.2.0"
   analyzer:
     dependency: transitive
     description:

@@ -13,10 +13,15 @@ class RoverPathfinder extends PathfindingInterface {
     obstacleCoordinates.add(coordinates);
 
   @override
+  bool isObstacle(GpsCoordinates coordinates) => 
+    obstacleCoordinates.contains(coordinates);
+
+  @override
   List<AutonomyTransition>? getPath(GpsCoordinates destination) {
     final state = AutonomyAStarState(
       position: collection.gps.coordinates,
       orientation: collection.imu.orientation,
+      collection: collection,
       goal: destination,
     )..finalize();
     final result = aStar(state);

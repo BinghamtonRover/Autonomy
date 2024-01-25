@@ -7,4 +7,5 @@ abstract class PathfindingInterface extends Service {
 
   List<AutonomyTransition>? getPath(GpsCoordinates destination);
   void recordObstacle(GpsCoordinates coordinates);
+  bool isObstacle(GpsCoordinates coordinates);
 }

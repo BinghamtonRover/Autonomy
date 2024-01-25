@@ -80,8 +80,10 @@ void main() {
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     final destination = GpsCoordinates(latitude: 5, longitude: 5);
     final obstacles = <GpsCoordinates>{
+      (1, 0).toGps(),
       (1, 1).toGps(),
-      (2, 2).toGps(),
+      (2, 0).toGps(),
+      (2, 1).toGps(),
       (3, 3).toGps(),
     };
     for (final obstacle in obstacles) {
@@ -96,6 +98,22 @@ void main() {
     await simulator.drive.followPath(path);
     expect(simulator.gps.latitude, destination.latitude);
     expect(simulator.gps.longitude, destination.longitude);
+  });
+
+  test("Impossible paths are reported", () async {
+    final simulator = AutonomySimulator();
+    simulator.pathfinder = RoverPathfinder(collection: simulator);
+    final destination = (5, 5).toGps();
+    final obstacles = {
+      (1, -1).toGps(),  (1, 0).toGps(),  (1, 1).toGps(),
+      (0, -1).toGps(),   /* Rover */     (0, 1).toGps(),
+      (-1, -1).toGps(), (-1, 0).toGps(), (-1, 1).toGps(),
+    };
+    for (final obstacle in obstacles) {
+      simulator.pathfinder.recordObstacle(obstacle);
+    }
+    final path = simulator.pathfinder.getPath(destination);
+    expect(path, isNull);
   });
 }
 
