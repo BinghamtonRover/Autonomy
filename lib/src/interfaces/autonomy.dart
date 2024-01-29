@@ -9,6 +9,7 @@ abstract class AutonomyInterface extends Service {
   DriveInterface get drive;
   ServerInterface get server;
   PathfindingInterface get pathfinder;
+  DetectorInterface get detector;
   
   @override
   Future<void> init() async {

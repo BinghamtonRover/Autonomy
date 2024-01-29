@@ -21,4 +21,5 @@ class RoverAutonomy extends AutonomyInterface {
   @override late final imu = ImuSimulator(collection: this);
   @override late final logger = BurtLogger(socket: server);
   @override late final pathfinder = RoverPathfinder(collection: this);
+  @override late final detector = DetectorSimulator(collection: this);
 }
