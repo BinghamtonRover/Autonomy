@@ -44,9 +44,8 @@ abstract class GpsInterface extends Service {
   double get longitude => coordinates.longitude;
   double get latitude => coordinates.latitude;
 
-  GpsCoordinates _coordinates = GpsCoordinates();
 
   // ignore: use_setters_to_change_properties
-  void update(GpsCoordinates newValue) => _coordinates = newValue;
-  GpsCoordinates get coordinates => _coordinates;
+  void update(GpsCoordinates newValue);
+  GpsCoordinates get coordinates;
 }

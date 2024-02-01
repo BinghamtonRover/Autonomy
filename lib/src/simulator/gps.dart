@@ -8,4 +8,12 @@ class GpsSimulator extends GpsInterface with ValueReporter {
   
   @override
   RoverPosition getMessage() => RoverPosition(gps: coordinates);
+
+  GpsCoordinates _coordinates = GpsCoordinates();
+
+  @override
+  GpsCoordinates get coordinates => _coordinates;
+
+  @override
+  void update(GpsCoordinates newValue) => _coordinates = newValue;
 }
