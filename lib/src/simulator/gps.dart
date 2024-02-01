@@ -1,10 +1,17 @@
+import "dart:math";
 import "package:burt_network/generated.dart";
 import "package:autonomy/interfaces.dart";
 
 import "reporter.dart";
 
 class GpsSimulator extends GpsInterface with ValueReporter {
-  GpsSimulator({required super.collection});
+  final double maxError;
+  final _random = Random();
+
+  GpsSimulator({
+    required super.collection,
+    this.maxError = 0,
+  });
   
   @override
   RoverPosition getMessage() => RoverPosition(gps: coordinates);
@@ -12,7 +19,10 @@ class GpsSimulator extends GpsInterface with ValueReporter {
   GpsCoordinates _coordinates = GpsCoordinates();
 
   @override
-  GpsCoordinates get coordinates => _coordinates;
+  GpsCoordinates get coordinates => GpsCoordinates(
+    latitude: _coordinates.latitude + (_random.nextDouble() * maxError),
+    longitude: _coordinates.longitude + (_random.nextDouble() * maxError),
+  );
 
   @override
   void update(GpsCoordinates newValue) => _coordinates = newValue;

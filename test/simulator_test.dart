@@ -1,3 +1,4 @@
+import "package:autonomy/src/rover/gps.dart";
 import "package:test/test.dart";
 import "package:burt_network/generated.dart";
 import "package:burt_network/logging.dart";
@@ -7,7 +8,7 @@ import "package:autonomy/rover.dart";
 import "package:autonomy/simulator.dart";
 
 void main() {
-  test("Simulated drive test", () async {
+  test("Simulated drive test with simulated GPS", () async {
     Logger.level = LogLevel.info;
     final simulator = AutonomySimulator();
     expect(simulator.gps.latitude, 0);
@@ -114,6 +115,20 @@ void main() {
     }
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNull);
+  });
+
+  test("GPS Error is appropriate", () async {
+    // TODO: Measure the actual error here
+    final simulator = AutonomySimulator();
+    final simulatedGps = GpsSimulator(collection: simulator, maxError: 0.01);
+    final realGps = RoverGps(collection: simulator);
+    final origin = GpsCoordinates(latitude: 0, longitude: 0);
+    simulatedGps.update(origin);
+    for (var i = 0; i < 5; i++) {
+      final coordinates = simulatedGps.coordinates;
+      realGps.update(coordinates);
+    }
+    expect(realGps.coordinates.isNear(origin), isTrue);
   });
 }
 
