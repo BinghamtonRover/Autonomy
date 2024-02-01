@@ -2,6 +2,7 @@ export "src/simulator/detector.dart";
 export "src/simulator/drive.dart";
 export "src/simulator/gps.dart";
 export "src/simulator/imu.dart";
+export "src/simulator/realsense.dart";
 export "src/simulator/server.dart";
 
 import "package:autonomy/interfaces.dart";
@@ -11,8 +12,9 @@ import "src/simulator/detector.dart";
 import "src/simulator/drive.dart";
 import "src/simulator/gps.dart";
 import "src/simulator/imu.dart";
-import "src/simulator/server.dart";
 import "src/simulator/pathfinding.dart";
+import "src/simulator/realsense.dart";
+import "src/simulator/server.dart";
 
 class AutonomySimulator extends AutonomyInterface {
   @override late final logger = BurtLogger(socket: server);
@@ -22,6 +24,7 @@ class AutonomySimulator extends AutonomyInterface {
   @override late DriveInterface drive = DriveSimulator(collection: this);
   @override late PathfindingInterface pathfinder = PathfindingSimulator(collection: this);
   @override late DetectorInterface detector = DetectorSimulator(collection: this);
+  @override late RealSenseSimulator realsense = RealSenseSimulator(collection: this);
 
   @override
   Future<void> init() async {

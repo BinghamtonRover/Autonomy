@@ -10,7 +10,6 @@ import "src/rover/pathfinding.dart";
 import "src/rover/server.dart";
 import "src/rover/drive.dart";
 
-
 /// A collection of all the different services used by the autonomy program.
 class RoverAutonomy extends AutonomyInterface {
 	/// A server to communicate with the dashboard and receive data from the subsystems.
@@ -22,4 +21,5 @@ class RoverAutonomy extends AutonomyInterface {
   @override late final logger = BurtLogger(socket: server);
   @override late final pathfinder = RoverPathfinder(collection: this);
   @override late final detector = DetectorSimulator(collection: this);
+  @override late final realsense = RealSenseSimulator(collection: this);
 }

@@ -10,14 +10,17 @@ abstract class AutonomyInterface extends Service {
   ServerInterface get server;
   PathfindingInterface get pathfinder;
   DetectorInterface get detector;
+  RealSenseInterface get realsense;
   
   @override
   Future<void> init() async {
-    await server.init();
     await gps.init();
     await imu.init();
     await drive.init();
+    await server.init();
     await pathfinder.init();
+    await detector.init();
+    await realsense.init();
   }
   
   @override
@@ -27,6 +30,8 @@ abstract class AutonomyInterface extends Service {
     await imu.dispose();
     await drive.dispose();
     await pathfinder.dispose();
+    await detector.dispose();
+    await realsense.dispose();
   }
   
   Future<void> restart() async {
