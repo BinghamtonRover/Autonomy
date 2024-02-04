@@ -2,12 +2,15 @@ import "dart:collection";
 
 class ErrorCorrector {  // non-nullable
   final int maxSamples;
-  ErrorCorrector({this.maxSamples = 5});
+  final double maxDeviation;
+  ErrorCorrector({this.maxSamples = 5, this.maxDeviation = double.infinity});
   
   double calibratedValue = 0;
   final Queue<double> recentSamples = DoubleLinkedQueue();
   
   void addValue(double value) {
+    final deviation = (calibratedValue - value).abs();
+    if (deviation > maxDeviation) return;
     if (recentSamples.length == maxSamples) recentSamples.removeLast();
     recentSamples.addFirst(value);
     calibratedValue = recentSamples.average();

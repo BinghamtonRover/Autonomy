@@ -8,7 +8,7 @@ extension RecordToGps on (num, num) {
 }
 
 extension GpsCoordinatesUtils on GpsCoordinates {
-  static const epsilon = 0.5;
+  static const epsilon = 0.0001;
   static final east = GpsCoordinates(longitude: 1);
   static final north = GpsCoordinates(latitude: 1);
   static final west = GpsCoordinates(longitude: -1);
