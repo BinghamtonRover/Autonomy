@@ -11,6 +11,7 @@ abstract class AutonomyInterface extends Service {
   PathfindingInterface get pathfinder;
   DetectorInterface get detector;
   RealSenseInterface get realsense;
+  OrchestratorInterface get orchestrator;
   
   @override
   Future<void> init() async {
@@ -21,6 +22,7 @@ abstract class AutonomyInterface extends Service {
     await pathfinder.init();
     await detector.init();
     await realsense.init();
+    await orchestrator.init();
   }
   
   @override
@@ -32,6 +34,7 @@ abstract class AutonomyInterface extends Service {
     await pathfinder.dispose();
     await detector.dispose();
     await realsense.dispose();
+    await orchestrator.dispose();
   }
   
   Future<void> restart() async {

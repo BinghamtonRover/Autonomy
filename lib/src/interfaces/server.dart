@@ -28,18 +28,15 @@ abstract class ServerInterface extends RoverServer implements Service {
 
   void onCommand(AutonomyCommand command);
 
-  void onAbort();
-
   @override
   @mustCallSuper
   void onMessage(WrappedMessage wrapper) {
     if (wrapper.name == AutonomyCommand().messageName) {
       final command = AutonomyCommand.fromBuffer(wrapper.data);
       if (command.abort) {
-        sendWrapper(wrapper);
-        collection.logger.warning("Aborting task!");
-        collection.drive.stop();
-        onAbort();
+        sendWrapper(wrapper);  // acknowledge receipt to the dashboard
+        collection.orchestrator.abort();
+        return;
       }
       onCommand(command);
     }

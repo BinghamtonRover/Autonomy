@@ -9,3 +9,4 @@ export "src/interfaces/server.dart";
 export "src/interfaces/realsense.dart";
 export "src/interfaces/reporter.dart";
 export "src/interfaces/service.dart";
+export "src/interfaces/orchestrator.dart";

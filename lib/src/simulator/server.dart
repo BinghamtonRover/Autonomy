@@ -1,4 +1,3 @@
-import "dart:io";
 import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 
@@ -12,12 +11,6 @@ class SimulatorServer extends ServerInterface {
   @override
   void onCommand(AutonomyCommand command) {
     // TODO: Decide what needs to go here
-  }
-
-  @override
-  Future<void> onAbort() async {
-    await collection.dispose();
-    exit(1);
   }
 
   @override

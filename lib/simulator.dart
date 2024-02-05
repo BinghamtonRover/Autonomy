@@ -7,6 +7,7 @@ export "src/simulator/sensorless_drive.dart";
 export "src/simulator/server.dart";
 
 import "package:autonomy/interfaces.dart";
+import "package:autonomy/src/simulator/orchestrator.dart";
 import "package:burt_network/logging.dart";
 
 import "src/simulator/detector.dart";
@@ -26,4 +27,5 @@ class AutonomySimulator extends AutonomyInterface {
   @override late PathfindingInterface pathfinder = PathfindingSimulator(collection: this);
   @override late DetectorInterface detector = DetectorSimulator(collection: this);
   @override late RealSenseSimulator realsense = RealSenseSimulator(collection: this);
+  @override late OrchestratorSimulator orchestrator = OrchestratorSimulator(collection: this);
 }
