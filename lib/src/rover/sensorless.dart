@@ -3,10 +3,12 @@ import "package:autonomy/rover.dart";
 import "package:autonomy/simulator.dart";
 
 class SensorlessDrive extends DriveInterface {
-  SensorlessDrive({required super.collection});
+  final DriveInterface simulatedDrive;
+  final DriveInterface realDrive;
   
-  late final simulatedDrive = DriveSimulator(collection: collection);
-  late final realDrive = RoverDrive(collection: collection);
+  SensorlessDrive({required super.collection, bool useGps = true, bool useImu = true}) : 
+    simulatedDrive = DriveSimulator(collection: collection),
+    realDrive = RoverDrive(collection: collection, useGps: useGps, useImu: useImu);
 
   @override
   Future<void> goForward() async {

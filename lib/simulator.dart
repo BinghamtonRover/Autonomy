@@ -3,7 +3,6 @@ export "src/simulator/drive.dart";
 export "src/simulator/gps.dart";
 export "src/simulator/imu.dart";
 export "src/simulator/realsense.dart";
-export "src/simulator/sensorless_drive.dart";
 export "src/simulator/server.dart";
 
 import "package:autonomy/interfaces.dart";

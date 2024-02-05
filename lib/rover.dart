@@ -1,5 +1,6 @@
 export "src/rover/drive.dart";
 export "src/rover/pathfinding.dart";
+export "src/rover/sensorless.dart";
 
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/simulator.dart";

@@ -33,7 +33,15 @@ extension GpsCoordinatesUtils on GpsCoordinates {
     90 => west,
     180 => south,
     270 => east,
-    _ => throw StateError("Unrecognized orientation: $orientation"),
+    _ => throw ArgumentError("Unrecognized orientation: $orientation"),
+  };
+
+  bool isPast(GpsCoordinates other, Orientation orientation) => switch (orientation.z) {
+    0 => latitude >= other.latitude,
+    90 => longitude >= other.longitude,
+    180 => latitude <= other.latitude,
+    270 => longitude <= other.longitude,
+    _ => throw ArgumentError("Unrecognized orientation: $orientation"),
   };
 }
 

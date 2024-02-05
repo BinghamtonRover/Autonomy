@@ -1,11 +1,13 @@
 import "package:burt_network/logging.dart";
 import "package:burt_network/generated.dart";
+
 import "package:autonomy/simulator.dart";
+import "package:autonomy/rover.dart";
 
 void main() async {
   Logger.level = LogLevel.debug;
   final simulator = AutonomySimulator();
-  simulator.drive = SensorlessDrive(collection: simulator);
+  simulator.drive = SensorlessDrive(collection: simulator, useGps: false, useImu: false);
   await simulator.init();
   await simulator.server.waitForConnection();
 

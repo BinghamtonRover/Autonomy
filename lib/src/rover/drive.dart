@@ -1,14 +1,21 @@
 import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 
+import "drive/timed.dart";
+import "drive/sensor.dart";
+
 /// A helper class to send drive commands to the rover with a simpler API. 
 class RoverDrive extends DriveInterface {
+  final bool useGps;
+  final bool useImu;
+  
+  final SensorDrive sensorDrive;
+  final TimedDrive timedDrive;
+  
   // TODO: Calibrate these
-  static const maxThrottle = 0.2;
-  static const turnThrottle = 0.1;
-  static const oneMeterDelay = Duration(seconds: 1);
-  static const turnDelay = Duration(seconds: 1);
-  RoverDrive({required super.collection});
+  RoverDrive({required super.collection, this.useGps = true, this.useImu = true}) : 
+    sensorDrive = SensorDrive(collection: collection),
+    timedDrive = TimedDrive(collection: collection);
 
 	/// Initializes the rover's drive subsystems.
 	@override 
@@ -17,25 +24,6 @@ class RoverDrive extends DriveInterface {
 	/// Stops the rover from driving.
 	@override 
   Future<void> dispose() => stop();
-
-	/// Sets the max speed of the rover. 
-	/// 
-	/// [setSpeeds] takes the speeds of each side of wheels. These numbers are percentages of the
-	/// max speed allowed by the rover, which we call the throttle. This function adjusts the 
-	/// throttle, as a percentage of the rover's top speed. 
-	void setThrottle(double throttle) {
-		collection.logger.trace("Setting throttle to $throttle");
-		collection.server.sendCommand(DriveCommand(throttle: throttle, setThrottle: true));
-	}
-
-	/// Sets the speeds of the left and right wheels, using differential steering. 
-	/// 
-	/// These values are percentages of the max speed allowed by the rover. See [setThrottle].
-	void setSpeeds({required double left, required double right}) {
-		collection.logger.trace("Setting speeds to $left and $right");
-		collection.server.sendCommand(DriveCommand(left: left, setLeft: true));
-		collection.server.sendCommand(DriveCommand(right: right, setRight: true));
-	}
 
 	/// Sets the angle of the front camera.
 	void setCameraAngle({required double swivel, required double tilt}) {
@@ -46,31 +34,15 @@ class RoverDrive extends DriveInterface {
 
   @override 
   Future<void> stop() async {
-    setThrottle(0);
-    setSpeeds(left: 0, right: 0);
+    await timedDrive.stop();
   }
 
   @override 
-  Future<void> goForward() async {
-    setThrottle(maxThrottle);
-    setSpeeds(left: 1, right: 1);
-    await Future<void>.delayed(oneMeterDelay);
-    await stop();
-  }
+  Future<void> goForward() => useGps ? sensorDrive.goForward() : timedDrive.goForward();
 
   @override
-  Future<void> turnLeft() async {
-    setThrottle(turnThrottle);
-    setSpeeds(left: -1, right: 1);
-    await Future<void>.delayed(turnDelay);
-    await stop();
-  }
+  Future<void> turnLeft() => useImu ? sensorDrive.turnLeft() : timedDrive.turnLeft();
 
   @override
-  Future<void> turnRight() async {
-    setThrottle(turnThrottle);
-    setSpeeds(left: 1, right: -1);
-    await Future<void>.delayed(turnDelay);
-    await stop();
-  }
+  Future<void> turnRight() => useImu ? sensorDrive.turnRight() : timedDrive.turnRight();
 }
