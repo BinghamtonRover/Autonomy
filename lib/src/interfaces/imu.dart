@@ -2,6 +2,8 @@ import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
 extension OrientationUtils on Orientation {
+  static const double epsilon = 15;
+  
   static final north = Orientation(z: 0);
   static final west = Orientation(z: 90);
   static final south = Orientation(z: 180);
@@ -20,6 +22,8 @@ extension OrientationUtils on Orientation {
 
   Orientation turnLeft() => Orientation(z: heading + 90).clampHeading();
   Orientation turnRight() => Orientation(z: heading - 90).clampHeading();
+
+  bool isNear(double value) => (z - value).abs() < epsilon;
 }
 
 abstract class ImuInterface extends Service {
@@ -27,6 +31,6 @@ abstract class ImuInterface extends Service {
   ImuInterface({required this.collection});
 
   double get heading => orientation.z;
-  Orientation orientation = Orientation();
-  void update(Orientation newValue) => orientation = newValue.clampHeading();
+  Orientation get orientation;
+  void update(Orientation newValue);
 }

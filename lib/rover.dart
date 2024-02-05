@@ -1,5 +1,4 @@
 export "src/rover/drive.dart";
-export "src/rover/server.dart";
 export "src/rover/pathfinding.dart";
 
 import "package:autonomy/interfaces.dart";
@@ -10,6 +9,7 @@ import "src/rover/pathfinding.dart";
 import "src/rover/server.dart";
 import "src/rover/drive.dart";
 import "src/rover/gps.dart";
+import "src/rover/imu.dart";
 import "src/rover/orchestrator.dart";
 
 /// A collection of all the different services used by the autonomy program.
@@ -19,7 +19,7 @@ class RoverAutonomy extends AutonomyInterface {
 	/// A helper class to handle driving the rover.
 	@override late final RoverDrive drive = RoverDrive(collection: this);
   @override late final gps = RoverGps(collection: this);
-  @override late final imu = ImuSimulator(collection: this);
+  @override late final imu = RoverImu(collection: this);
   @override late final logger = BurtLogger(socket: server);
   @override late final pathfinder = RoverPathfinder(collection: this);
   @override late final detector = DetectorSimulator(collection: this);

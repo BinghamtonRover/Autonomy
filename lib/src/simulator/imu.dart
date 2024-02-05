@@ -6,4 +6,10 @@ class ImuSimulator extends ImuInterface with ValueReporter {
   
   @override
   RoverPosition getMessage() => RoverPosition(orientation: orientation);
+
+  @override
+  Orientation orientation = Orientation();
+
+  @override
+  void update(Orientation newValue) => orientation = newValue.clampHeading();
 }
