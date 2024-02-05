@@ -26,8 +26,6 @@ abstract class ServerInterface extends RoverServer implements Service {
     return;
   }
 
-  void onCommand(AutonomyCommand command);
-
   @override
   @mustCallSuper
   void onMessage(WrappedMessage wrapper) {
@@ -38,7 +36,7 @@ abstract class ServerInterface extends RoverServer implements Service {
         collection.orchestrator.abort();
         return;
       }
-      onCommand(command);
+      collection.orchestrator.onCommand(command);
     }
   }
 }

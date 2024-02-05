@@ -7,11 +7,6 @@ class SimulatorServer extends ServerInterface {
   SimulatorServer({
     required super.collection,
   }) : super(quiet: true);
-  
-  @override
-  void onCommand(AutonomyCommand command) {
-    // TODO: Decide what needs to go here
-  }
 
   @override
   void restart() { }

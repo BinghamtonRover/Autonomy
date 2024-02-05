@@ -7,11 +7,6 @@ class AutonomyServer extends ServerInterface {
   AutonomyServer({required super.collection});
 
   @override
-  void onCommand(AutonomyCommand command) {
-    // TODO: Implement this
-  }
-
-  @override
   void onMessage(WrappedMessage wrapper) {
     if (wrapper.name == RoverPosition().messageName) {
       final message = RoverPosition.fromBuffer(wrapper.data);
