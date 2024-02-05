@@ -1,3 +1,4 @@
+import "dart:io";
 import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 
@@ -9,31 +10,14 @@ class SimulatorServer extends ServerInterface {
   }) : super(quiet: true);
   
   @override
-  void onMessage(WrappedMessage wrapper) {
-    if (wrapper.name == driveName) {
-      final command = DriveCommand.fromBuffer(wrapper.data);
-      collection.drive.goDirection(command.direction);
-    }
+  void onCommand(AutonomyCommand command) {
+    // TODO: Decide what needs to go here
   }
 
   @override
-  Future<void> onConnect(SocketInfo source) async {
-    super.onConnect(source);
-    final message = AutonomyData(
-      destination: GpsCoordinates(latitude: 3, longitude: 1),
-      state: AutonomyState.DRIVING,
-      task: AutonomyTask.GPS_ONLY,
-      obstacles: [GpsCoordinates(latitude: 1, longitude: 1)],
-      path: [
-        GpsCoordinates(latitude: 0, longitude: 1),
-        GpsCoordinates(latitude: 0, longitude: 2),
-        GpsCoordinates(latitude: 1, longitude: 2),
-        GpsCoordinates(latitude: 2, longitude: 2),
-        GpsCoordinates(latitude: 2, longitude: 1),
-        GpsCoordinates(latitude: 3, longitude: 1),
-      ],
-    );
-    sendMessage(message);
+  Future<void> onAbort() async {
+    await collection.dispose();
+    exit(1);
   }
 
   @override

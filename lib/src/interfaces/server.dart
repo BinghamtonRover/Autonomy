@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/burt_network.dart";
+import "package:meta/meta.dart";
 
 final subsystemsDestination = SocketInfo(
   address: InternetAddress("192.168.1.20"),
@@ -23,5 +24,24 @@ abstract class ServerInterface extends RoverServer implements Service {
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }
     return;
+  }
+
+  void onCommand(AutonomyCommand command);
+
+  void onAbort();
+
+  @override
+  @mustCallSuper
+  void onMessage(WrappedMessage wrapper) {
+    if (wrapper.name == AutonomyCommand().messageName) {
+      final command = AutonomyCommand.fromBuffer(wrapper.data);
+      if (command.abort) {
+        sendWrapper(wrapper);
+        collection.logger.warning("Aborting task!");
+        collection.drive.stop();
+        onAbort();
+      }
+      onCommand(command);
+    }
   }
 }

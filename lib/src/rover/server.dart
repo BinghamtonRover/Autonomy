@@ -7,12 +7,23 @@ class AutonomyServer extends ServerInterface {
   AutonomyServer({required super.collection});
 
   @override
+  void onCommand(AutonomyCommand command) {
+    // TODO: Implement this
+  }
+
+  @override
+  void onAbort() {
+    // TODO: Implement this
+  }
+
+  @override
   void onMessage(WrappedMessage wrapper) {
     if (wrapper.name == RoverPosition().messageName) {
       final message = RoverPosition.fromBuffer(wrapper.data);
       if (message.hasGps()) collection.gps.update(message.gps);
       if (message.hasOrientation()) collection.imu.update(message.orientation);
     }
+    super.onMessage(wrapper);
   }
 
   @override

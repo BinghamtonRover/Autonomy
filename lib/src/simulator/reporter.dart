@@ -8,7 +8,7 @@ mixin ValueReporter {
   Message getMessage();
 
   Timer? timer;
-  static const reportInterval = Duration(milliseconds: 250);
+  static const reportInterval = Duration(milliseconds: 100);
   Future<void> init() async => timer = Timer.periodic(reportInterval, (timer) => reportValue());
   Future<void> dispose() async => timer?.cancel();
   void reportValue() => collection.server.sendMessage(getMessage());
