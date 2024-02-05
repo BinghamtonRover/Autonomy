@@ -8,6 +8,13 @@ import "package:autonomy/rover.dart";
 import "package:autonomy/simulator.dart";
 
 void main() {
+  test("Simulator can be restarted", () async { 
+    final simulator = AutonomySimulator();
+    await simulator.init();
+    await simulator.restart();
+    await simulator.dispose();
+  });
+  
   test("Simulated drive test with simulated GPS", () async {
     Logger.level = LogLevel.info;
     final simulator = AutonomySimulator();
@@ -47,7 +54,7 @@ void main() {
     await simulator.drive.turnLeft();
     expect(simulator.imu.heading, 0);
   });
-  
+
   test("Real pathfinding is coherent", () async { 
     Logger.level = LogLevel.info;
     final simulator = AutonomySimulator();

@@ -14,4 +14,10 @@ class AutonomyServer extends ServerInterface {
       if (message.hasOrientation()) collection.imu.update(message.orientation);
     }
   }
+
+  @override
+  Future<void> init() async {
+    await super.init();
+    collection.logger.info("Initialized server");
+  }
 }

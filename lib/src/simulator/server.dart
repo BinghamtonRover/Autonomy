@@ -6,7 +6,7 @@ final driveName = DriveCommand().messageName;
 class SimulatorServer extends ServerInterface {
   SimulatorServer({
     required super.collection,
-  }) : super();
+  }) : super(quiet: true);
   
   @override
   void onMessage(WrappedMessage wrapper) {

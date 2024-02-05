@@ -3,6 +3,7 @@ export "src/simulator/drive.dart";
 export "src/simulator/gps.dart";
 export "src/simulator/imu.dart";
 export "src/simulator/realsense.dart";
+export "src/simulator/sensorless_drive.dart";
 export "src/simulator/server.dart";
 
 import "package:autonomy/interfaces.dart";
@@ -25,20 +26,4 @@ class AutonomySimulator extends AutonomyInterface {
   @override late PathfindingInterface pathfinder = PathfindingSimulator(collection: this);
   @override late DetectorInterface detector = DetectorSimulator(collection: this);
   @override late RealSenseSimulator realsense = RealSenseSimulator(collection: this);
-
-  @override
-  Future<void> init() async {
-    await server.init();
-    await gps.init();
-    await imu.init();
-    await drive.init();
-  }
-
-  @override
-  Future<void> dispose() async {
-    await server.dispose();
-    await gps.dispose();
-    await imu.dispose();
-    await drive.dispose();
-  }
 }

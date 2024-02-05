@@ -10,10 +10,18 @@ final subsystemsDestination = SocketInfo(
 
 abstract class ServerInterface extends RoverServer implements Service {
   final AutonomyInterface collection;
-  ServerInterface({required this.collection}) : super(device: Device.AUTONOMY, port: 8003);
+  ServerInterface({required this.collection, super.quiet}) : super(device: Device.AUTONOMY, port: 8003);
 
   void sendCommand(Message message) => sendMessage(message, destinationOverride: subsystemsDestination);
 
   @override
   void restart() => collection.restart();
+
+  Future<void> waitForConnection() async {
+    logger.info("Waiting for connection...");
+    while (!isConnected) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    return;
+  }
 }
