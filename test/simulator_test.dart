@@ -14,6 +14,14 @@ void main() {
     await simulator.restart();
     await simulator.dispose();
   });
+
+  test("Rover can be restarted", () async { 
+    Logger.level = LogLevel.warning;
+    final rover = RoverAutonomy();
+    await rover.init();
+    await rover.restart();
+    await rover.dispose();
+  });
   
   test("Simulated drive test with simulated GPS", () async {
     Logger.level = LogLevel.info;
@@ -53,6 +61,7 @@ void main() {
     // 4 lefts go back to north
     await simulator.drive.turnLeft();
     expect(simulator.imu.heading, 0);
+    await simulator.dispose();
   });
 
   test("Real pathfinding is coherent", () async { 
@@ -60,12 +69,14 @@ void main() {
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     await testPath(simulator);
+    await simulator.dispose();
   });
 
   test("Simulated pathfinding is coherent", () async { 
     Logger.level = LogLevel.info;
     final simulator = AutonomySimulator();
     await testPath(simulator);
+    await simulator.dispose();
   });
 
   test("Following path gets to the end", () async { 
@@ -80,6 +91,7 @@ void main() {
     await simulator.drive.followPath(path);
     expect(simulator.gps.latitude, destination.latitude);
     expect(simulator.gps.longitude, destination.longitude);
+    await simulator.dispose();
   });
 
   test("Path avoids obstacles but reaches the goal", () async {
@@ -106,6 +118,7 @@ void main() {
     await simulator.drive.followPath(path);
     expect(simulator.gps.latitude, destination.latitude);
     expect(simulator.gps.longitude, destination.longitude);
+    await simulator.dispose();
   });
 
   test("Impossible paths are reported", () async {
@@ -122,6 +135,7 @@ void main() {
     }
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNull);
+    await simulator.dispose();
   });
 
   test("GPS Error is appropriate", () async {
@@ -137,6 +151,7 @@ void main() {
     }
     realGps.update(GpsCoordinates(latitude: 100, longitude: 100));
     expect(realGps.coordinates.isNear(origin), isTrue);
+    await simulator.dispose();
   });
 }
 

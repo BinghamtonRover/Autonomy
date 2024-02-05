@@ -2,8 +2,6 @@ import "dart:math";
 import "package:burt_network/generated.dart";
 import "package:autonomy/interfaces.dart";
 
-import "reporter.dart";
-
 class GpsSimulator extends GpsInterface with ValueReporter {
   final double maxError;
   final _random = Random();
