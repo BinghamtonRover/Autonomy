@@ -38,7 +38,7 @@ abstract class AutonomyInterface extends Service {
   }
   
   Future<void> restart() async {
-    await init();
     await dispose();
+    await init();
   }
 }

@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:burt_network/generated.dart";
 import "package:autonomy/interfaces.dart";
 import "package:meta/meta.dart";
@@ -22,6 +24,8 @@ abstract class OrchestratorInterface extends Service {
     currentCommand = null;
     collection.logger.warning("Aborting task!");
     await collection.drive.stop();
+    await collection.dispose();
+    exit(1);
   }
   
   Future<void> handleGpsTask(AutonomyCommand command);
