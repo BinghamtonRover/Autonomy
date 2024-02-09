@@ -9,6 +9,7 @@ abstract class OrchestratorInterface extends Service {
   OrchestratorInterface({required this.collection});
 
   AutonomyCommand? currentCommand;
+  AutonomyState currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
   void onCommand(AutonomyCommand command) {
     currentCommand = command;
     switch (command.task) {
@@ -23,6 +24,7 @@ abstract class OrchestratorInterface extends Service {
   Future<void> abort() async {
     currentCommand = null;
     collection.logger.warning("Aborting task!");
+    currentState = AutonomyState.ABORTING;
     await collection.drive.stop();
     await collection.dispose();
     exit(1);

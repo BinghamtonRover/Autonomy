@@ -6,16 +6,6 @@ import "package:burt_network/generated.dart";
 class RoverPathfinder extends PathfindingInterface {
   RoverPathfinder({required super.collection});
 
-  final Set<GpsCoordinates> obstacleCoordinates = {};
-
-  @override
-  void recordObstacle(GpsCoordinates coordinates) => 
-    obstacleCoordinates.add(coordinates);
-
-  @override
-  bool isObstacle(GpsCoordinates coordinates) => 
-    obstacleCoordinates.contains(coordinates);
-
   @override
   List<AutonomyTransition>? getPath(GpsCoordinates destination) {
     final state = AutonomyAStarState(

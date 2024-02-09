@@ -17,10 +17,4 @@ class PathfindingSimulator extends PathfindingInterface {
     AutonomyTransition.simulated(position: (2, 1).toGps(), orientation: OrientationUtils.west, direction: DriveDirection.DRIVE_DIRECTION_RIGHT, collection: collection),
     AutonomyTransition.simulated(position: (2, 1).toGps(), orientation: OrientationUtils.north, direction: DriveDirection.DRIVE_DIRECTION_FORWARD, collection: collection),
   ];
-
-  @override
-  void recordObstacle(GpsCoordinates coordinates) { }
-
-  @override
-  bool isObstacle(GpsCoordinates coordinates) => false;
 }

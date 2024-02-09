@@ -8,9 +8,7 @@ class DetectorSimulator extends DetectorInterface {
   DetectorSimulator({required this.collection});
   
   @override
-  void checkObstacles() {
-    
-  }
+  bool findObstacles() => false;
 
   @override
   bool canSeeAruco() => false;  // if can see [arucoPosition]

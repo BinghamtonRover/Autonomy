@@ -6,6 +6,8 @@ abstract class PathfindingInterface extends Service {
   PathfindingInterface({required this.collection});
 
   List<AutonomyTransition>? getPath(GpsCoordinates destination);
-  void recordObstacle(GpsCoordinates coordinates);
-  bool isObstacle(GpsCoordinates coordinates);
+
+  final Set<GpsCoordinates> obstacles = {};
+  void recordObstacle(GpsCoordinates coordinates) => obstacles.add(coordinates);
+  bool isObstacle(GpsCoordinates coordinates) => obstacles.contains(coordinates);
 }
