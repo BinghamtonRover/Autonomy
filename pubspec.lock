@@ -12,9 +12,11 @@ packages:
   a_star:
     dependency: "direct main"
     description:
-      path: "D:/Flutter/Packages/astar"
-      relative: false
-    source: path
+      path: "."
+      ref: api-refactor
+      resolved-ref: "9b3aa78d9a7fcbaadaa33ccd35f95fe38fcbc092"
+      url: "https://github.com/Levi-Lesches/dart-a-star.git"
+    source: git
     version: "1.2.0"
   analyzer:
     dependency: transitive
@@ -221,7 +223,7 @@ packages:
       path: "../opencv_ffi"
       relative: true
     source: path
-    version: "1.1.0"
+    version: "1.2.0"
   package_config:
     dependency: transitive
     description:

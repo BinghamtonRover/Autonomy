@@ -13,7 +13,9 @@ dependencies:
   burt_network: 
     git: https://github.com/BinghamtonRover/Dart-Networking.git
   a_star:
-    path: D:/Flutter/Packages/astar
+    git: 
+      url: https://github.com/Levi-Lesches/dart-a-star.git
+      ref: api-refactor
   meta: ^1.11.0
 
 dev_dependencies:
