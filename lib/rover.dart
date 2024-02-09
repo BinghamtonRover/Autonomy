@@ -19,7 +19,7 @@ class RoverAutonomy extends AutonomyInterface {
 	/// A server to communicate with the dashboard and receive data from the subsystems.
 	@override late final AutonomyServer server = AutonomyServer(collection: this);
 	/// A helper class to handle driving the rover.
-	@override late final RoverDrive drive = RoverDrive(collection: this);
+	@override late final drive = RoverDrive(collection: this);
   @override late final gps = RoverGps(collection: this);
   @override late final imu = RoverImu(collection: this);
   @override late final logger = BurtLogger(socket: server);

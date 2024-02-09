@@ -32,13 +32,15 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       final path = collection.pathfinder.getPath(destination);
       currentPath = path;  // also use local variable path for promotion
       if (path == null) {
-        currentState = AutonomyState.NO_SOLUTION;
         final current = collection.gps.coordinates;
-        collection.logger.critical("Could not find a path", body: "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}");
+        collection.logger.error("Could not find a path", body: "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}");
+        currentState = AutonomyState.NO_SOLUTION;
+        currentCommand = null;
         return;
       }
       // Try to take that path
-      collection.logger.trace("Found a path: ${path.length} steps");
+      final current = collection.gps.coordinates;
+      collection.logger.trace("Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${path.length} steps");
       currentState = AutonomyState.DRIVING;
       for (final transition in path) {
         await collection.drive.goDirection(transition.direction);
@@ -49,6 +51,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
       }
     }
+    collection.logger.info("Task complete");
     currentState = AutonomyState.AT_DESTINATION;
     currentCommand = null;
   }

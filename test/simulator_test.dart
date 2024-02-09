@@ -9,6 +9,7 @@ import "package:autonomy/simulator.dart";
 
 void main() {
   test("Simulator can be restarted", () async { 
+    Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     expect(simulator.isInitialized, isFalse);
     await simulator.init();
@@ -20,7 +21,7 @@ void main() {
   });
 
   test("Rover can be restarted", () async { 
-    Logger.level = LogLevel.warning;
+    Logger.level = LogLevel.off;
     final rover = RoverAutonomy();
     await rover.init();
     await rover.restart();
@@ -28,7 +29,7 @@ void main() {
   });
   
   test("Simulated drive test with simulated GPS", () async {
-    Logger.level = LogLevel.info;
+    Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     expect(simulator.gps.latitude, 0);
     expect(simulator.gps.longitude, 0);
@@ -69,7 +70,7 @@ void main() {
   });
 
   test("Real pathfinding is coherent", () async { 
-    Logger.level = LogLevel.info;
+    Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     await testPath(simulator);
@@ -80,14 +81,14 @@ void main() {
   });
 
   test("Simulated pathfinding is coherent", () async { 
-    Logger.level = LogLevel.info;
+    Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     await testPath(simulator);
     await simulator.dispose();
   });
 
   test("Following path gets to the end", () async { 
-    Logger.level = LogLevel.info;
+    Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     final destination = (5, 5).toGps();
@@ -102,7 +103,7 @@ void main() {
   });
 
   test("Path avoids obstacles but reaches the goal", () async {
-    Logger.level = LogLevel.info;
+    Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     final destination = GpsCoordinates(latitude: 5, longitude: 5);
@@ -202,27 +203,29 @@ void main() {
       (4, 1).toGps(),
     ]);
     expect(status1.state, AutonomyState.AT_DESTINATION);
+    await simulator.dispose();
+  });
+
+  test("Orchestrator gracefully fails for invalid destinations", () async {
+    Logger.level = LogLevel.off;  // this test can log critical messages
+    final simulator = AutonomySimulator();
+    simulator.pathfinder = RoverPathfinder(collection: simulator);
+    simulator.orchestrator = RoverOrchestrator(collection: simulator);
+    simulator.pathfinder.recordObstacle((2, 0).toGps());
     // Test blocked command: 
-    simulator.gps.update(GpsCoordinates());
-    simulator.imu.update(Orientation());
-    final command2 = AutonomyCommand(destination: (2, 0).toGps(), task: AutonomyTask.GPS_ONLY);
+    final command = AutonomyCommand(destination: (2, 0).toGps(), task: AutonomyTask.GPS_ONLY);
     expect(simulator.gps.latitude, 0);
     expect(simulator.gps.longitude, 0);
     expect(simulator.imu.heading, 0);
-    await simulator.orchestrator.onCommand(command2);
+    await simulator.orchestrator.onCommand(command);
     expect(simulator.gps.latitude, 0);
     expect(simulator.gps.longitude, 0);
     expect(simulator.imu.heading, 0);
     final status2 = simulator.orchestrator.statusMessage;
     expect(status2.crash, isFalse);
-    expect(status2.task, AutonomyTask.GPS_ONLY);
-    expect(status2.destination, (2, 0).toGps());
-    expect(status2.obstacles, [
-      (2, 0).toGps(),
-      (4, -1).toGps(),
-      (4, 1).toGps(),
-    ]);
     expect(status2.state, AutonomyState.NO_SOLUTION);
+    expect(status2.task, AutonomyTask.AUTONOMY_TASK_UNDEFINED);
+    expect(status2.destination, GpsCoordinates());
     await simulator.dispose();
   });
 }

@@ -23,6 +23,7 @@ abstract class AutonomyInterface extends Service {
     await detector.init();
     await realsense.init();
     await orchestrator.init();
+    logger.info("Autonomy initialized");
   }
   
   @override
@@ -35,6 +36,7 @@ abstract class AutonomyInterface extends Service {
     await detector.dispose();
     await realsense.dispose();
     await orchestrator.dispose();
+    logger.info("Autonomy disposed");
   }
   
   Future<void> restart() async {

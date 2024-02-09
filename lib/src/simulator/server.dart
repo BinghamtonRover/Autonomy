@@ -8,9 +8,6 @@ class SimulatorServer extends ServerInterface {
     required super.collection,
   }) : super(quiet: true);
 
-  @override
-  void restart() { }
-
   void sendDone() {
     final message = AutonomyData(state: AutonomyState.AT_DESTINATION, task: AutonomyTask.AUTONOMY_TASK_UNDEFINED);
     sendMessage(message);

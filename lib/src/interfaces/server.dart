@@ -19,7 +19,7 @@ abstract class ServerInterface extends RoverServer implements Service {
   void restart() => collection.restart();
 
   Future<void> waitForConnection() async {
-    logger.info("Waiting for connection...");
+    collection.logger.info("Waiting for connection...");
     while (!isConnected) {
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }
@@ -30,10 +30,14 @@ abstract class ServerInterface extends RoverServer implements Service {
   @mustCallSuper
   void onMessage(WrappedMessage wrapper) {
     if (wrapper.name == AutonomyCommand().messageName) {
-      final command = AutonomyCommand.fromBuffer(wrapper.data);
       sendWrapper(wrapper);  // acknowledge receipt to the dashboard
+      final command = AutonomyCommand.fromBuffer(wrapper.data);
       if (command.abort) {
         collection.orchestrator.abort();
+        return;
+      }
+      if (collection.orchestrator.currentCommand != null) {
+        collection.logger.error("Already executing a command", body: "Abort first if you want to switch tasks");
         return;
       }
       collection.orchestrator.onCommand(command);
