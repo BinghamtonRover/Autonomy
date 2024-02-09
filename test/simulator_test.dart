@@ -145,6 +145,17 @@ void main() {
     await simulator.dispose();
   });
 
+  
+  test("Stress test pathfinding", () async {
+    Logger.level = LogLevel.off;
+    final simulator = AutonomySimulator();
+    simulator.pathfinder = RoverPathfinder(collection: simulator);
+    final destination = (1000, 1000).toGps();
+    final path = simulator.pathfinder.getPath(destination);
+    expect(path, isNotNull);
+    await simulator.dispose();
+  });
+
   test("GPS Error is appropriate", () async {
     // TODO: Measure the actual error here
     final simulator = AutonomySimulator();

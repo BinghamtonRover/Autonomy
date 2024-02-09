@@ -37,7 +37,27 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   });
 
   @override
-  double calculateHeuristic() => position.distanceTo(goal);
+  double calculateHeuristic() {
+    var result = (position.latitude - goal.latitude).abs() + (position.longitude - goal.longitude).abs();
+    if (goal.latitude > position.latitude) {
+      result += switch (orientation.heading) {
+        0 => 0,
+        90 => 1, 
+        270 => 1,
+        180 => 2,
+        _ => throw StateError("Unrecognized orientation: ${orientation.heading}"),
+      };
+    } else if (goal.latitude < position.latitude) {
+      result += switch (orientation.heading) {
+        0 => 2,
+        90 => 1, 
+        270 => 1,
+        180 => 0,
+        _ => throw StateError("Unrecognized orientation: ${orientation.heading}"),
+      };
+    }
+    return result;
+  }
 
   @override
   String hash() => "${position.latitude},${position.longitude}-${orientation.z}";
@@ -49,7 +69,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
     position: position ?? this.position, 
     orientation: orientation ?? this.orientation,
     goal: goal, 
-    depth: depth + 1,
+    depth: direction == DriveDirection.DRIVE_DIRECTION_FORWARD ? depth + 1 : depth,
     collection: collection,
     transition: AutonomyTransition(this, direction: direction),
   )..finalize();
