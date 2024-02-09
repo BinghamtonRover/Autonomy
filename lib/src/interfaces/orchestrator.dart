@@ -10,11 +10,11 @@ abstract class OrchestratorInterface extends Service {
 
   AutonomyCommand? currentCommand;
   AutonomyState currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
-  void onCommand(AutonomyCommand command) {
+  Future<void> onCommand(AutonomyCommand command) async {
     currentCommand = command;
     switch (command.task) {
-      case AutonomyTask.GPS_ONLY: handleGpsTask(command);
-      case AutonomyTask.VISUAL_MARKER: handleArucoTask(command);
+      case AutonomyTask.GPS_ONLY: await handleGpsTask(command);
+      case AutonomyTask.VISUAL_MARKER: await handleArucoTask(command);
       // TODO: Add more tasks 
       default: collection.logger.error("Unrecognized task: ${command.task}");  // ignore: no_default_cases
     }
@@ -34,4 +34,5 @@ abstract class OrchestratorInterface extends Service {
   Future<void> handleArucoTask(AutonomyCommand command);
   Future<void> handleHammerTask(AutonomyCommand command);
   Future<void> handleBottleTask(AutonomyCommand command);
+  AutonomyData get statusMessage;
 }

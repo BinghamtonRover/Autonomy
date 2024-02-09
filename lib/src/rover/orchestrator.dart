@@ -6,7 +6,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   RoverOrchestrator({required super.collection});
   
   @override
-  AutonomyData getMessage() => AutonomyData(
+  AutonomyData get statusMessage => AutonomyData(
     destination: currentCommand?.destination,
     state: currentState,
     obstacles: collection.pathfinder.obstacles,
@@ -17,6 +17,9 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     task: currentCommand?.task,
     crash: false,  // TODO: Investigate if this is used and how to use it better
   );
+
+  @override
+  Message getMessage() => statusMessage;
   
   @override
   Future<void> handleGpsTask(AutonomyCommand command) async {
@@ -27,14 +30,15 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       collection.logger.debug("Finding a path");
       currentState = AutonomyState.PATHING;
       final path = collection.pathfinder.getPath(destination);
+      currentPath = path;  // also use local variable path for promotion
       if (path == null) {
         currentState = AutonomyState.NO_SOLUTION;
         final current = collection.gps.coordinates;
-        collection.logger.error("Could not find a path from ${current.prettyPrint()} to ${destination.prettyPrint()}");
-        await collection.restart();
+        collection.logger.critical("Could not find a path", body: "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}");
         return;
       }
       // Try to take that path
+      collection.logger.trace("Found a path: ${path.length} steps");
       currentState = AutonomyState.DRIVING;
       for (final transition in path) {
         await collection.drive.goDirection(transition.direction);
@@ -45,6 +49,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
       }
     }
+    currentState = AutonomyState.AT_DESTINATION;
+    currentCommand = null;
   }
 
   @override

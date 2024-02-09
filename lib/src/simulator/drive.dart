@@ -4,7 +4,8 @@ import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
 class DriveSimulator extends DriveInterface {
-  DriveSimulator({required super.collection});
+  final bool shouldDelay;
+  DriveSimulator({required super.collection, this.shouldDelay = false});
 
   @override
   Future<void> goForward() async {
@@ -16,6 +17,7 @@ class DriveSimulator extends DriveInterface {
     collection.logger.trace("  Orientation: ${orientation.heading}");
     collection.logger.trace("  New position: ${newPosition.prettyPrint()}");
     collection.gps.update(newPosition);
+    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -24,6 +26,7 @@ class DriveSimulator extends DriveInterface {
     final heading = collection.imu.heading;
     final orientation = Orientation(z: heading + 90);
     collection.imu.update(orientation);
+    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -32,6 +35,7 @@ class DriveSimulator extends DriveInterface {
     final heading = collection.imu.heading;
     final orientation = Orientation(z: heading - 90);
     collection.imu.update(orientation);
+    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
   @override

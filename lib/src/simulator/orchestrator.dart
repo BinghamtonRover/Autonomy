@@ -5,6 +5,9 @@ class OrchestratorSimulator extends OrchestratorInterface {
   OrchestratorSimulator({required super.collection});
 
   @override
+  AutonomyData get statusMessage => AutonomyData();
+
+  @override
   Future<void> handleGpsTask(AutonomyCommand command) async {
 
   }

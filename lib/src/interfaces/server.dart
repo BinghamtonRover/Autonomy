@@ -31,8 +31,8 @@ abstract class ServerInterface extends RoverServer implements Service {
   void onMessage(WrappedMessage wrapper) {
     if (wrapper.name == AutonomyCommand().messageName) {
       final command = AutonomyCommand.fromBuffer(wrapper.data);
+      sendWrapper(wrapper);  // acknowledge receipt to the dashboard
       if (command.abort) {
-        sendWrapper(wrapper);  // acknowledge receipt to the dashboard
         collection.orchestrator.abort();
         return;
       }

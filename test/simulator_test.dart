@@ -73,6 +73,9 @@ void main() {
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     await testPath(simulator);
+    simulator.gps.update((0, 0).toGps());
+    simulator.imu.update(Orientation());
+    await testPath2(simulator);
     await simulator.dispose();
   });
 
@@ -157,10 +160,87 @@ void main() {
     expect(realGps.coordinates.isNear(origin), isTrue);
     await simulator.dispose();
   });
+
+  test("Orchestrator works for GPS task", () async {
+    Logger.level = LogLevel.off;  // this test can log critical messages
+    final simulator = AutonomySimulator();
+    simulator.pathfinder = RoverPathfinder(collection: simulator);
+    simulator.orchestrator = RoverOrchestrator(collection: simulator);
+    simulator.pathfinder.obstacles.addAll([
+      (2, 0).toGps(),
+      (4, -1).toGps(),
+      (4, 1).toGps(),
+    ]);
+    await simulator.init();
+    // Test normal command: 
+    final command1 = AutonomyCommand(destination: (4, 0).toGps(), task: AutonomyTask.GPS_ONLY);
+    expect(simulator.gps.latitude, 0);
+    expect(simulator.gps.longitude, 0);
+    expect(simulator.imu.heading, 0);
+    await simulator.orchestrator.onCommand(command1);
+    expect(simulator.gps.latitude, 4);
+    expect(simulator.gps.longitude, 0);
+    expect(simulator.imu.heading, 0);
+    final status1 = simulator.orchestrator.statusMessage;
+    expect(status1.crash, isFalse);
+    expect(status1.task, AutonomyTask.AUTONOMY_TASK_UNDEFINED);
+    expect(status1.destination, GpsCoordinates());
+    expect(status1.obstacles, [
+      (2, 0).toGps(),
+      (4, -1).toGps(),
+      (4, 1).toGps(),
+    ]);
+    expect(status1.state, AutonomyState.AT_DESTINATION);
+    // Test blocked command: 
+    simulator.gps.update(GpsCoordinates());
+    simulator.imu.update(Orientation());
+    final command2 = AutonomyCommand(destination: (2, 0).toGps(), task: AutonomyTask.GPS_ONLY);
+    expect(simulator.gps.latitude, 0);
+    expect(simulator.gps.longitude, 0);
+    expect(simulator.imu.heading, 0);
+    await simulator.orchestrator.onCommand(command2);
+    expect(simulator.gps.latitude, 0);
+    expect(simulator.gps.longitude, 0);
+    expect(simulator.imu.heading, 0);
+    final status2 = simulator.orchestrator.statusMessage;
+    expect(status2.crash, isFalse);
+    expect(status2.task, AutonomyTask.GPS_ONLY);
+    expect(status2.destination, (2, 0).toGps());
+    expect(status2.obstacles, [
+      (2, 0).toGps(),
+      (4, -1).toGps(),
+      (4, 1).toGps(),
+    ]);
+    expect(status2.state, AutonomyState.NO_SOLUTION);
+    await simulator.dispose();
+  });
 }
 
 Future<void> testPath(AutonomyInterface simulator) async {
   final destination = GpsCoordinates(latitude: 5, longitude: 5);
+  final result = simulator.pathfinder.getPath(destination);
+  expect(simulator.gps.latitude, 0);
+  expect(simulator.gps.longitude, 0);
+  expect(simulator.imu.heading, 0);
+  expect(result, isNotNull); if (result == null) return;
+  expect(result, isNotEmpty);
+  AutonomyTransition transition;
+  for (transition in result) {
+    simulator.logger.debug(transition.toString());
+    simulator.logger.trace("  From: ${simulator.gps.coordinates.prettyPrint()}");
+    expect(simulator.gps.latitude, transition.position.latitude);
+    expect(simulator.gps.longitude, transition.position.longitude);
+    expect(simulator.imu.heading, transition.orientation.heading);
+    await simulator.drive.goDirection(transition.direction);
+    simulator.logger.trace("  To: ${simulator.gps.coordinates.prettyPrint()}");
+  }
+}
+
+Future<void> testPath2(AutonomyInterface simulator) async {
+  final destination = GpsCoordinates(latitude: 4, longitude: 0);
+  simulator.pathfinder.recordObstacle((2, 0).toGps());
+  simulator.pathfinder.recordObstacle((4, -1).toGps());
+  simulator.pathfinder.recordObstacle((4, 1).toGps());
   final result = simulator.pathfinder.getPath(destination);
   expect(simulator.gps.latitude, 0);
   expect(simulator.gps.longitude, 0);
