@@ -10,9 +10,13 @@ import "package:autonomy/simulator.dart";
 void main() {
   test("Simulator can be restarted", () async { 
     final simulator = AutonomySimulator();
+    expect(simulator.isInitialized, isFalse);
     await simulator.init();
+    expect(simulator.isInitialized, isTrue);
     await simulator.restart();
+    expect(simulator.isInitialized, isTrue);
     await simulator.dispose();
+    expect(simulator.isInitialized, isFalse);
   });
 
   test("Rover can be restarted", () async { 

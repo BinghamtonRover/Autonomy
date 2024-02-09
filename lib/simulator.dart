@@ -27,4 +27,10 @@ class AutonomySimulator extends AutonomyInterface {
   @override late DetectorInterface detector = DetectorSimulator(collection: this);
   @override late RealSenseSimulator realsense = RealSenseSimulator(collection: this);
   @override late OrchestratorSimulator orchestrator = OrchestratorSimulator(collection: this);
+
+  bool isInitialized = false;
+  @override
+  Future<void> init() { isInitialized = true; return super.init(); }
+  @override
+  Future<void> dispose() { isInitialized = false; return super.dispose(); }
 }
