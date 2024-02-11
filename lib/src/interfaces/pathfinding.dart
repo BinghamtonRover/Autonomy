@@ -10,4 +10,10 @@ abstract class PathfindingInterface extends Service {
   final Set<GpsCoordinates> obstacles = {};
   void recordObstacle(GpsCoordinates coordinates) => obstacles.add(coordinates);
   bool isObstacle(GpsCoordinates coordinates) => obstacles.contains(coordinates);
+
+  @override
+  Future<void> dispose() async {
+    obstacles.clear();
+    await super.dispose();
+  }
 }

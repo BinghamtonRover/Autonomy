@@ -5,19 +5,21 @@ import "package:burt_network/logging.dart";
 
 final chair = (2, 0).toGps();
 final obstacles = {
-  (2, 0).toGps(),
-  (4, -1).toGps(),
-  (4, 1).toGps(),
+  SimulatedObstacle(coordinates: (2, 0).toGps(), radius: 3),
+  SimulatedObstacle(coordinates: (6, -1).toGps(), radius: 3),
+  SimulatedObstacle(coordinates: (6, 1).toGps(), radius: 3),
 };
-// Enter in the Dashboard: Destination = (lat=4, long=0);
+// Enter in the Dashboard: Destination = (lat=7, long=0);
 
 void main() async {
-  Logger.level = LogLevel.trace;
+  Logger.level = LogLevel.info;
   final simulator = AutonomySimulator();
+  final detector = DetectorSimulator(collection: simulator)
+    ..obstacles.addAll(obstacles);
+  simulator.detector = detector;
   simulator.pathfinder = RoverPathfinder(collection: simulator);
   simulator.orchestrator = RoverOrchestrator(collection: simulator);
   simulator.drive = DriveSimulator(collection: simulator, shouldDelay: true);
-  simulator.pathfinder.obstacles.addAll(obstacles);
   await simulator.init();
   await simulator.server.waitForConnection();
 }

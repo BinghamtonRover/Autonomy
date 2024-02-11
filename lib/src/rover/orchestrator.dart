@@ -2,8 +2,18 @@ import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
 class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
+  final List<GpsCoordinates> traversed = [];
   List<AutonomyTransition>? currentPath;
   RoverOrchestrator({required super.collection});
+
+  @override
+  Future<void> dispose() async {
+    currentPath = null;
+    currentCommand = null;
+    currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
+    traversed.clear();
+    await super.dispose();
+  }
   
   @override
   AutonomyData get statusMessage => AutonomyData(
@@ -13,6 +23,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     path: [
       for (final transition in currentPath ?? <AutonomyTransition>[])
         transition.position,
+      ...traversed,
     ],
     task: currentCommand?.task,
     crash: false,  // TODO: Investigate if this is used and how to use it better
@@ -44,6 +55,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       currentState = AutonomyState.DRIVING;
       for (final transition in path) {
         await collection.drive.goDirection(transition.direction);
+        traversed.add(transition.position);
+        if (transition.direction != DriveDirection.DRIVE_DIRECTION_FORWARD) continue;
         final foundObstacle = collection.detector.findObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path..."); 

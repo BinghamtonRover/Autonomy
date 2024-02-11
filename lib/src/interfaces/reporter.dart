@@ -8,7 +8,7 @@ mixin ValueReporter {
   Message getMessage();
 
   Timer? timer;
-  Duration get reportInterval => const Duration(milliseconds: 100);
+  Duration get reportInterval => const Duration(milliseconds: 10);
 
   Future<void> init() async => timer = Timer.periodic(reportInterval, (timer) => _reportValue());
   Future<void> dispose() async => timer?.cancel();

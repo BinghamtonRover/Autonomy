@@ -19,6 +19,10 @@ extension GpsCoordinatesUtils on GpsCoordinates {
     pow(longitude - other.longitude, 2),
   );
 
+  double manhattanDistance(GpsCoordinates other) => 
+    (latitude - other.latitude).abs() + 
+    (longitude - other.longitude).abs();
+
   bool isNear(GpsCoordinates other) => distanceTo(other).abs() < epsilon;
 
   GpsCoordinates operator +(GpsCoordinates other) => GpsCoordinates(
@@ -52,8 +56,6 @@ abstract class GpsInterface extends Service {
   double get longitude => coordinates.longitude;
   double get latitude => coordinates.latitude;
 
-
-  // ignore: use_setters_to_change_properties
   void update(GpsCoordinates newValue);
   GpsCoordinates get coordinates;
 }
