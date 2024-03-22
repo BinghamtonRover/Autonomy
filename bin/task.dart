@@ -19,6 +19,7 @@ void main() async {
   simulator.pathfinder = RoverPathfinder(collection: simulator);
   simulator.orchestrator = RoverOrchestrator(collection: simulator);
   simulator.drive = DriveSimulator(collection: simulator, shouldDelay: true);
+	await simulator.drive.goForward();
   await simulator.init();
   await simulator.server.waitForConnection();
 }
