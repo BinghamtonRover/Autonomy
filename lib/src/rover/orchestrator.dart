@@ -36,6 +36,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   Future<void> handleGpsTask(AutonomyCommand command) async {
     final destination = command.destination;
     collection.logger.info("Got GPS Task: Go to ${destination.prettyPrint()}");
+	collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
     while (!collection.gps.coordinates.isNear(destination)) {
       // Calculate a path
       collection.logger.debug("Finding a path");
@@ -50,10 +51,13 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         return;
       }
       // Try to take that path
+	for (final step in path) { print(step); }
+//	return;
       final current = collection.gps.coordinates;
       collection.logger.trace("Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${path.length} steps");
       currentState = AutonomyState.DRIVING;
       for (final state in path) {
+	collection.logger.debug(state.toString());
         await collection.drive.goDirection(state.direction);
         traversed.add(state.position);
         if (state.direction != DriveDirection.forward) continue;

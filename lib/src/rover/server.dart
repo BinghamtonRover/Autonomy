@@ -12,6 +12,7 @@ class AutonomyServer extends ServerInterface {
   void onMessage(WrappedMessage wrapper) {
     if (wrapper.name == RoverPosition().messageName) {
       final message = RoverPosition.fromBuffer(wrapper.data);
+//	print("Got data from rover: GPS? ${message.hasGps()}, IMU? ${message.hasOrientation()}");
       if (message.hasGps()) collection.gps.update(message.gps);
       if (message.hasOrientation()) collection.imu.update(message.orientation);
     } else if (wrapper.name == VideoData().messageName) {

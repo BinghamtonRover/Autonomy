@@ -17,16 +17,20 @@ class RoverGps extends GpsInterface {
     _longitudeCorrector.clear();
   }
 
-  @override
+	GpsCoordinates _coordinates = GpsCoordinates();  
+
+	@override
   void update(GpsCoordinates newValue) {
     _latitudeCorrector.addValue(newValue.latitude);
     _longitudeCorrector.addValue(newValue.longitude);
+	_coordinates = newValue;
     hasValue = true;
   }
 
   @override
-  GpsCoordinates get coordinates => GpsCoordinates(
-    latitude: _latitudeCorrector.calibratedValue,
-    longitude: _longitudeCorrector.calibratedValue,
-  );
+  GpsCoordinates get coordinates => _coordinates;
+//  GpsCoordinates get coordinates => GpsCoordinates(
+//    latitude: _latitudeCorrector.calibratedValue,
+//    longitude: _longitudeCorrector.calibratedValue,
+//  );
 }
