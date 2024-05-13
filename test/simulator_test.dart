@@ -220,6 +220,28 @@ void main() {
     expect(status2.destination, GpsCoordinates());
     await simulator.dispose();
   });
+
+  test("Orchestrator works with simulated obstacles", () async {
+    Logger.level = LogLevel.off;
+    final simulator = AutonomySimulator();
+    final obstacles = <SimulatedObstacle>[
+      SimulatedObstacle(coordinates: (2, 0).toGps(), radius: 3),
+      SimulatedObstacle(coordinates: (6, -1).toGps(), radius: 3),
+      SimulatedObstacle(coordinates: (6, 1).toGps(), radius: 3),
+    ];
+    simulator.detector = DetectorSimulator(collection: simulator, obstacles: obstacles);
+    simulator.pathfinder = RoverPathfinder(collection: simulator);
+    simulator.orchestrator = RoverOrchestrator(collection: simulator);
+    simulator.drive = DriveSimulator(collection: simulator);
+    await simulator.init();
+    expect(simulator.gps.latitude, 0);
+    expect(simulator.gps.longitude, 0);
+    expect(simulator.imu.heading, 0);
+    final command = AutonomyCommand(destination: (7, 0).toGps(), task: AutonomyTask.GPS_ONLY);
+    await simulator.orchestrator.onCommand(command);
+    expect(simulator.gps.latitude, 7);
+    expect(simulator.gps.longitude, 0);
+  });
 }
 
 Future<void> testPath(AutonomyInterface simulator) async {
