@@ -14,10 +14,10 @@ class DetectorSimulator extends DetectorInterface {
   static const arucoPosition = (10, 10);
   static const slopedLatitude = -5;
 
-  final List<SimulatedObstacle> obstacles = [];
+  final List<SimulatedObstacle> obstacles;
 
   final AutonomyInterface collection;
-  DetectorSimulator({required this.collection});
+  DetectorSimulator({required this.collection, required this.obstacles});
 
   @override
   Future<bool> init() async => true;

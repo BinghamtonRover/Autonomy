@@ -139,7 +139,6 @@ void main() {
     await simulator.dispose();
   });
 
-  
   test("Stress test pathfinding", () async {
     Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();

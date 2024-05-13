@@ -24,7 +24,7 @@ class AutonomySimulator extends AutonomyInterface {
   @override late ImuInterface imu = ImuSimulator(collection: this);
   @override late DriveInterface drive = DriveSimulator(collection: this);
   @override late PathfindingInterface pathfinder = PathfindingSimulator(collection: this);
-  @override late DetectorInterface detector = DetectorSimulator(collection: this);
+  @override late DetectorInterface detector = DetectorSimulator(collection: this, obstacles: []);
   @override late RealSenseInterface realsense = RealSenseSimulator(collection: this);
   @override late OrchestratorInterface orchestrator = OrchestratorSimulator(collection: this);
 
