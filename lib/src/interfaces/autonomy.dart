@@ -14,16 +14,22 @@ abstract class AutonomyInterface extends Service {
   OrchestratorInterface get orchestrator;
   
   @override
-  Future<void> init() async {
-    await gps.init();
-    await imu.init();
-    await drive.init();
-    await server.init();
-    await pathfinder.init();
-    await detector.init();
-    await realsense.init();
-    await orchestrator.init();
-    logger.info("Autonomy initialized");
+  Future<bool> init() async {
+    var result = true;
+    result &= await gps.init();
+    result &= await imu.init();
+    result &= await drive.init();
+    result &= await server.init();
+    result &= await pathfinder.init();
+    result &= await detector.init();
+    result &= await realsense.init();
+    result &= await orchestrator.init();
+    if (result) {
+      logger.info("Autonomy initialized");
+    } else {
+      logger.warning("Autonomy could not initialize");
+    }
+    return result;
   }
   
   @override

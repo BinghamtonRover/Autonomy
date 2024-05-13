@@ -5,7 +5,7 @@ abstract class PathfindingInterface extends Service {
   final AutonomyInterface collection;
   PathfindingInterface({required this.collection});
 
-  List<AutonomyTransition>? getPath(GpsCoordinates destination);
+  List<AutonomyAStarState>? getPath(GpsCoordinates destination);
 
   final Set<GpsCoordinates> obstacles = {};
   void recordObstacle(GpsCoordinates coordinates) => obstacles.add(coordinates);
@@ -14,6 +14,5 @@ abstract class PathfindingInterface extends Service {
   @override
   Future<void> dispose() async {
     obstacles.clear();
-    await super.dispose();
   }
 }

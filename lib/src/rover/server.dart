@@ -17,8 +17,9 @@ class AutonomyServer extends ServerInterface {
   }
 
   @override
-  Future<void> init() async {
+  Future<bool> init() async {
     await super.init();
     collection.logger.info("Initialized server");
+    return true;
   }
 }

@@ -9,6 +9,12 @@ class RoverGps extends GpsInterface {
   RoverGps({required super.collection});
     
   @override
+  Future<bool> init() async => true;
+
+  @override
+  Future<void> dispose() async { }
+
+  @override
   void update(GpsCoordinates newValue) {
     _latitudeCorrector.addValue(newValue.latitude);
     _longitudeCorrector.addValue(newValue.longitude);

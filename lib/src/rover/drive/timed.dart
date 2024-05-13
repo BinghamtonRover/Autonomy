@@ -10,6 +10,12 @@ class TimedDrive extends DriveInterface with RoverMotors {
 
   TimedDrive({required super.collection});
 
+  @override
+  Future<bool> init() async => true;
+
+  @override
+  Future<void> dispose() async { }
+
   @override 
   Future<void> stop() async {
     setThrottle(0);

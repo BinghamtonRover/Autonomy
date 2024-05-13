@@ -20,6 +20,12 @@ class SensorDrive extends DriveInterface with RoverMotors {
   }
 
   @override
+  Future<bool> init() async => true;
+
+  @override
+  Future<void> dispose() async { }
+
+  @override
   Future<void> goForward() async {
     final orientation = collection.imu.orientation;
     final currentCoordinates = collection.gps.coordinates;

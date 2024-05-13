@@ -8,6 +8,12 @@ class DriveSimulator extends DriveInterface {
   DriveSimulator({required super.collection, this.shouldDelay = false});
 
   @override
+  Future<bool> init() async => true;
+
+  @override
+  Future<void> dispose() async { }
+
+  @override
   Future<void> goForward() async {
     final position = collection.gps.coordinates;
     final orientation = collection.imu.orientation;

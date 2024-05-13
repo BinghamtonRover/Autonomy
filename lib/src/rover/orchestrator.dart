@@ -3,7 +3,7 @@ import "package:burt_network/generated.dart";
 
 class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   final List<GpsCoordinates> traversed = [];
-  List<AutonomyTransition>? currentPath;
+  List<AutonomyAStarState>? currentPath;
   RoverOrchestrator({required super.collection});
 
   @override
@@ -21,7 +21,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     state: currentState,
     obstacles: collection.pathfinder.obstacles,
     path: [
-      for (final transition in currentPath ?? <AutonomyTransition>[])
+      for (final transition in currentPath ?? <AutonomyAStarState>[])
         transition.position,
       ...traversed,
     ],
@@ -53,10 +53,9 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       final current = collection.gps.coordinates;
       collection.logger.trace("Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${path.length} steps");
       currentState = AutonomyState.DRIVING;
-      for (final transition in path) {
-        await collection.drive.goDirection(transition.direction);
-        traversed.add(transition.position);
-        if (transition.direction != DriveDirection.DRIVE_DIRECTION_FORWARD) continue;
+      for (final state in path) {
+        await collection.drive.goDirection(state.direction);
+        traversed.add(state.position);
         final foundObstacle = collection.detector.findObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path..."); 

@@ -8,6 +8,12 @@ class RoverImu extends ImuInterface {
   RoverImu({required super.collection});
 
   @override
+  Future<bool> init() async => true;
+
+  @override
+  Future<void> dispose() async { }
+
+  @override
   void update(Orientation newValue) => _zCorrector.addValue(newValue.clampHeading().heading);
 
   @override

@@ -18,6 +18,12 @@ class DetectorSimulator extends DetectorInterface {
 
   final AutonomyInterface collection;
   DetectorSimulator({required this.collection});
+
+  @override
+  Future<bool> init() async => true;
+
+  @override
+  Future<void> dispose() async => obstacles.clear();
   
   @override
   bool findObstacles() {

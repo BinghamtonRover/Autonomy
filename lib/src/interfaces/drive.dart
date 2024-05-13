@@ -1,17 +1,21 @@
-import "package:burt_network/generated.dart";
-
 import "package:autonomy/interfaces.dart";
+
+enum DriveDirection {
+  forward, 
+  left,
+  right,
+  stop,
+}
 
 abstract class DriveInterface extends Service {
   AutonomyInterface collection;
   DriveInterface({required this.collection});
 
   Future<void> goDirection(DriveDirection direction) async => switch (direction) {
-    DriveDirection.DRIVE_DIRECTION_FORWARD => await goForward(),
-    DriveDirection.DRIVE_DIRECTION_LEFT => await turnLeft(),
-    DriveDirection.DRIVE_DIRECTION_RIGHT => await turnRight(),
-    DriveDirection.DRIVE_DIRECTION_STOP => await stop(),
-    _ => null,
+    DriveDirection.forward => await goForward(),
+    DriveDirection.left => await turnLeft(),
+    DriveDirection.right => await turnRight(),
+    DriveDirection.stop => await stop(),
   };
   
   Future<void> goForward();
@@ -19,9 +23,9 @@ abstract class DriveInterface extends Service {
   Future<void> turnRight();
   Future<void> stop();
 
-  Future<void> followPath(List<AutonomyTransition> path) async {
-    for (final transition in path) {
-      await goDirection(transition.direction);
+  Future<void> followPath(List<AutonomyAStarState> path) async {
+    for (final state in path) {
+      await goDirection(state.direction);
     }
   }
 }

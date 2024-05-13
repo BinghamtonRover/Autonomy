@@ -6,6 +6,12 @@ class RealSenseSimulator extends RealSenseInterface {
   RealSenseSimulator({required super.collection});
   
   @override
+  Future<bool> init() async => true;
+
+  @override
+  Future<void> dispose() async => depthFrame = Uint16List.fromList([]);
+  
+  @override
   Uint16List depthFrame = Uint16List.fromList([]);
 
   @override

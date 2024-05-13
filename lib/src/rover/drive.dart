@@ -19,7 +19,7 @@ class RoverDrive extends DriveInterface {
 
 	/// Initializes the rover's drive subsystems.
 	@override 
-  Future<void> init() async { }
+  Future<bool> init() async => true;
 
 	/// Stops the rover from driving.
 	@override 

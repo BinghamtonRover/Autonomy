@@ -1,4 +1,1 @@
-abstract class Service {  
-  Future<void> init() async { }
-  Future<void> dispose() async { }
-}
+export "package:burt_network/burt_network.dart" show Service;

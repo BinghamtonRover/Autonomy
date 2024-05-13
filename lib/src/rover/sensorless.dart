@@ -11,6 +11,20 @@ class SensorlessDrive extends DriveInterface {
     realDrive = RoverDrive(collection: collection, useGps: useGps, useImu: useImu);
 
   @override
+  Future<bool> init() async {
+    var result = true;
+    result &= await simulatedDrive.init();
+    result &= await realDrive.init();
+    return result;
+  }
+
+  @override
+  Future<void> dispose() async {
+    await simulatedDrive.dispose();
+    await realDrive.dispose();
+  }
+
+  @override
   Future<void> goForward() async {
     await simulatedDrive.goForward();
     await realDrive.goForward();

@@ -80,13 +80,6 @@ void main() {
     await simulator.dispose();
   });
 
-  test("Simulated pathfinding is coherent", () async { 
-    Logger.level = LogLevel.off;
-    final simulator = AutonomySimulator();
-    await testPath(simulator);
-    await simulator.dispose();
-  });
-
   test("Following path gets to the end", () async { 
     Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
@@ -238,15 +231,15 @@ Future<void> testPath(AutonomyInterface simulator) async {
   expect(simulator.imu.heading, 0);
   expect(result, isNotNull); if (result == null) return;
   expect(result, isNotEmpty);
-  AutonomyTransition transition;
-  for (transition in result) {
-    simulator.logger.debug(transition.toString());
-    simulator.logger.trace("  From: ${simulator.gps.coordinates.prettyPrint()}");
+  for (final transition in result) {
+    simulator.logger.trace("  From: ${simulator.gps.coordinates.prettyPrint()} facing ${simulator.imu.heading}");
+    simulator.logger.debug("  $transition");
+    await simulator.drive.goDirection(transition.direction);
     expect(simulator.gps.latitude, transition.position.latitude);
     expect(simulator.gps.longitude, transition.position.longitude);
+    simulator.logger.trace("New orientation: ${simulator.imu.heading}");
+    simulator.logger.trace("Expected orientation: ${transition.orientation.heading}");
     expect(simulator.imu.heading, transition.orientation.heading);
-    await simulator.drive.goDirection(transition.direction);
-    simulator.logger.trace("  To: ${simulator.gps.coordinates.prettyPrint()}");
   }
 }
 
@@ -261,14 +254,13 @@ Future<void> testPath2(AutonomyInterface simulator) async {
   expect(simulator.imu.heading, 0);
   expect(result, isNotNull); if (result == null) return;
   expect(result, isNotEmpty);
-  AutonomyTransition transition;
-  for (transition in result) {
+  for (final transition in result) {
     simulator.logger.debug(transition.toString());
     simulator.logger.trace("  From: ${simulator.gps.coordinates.prettyPrint()}");
+    await simulator.drive.goDirection(transition.direction);
     expect(simulator.gps.latitude, transition.position.latitude);
     expect(simulator.gps.longitude, transition.position.longitude);
     expect(simulator.imu.heading, transition.orientation.heading);
-    await simulator.drive.goDirection(transition.direction);
     simulator.logger.trace("  To: ${simulator.gps.coordinates.prettyPrint()}");
   }
 }

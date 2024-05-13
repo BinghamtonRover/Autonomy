@@ -29,8 +29,10 @@ class AutonomySimulator extends AutonomyInterface {
   @override late OrchestratorInterface orchestrator = OrchestratorSimulator(collection: this);
 
   bool isInitialized = false;
+
   @override
-  Future<void> init() { isInitialized = true; return super.init(); }
+  Future<bool> init() { isInitialized = true; return super.init(); }
+  
   @override
   Future<void> dispose() { isInitialized = false; return super.dispose(); }
 }
