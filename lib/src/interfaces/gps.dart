@@ -4,15 +4,31 @@ import "package:burt_network/generated.dart";
 import "package:autonomy/interfaces.dart";
 
 extension RecordToGps on (num, num) {
-  GpsCoordinates toGps() => GpsCoordinates(latitude: $1.toDouble(), longitude: $2.toDouble());
+  GpsCoordinates toGps() => GpsCoordinates(latitude: $1.toDouble() * GpsUtils.latitudePerMeter, longitude: $2.toDouble() * GpsUtils.longitudePerMeter);
 }
 
-extension GpsCoordinatesUtils on GpsCoordinates {
-  static const epsilon = 0.0001;
-  static final east = GpsCoordinates(longitude: 1);
-  static final north = GpsCoordinates(latitude: 1);
-  static final west = GpsCoordinates(longitude: -1);
-  static final south = GpsCoordinates(latitude: -1);
+extension GpsUtils on GpsCoordinates {
+  static const maxErrorMeters = 3;
+  static double get epsilonLatitude => maxErrorMeters / metersPerLatitude; 
+  static double get epsilonLongitude => maxErrorMeters / metersPerLongitude; 
+
+  static GpsCoordinates get east => 
+    GpsCoordinates(longitude: 1 / metersPerLongitude);
+  static GpsCoordinates get west => 
+    GpsCoordinates(longitude: -1 / metersPerLongitude);
+  static GpsCoordinates get north => 
+    GpsCoordinates(latitude: 1 / metersPerLatitude);
+  static GpsCoordinates get south => 
+    GpsCoordinates(latitude: 1 / metersPerLatitude);
+
+  // Taken from https://stackoverflow.com/a/39540339/9392211
+  static const metersPerLatitude = 111.32 * 1000;  // 111.32 km
+  static const radiansPerDegree = pi / 180;
+  static double get metersPerLongitude => 
+    40075 * cos( GpsInterface.currentLatitude * radiansPerDegree ) / 360 * 1000;
+  
+  static double get latitudePerMeter => 1 / metersPerLatitude;
+  static double get longitudePerMeter => 1 / metersPerLongitude;
   
   double distanceTo(GpsCoordinates other) => sqrt(
     pow(latitude - other.latitude, 2) +
@@ -23,7 +39,9 @@ extension GpsCoordinatesUtils on GpsCoordinates {
     (latitude - other.latitude).abs() + 
     (longitude - other.longitude).abs();
 
-  bool isNear(GpsCoordinates other) => distanceTo(other).abs() < epsilon;
+  bool isNear(GpsCoordinates other) => 
+    (latitude - other.latitude).abs() < epsilonLatitude &&
+    (longitude - other.longitude).abs() < epsilonLongitude;
 
   GpsCoordinates operator +(GpsCoordinates other) => GpsCoordinates(
     latitude: latitude + other.latitude,
@@ -50,6 +68,9 @@ extension GpsCoordinatesUtils on GpsCoordinates {
 }
 
 abstract class GpsInterface extends Service {
+  static const gpsError = 0.00003;
+  static double currentLatitude = 0;
+
   final AutonomyInterface collection;
   GpsInterface({required this.collection});
   
@@ -58,4 +79,7 @@ abstract class GpsInterface extends Service {
 
   void update(GpsCoordinates newValue);
   GpsCoordinates get coordinates;
+
+  bool isNear(GpsCoordinates coordinates) => 
+    coordinates.isNear(coordinates);
 }

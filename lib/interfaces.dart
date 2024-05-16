@@ -2,6 +2,7 @@ export "src/interfaces/a_star.dart";
 export "src/interfaces/autonomy.dart";
 export "src/interfaces/detector.dart";
 export "src/interfaces/drive.dart";
+export "src/interfaces/error.dart";
 export "src/interfaces/gps.dart";
 export "src/interfaces/imu.dart";
 export "src/interfaces/pathfinding.dart";

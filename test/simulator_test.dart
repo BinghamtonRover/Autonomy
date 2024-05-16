@@ -22,41 +22,44 @@ void main() {
   test("Simulated drive test with simulated GPS", () async {
     Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
-    expect(simulator.gps.latitude, 0);
-    expect(simulator.gps.longitude, 0);
-    expect(simulator.imu.heading, 0);
+    var position = GpsCoordinates();
+    final gps = simulator.gps;
+    expect(gps.coordinates.isNear(position), isTrue);
     // Turning left takes you +90 degrees
     await simulator.drive.turnLeft();
     expect(simulator.imu.heading, 90);
+    expect(gps.coordinates.isNear(position), isTrue);
     // Turning right takes you -90 degrees
     await simulator.drive.turnRight();
     expect(simulator.imu.heading, 0);
+    expect(gps.coordinates.isNear(position), isTrue);
     // Going straight takes you 1 cell forward
     await simulator.drive.goForward();
-    expect(simulator.gps.latitude, 1);
-    expect(simulator.gps.longitude, 0);
+    position += GpsUtils.north;
+    expect(gps.coordinates.isNear(position), isTrue);
     expect(simulator.imu.heading, 0);
     // Going forward at 90 degrees
     await simulator.drive.turnLeft();
     await simulator.drive.goForward();
-    expect(simulator.gps.latitude, 1);
-    expect(simulator.gps.longitude, -1);
+    position += GpsUtils.west;
+    expect(gps.coordinates.isNear(position), isTrue);
     expect(simulator.imu.heading, 90);   
     // Going forward at 180 degrees
     await simulator.drive.turnLeft();
     await simulator.drive.goForward();
-    expect(simulator.gps.latitude, 0);
-    expect(simulator.gps.longitude, -1);
+    position += GpsUtils.south;
+    expect(gps.coordinates.isNear(position), isTrue);
     expect(simulator.imu.heading, 180);   
     // Going forward at 270 degrees
     await simulator.drive.turnLeft();
     await simulator.drive.goForward();
-    expect(simulator.gps.latitude, 0);
-    expect(simulator.gps.longitude, 0);
+    position += GpsUtils.east;
+    expect(gps.coordinates.isNear(position), isTrue);
     expect(simulator.imu.heading, 270);   
     // 4 lefts go back to north
     await simulator.drive.turnLeft();
     expect(simulator.imu.heading, 0);
+    expect(gps.coordinates.isNear(position), isTrue);
     await simulator.dispose();
   });
 
@@ -70,8 +73,7 @@ void main() {
     expect(simulator.gps.latitude, 0);
     expect(simulator.gps.longitude, 0);
     await simulator.drive.followPath(path);
-    expect(simulator.gps.latitude, destination.latitude);
-    expect(simulator.gps.longitude, destination.longitude);
+    expect(simulator.gps.coordinates.isNear(destination), isTrue);
     await simulator.dispose();
   });
 

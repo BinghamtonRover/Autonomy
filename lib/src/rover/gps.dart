@@ -4,8 +4,8 @@ import "package:autonomy/interfaces.dart";
 import "corrector.dart";
 
 class RoverGps extends GpsInterface {
-  final _latitudeCorrector = ErrorCorrector(maxDeviation: GpsCoordinatesUtils.epsilon);
-  final _longitudeCorrector = ErrorCorrector(maxDeviation: GpsCoordinatesUtils.epsilon);
+  final _latitudeCorrector = ErrorCorrector(maxDeviation: GpsInterface.gpsError * 2);
+  final _longitudeCorrector = ErrorCorrector(maxDeviation: GpsInterface.gpsError * 2);
   RoverGps({required super.collection});
     
   @override
