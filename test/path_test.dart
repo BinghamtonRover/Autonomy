@@ -17,17 +17,18 @@ void main() => group("Pathfinding: ", tags: ["path"], () {
   });
 
   test("Small paths are efficient", () {
+    GpsUtils.maxErrorMeters = 1;
     final simulator = AutonomySimulator();
-    Logger.level = LogLevel.all;
+    final oldError = GpsUtils.maxErrorMeters;
 
+    // Plan a path from (0, 0) to (5, 5)
     simulator.pathfinder = RoverPathfinder(collection: simulator);  
     final destination = (5, 5).toGps();
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNotNull); if (path == null) return;
-    simulator.logger.info("The path from (0, 0) to (5, 5) is ${path.length} steps");
-    for (final step in path) {
-      simulator.logger.trace(step.toString());
-    }
-    expect(path.length, 11);
+
+    // start + 5 forward + 1 turn + 5 right = 12 steps
+    expect(path.length, 12);
+    GpsUtils.maxErrorMeters = oldError;
   });
 });

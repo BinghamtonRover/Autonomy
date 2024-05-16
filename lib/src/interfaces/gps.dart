@@ -8,7 +8,7 @@ extension RecordToGps on (num, num) {
 }
 
 extension GpsUtils on GpsCoordinates {
-  static const maxErrorMeters = 3;
+  static double maxErrorMeters = 3;
   static double get epsilonLatitude => maxErrorMeters / metersPerLatitude; 
   static double get epsilonLongitude => maxErrorMeters / metersPerLongitude; 
 
