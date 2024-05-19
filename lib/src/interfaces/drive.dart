@@ -25,33 +25,6 @@ enum DriveOrientation {
     return null;
   }
 
-  // DriveDirection face(DriveOrientation other) => switch (this) {
-  //   north => switch (other) {
-  //     north => DriveDirection.forward,
-  //     south => throw ArgumentError("Cannot face backward"),
-  //     west => DriveDirection.left,
-  //     east => DriveDirection.right,
-  //   },
-  //   south => switch (other) {
-  //     south => DriveDirection.forward,
-  //     north => throw ArgumentError("Cannot face backward"),
-  //     east => DriveDirection.left,
-  //     west => DriveDirection.right,
-  //   },
-  //   west => switch (other) {
-  //     west => DriveDirection.forward,
-  //     east => throw ArgumentError("Cannot face backward"),
-  //     south => DriveDirection.left,
-  //     north => DriveDirection.right,
-  //   },
-  //   east => switch (other) {
-  //     east => DriveDirection.forward,
-  //     west => throw ArgumentError("Cannot face backward"),
-  //     north => DriveDirection.left,
-  //     south => DriveDirection.right,
-  //   },
-  // };
-
   DriveOrientation turnLeft() => switch (this) {
     north => west,
     west => south,

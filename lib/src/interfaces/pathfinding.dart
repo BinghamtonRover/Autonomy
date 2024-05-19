@@ -9,7 +9,6 @@ abstract class PathfindingInterface extends Service {
 
   Set<GpsCoordinates> obstacles = {};
   void recordObstacle(GpsCoordinates coordinates) => obstacles.add(coordinates);
-  // TODO: This should only be within 1 meter!
   bool isObstacle(GpsCoordinates coordinates) => obstacles.any((obstacle) => obstacle.isNear(coordinates));
 
   @override

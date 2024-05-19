@@ -24,13 +24,10 @@ class ErrorCorrector {  // non-nullable
 
 extension on Iterable<num> {
   double weightedAverage() {
-    // more recent data (first) weighed more heavily than older (last)
     num sum = 0;
     var count = 0;
-    // var percentage = 0.66;
     for (final element in this) {
       sum += element; 
-      // percentage /= 3;
       count++;
     }
     return sum / count;

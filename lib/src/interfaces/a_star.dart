@@ -43,7 +43,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   double heuristic() => position.manhattanDistance(goal);
 
   @override
-  String hash() => "${(position.latitude * GpsUtils.metersPerLatitude).toStringAsFixed(2)},${(position.longitude * GpsUtils.metersPerLongitude).toStringAsFixed(2)} ($orientation)";
+  String hash() => "${position.prettyPrint()} ($orientation)";
 
   @override
   bool isGoal() => position.isNear(goal);
@@ -62,8 +62,5 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
     copyWith(direction: DriveDirection.forward, orientation: orientation, position: position.goForward(orientation)),
     copyWith(direction: DriveDirection.left, orientation: orientation.turnLeft(), position: position),
     copyWith(direction: DriveDirection.right, orientation: orientation.turnRight(), position: position),    
-    // copyWith(direction: DriveDirection.left, orientation: orientation.turnLeft(), position: position.goForward(orientation.turnLeft())),
-    // copyWith(direction: DriveDirection.right, orientation: orientation.turnRight(), position: position.goForward(orientation.turnRight())),
   ].where((state) => !collection.pathfinder.isObstacle(state.position));
-  // ];
 }
