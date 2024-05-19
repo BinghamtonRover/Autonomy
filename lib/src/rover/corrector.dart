@@ -3,7 +3,7 @@ import "dart:collection";
 class ErrorCorrector {  // non-nullable
   final int maxSamples;
   final double maxDeviation;
-  ErrorCorrector({this.maxSamples = 5, this.maxDeviation = double.infinity});
+  ErrorCorrector({required this.maxSamples, this.maxDeviation = double.infinity});
   
   double calibratedValue = 0;
   final Queue<double> recentSamples = DoubleLinkedQueue();
@@ -15,21 +15,22 @@ class ErrorCorrector {  // non-nullable
       return;
     }
     final deviation = (calibratedValue - value).abs();
-    if (deviation > maxDeviation) {
-      // print("Threw out value");
-    }
+    if (deviation > maxDeviation) return;
     if (recentSamples.length == maxSamples) recentSamples.removeLast();
     recentSamples.addFirst(value);
-    calibratedValue = recentSamples.average();
+    calibratedValue = recentSamples.weightedAverage();
   }
 }
 
 extension on Iterable<num> {
-  double average() {
+  double weightedAverage() {
+    // more recent data (first) weighed more heavily than older (last)
     num sum = 0;
     var count = 0;
+    // var percentage = 0.66;
     for (final element in this) {
       sum += element; 
+      // percentage /= 3;
       count++;
     }
     return sum / count;

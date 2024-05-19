@@ -8,7 +8,7 @@ import "package:autonomy/interfaces.dart";
 import "package:autonomy/simulator.dart";
 import "package:autonomy/src/rover/gps.dart";
 
-const imuError = 5.0;
+const imuError = 2.5;
 const gpsPrecision = 7;
 
 void main() => group("[Sensors]", tags: ["sensors"], () {
@@ -138,6 +138,40 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     simulator.gps.update(GpsCoordinates(latitude: 100, longitude: 100));
     expect(realGps.isNear(realCoordinates), isTrue);
     GpsUtils.maxErrorMeters = oldError;
+  });
+
+  test("IMU noise when moving", () async {
+    Logger.level = LogLevel.off;
+    final simulator = AutonomySimulator();
+    final simulatedImu = ImuSimulator(collection: simulator, maxError: imuError);
+    final realImu = RoverImu(collection: simulator);
+    final orientation = OrientationUtils.north;
+    simulatedImu.update(orientation);
+    
+    var count = 0;
+    for (var i = 0; i < 350; i++) {
+      orientation.z += 1;
+      simulatedImu.update(orientation);
+      final newData = simulatedImu.raw;
+      realImu.update(newData);
+      simulator.logger.trace("Got new value: ${newData.heading}");
+      simulator.logger.trace("  New heading: ${realImu.heading}");
+      simulator.logger.trace("  Real position: ${orientation.heading}");
+      if (i < 10) continue;
+      simulator.logger.trace("  Values are similar: ${realImu.isNear(orientation.heading)}");
+      if (realImu.isNear(orientation.heading)) count++;
+    }
+
+    final percentage = count / 350;
+    expect(percentage, greaterThan(0.75), reason: "IMU should be accurate >75% of the time: $percentage");
+
+    final badData = Orientation(z: 10);
+    simulator.logger.info("Final orientation: ${realImu.heading}");
+    simulator.logger.info("Bad orientation: ${badData.heading}");
+    realImu.update(badData);
+    simulator.logger.info("Unaffected orientation: ${realImu.heading}");
+    expect(realImu.isNear(orientation.heading), isTrue);
+    await simulator.dispose();
   });
 
   test("GPS latitude is set properly", () async {

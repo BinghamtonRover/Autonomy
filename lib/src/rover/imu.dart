@@ -4,7 +4,7 @@ import "package:autonomy/interfaces.dart";
 import "corrector.dart";
 
 class RoverImu extends ImuInterface {
-  final _zCorrector = ErrorCorrector(maxSamples: 50, maxDeviation: 15);
+  final _zCorrector = ErrorCorrector(maxSamples: 10, maxDeviation: 15);
   RoverImu({required super.collection});
 
   @override
