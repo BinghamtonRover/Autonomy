@@ -24,5 +24,5 @@ class RoverImu extends ImuInterface {
     x: 0, 
     y: 0,
     z: _zCorrector.calibratedValue,
-  );
+  ).clampHeading();
 }
