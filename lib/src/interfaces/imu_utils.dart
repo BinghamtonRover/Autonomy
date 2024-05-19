@@ -19,5 +19,9 @@ extension OrientationUtils on Orientation {
     return Orientation(x: x, y: y, z: adjustedHeading);
   }
 
-  bool isNear(double value) => (z - value).abs() < epsilon;
+  bool isNear(double value) => value > 270 && z < 90
+    ? (z + 360 - value).abs() < epsilon
+    : value < 90 && z > 270 
+      ? (z - value - 360).abs() < epsilon
+      : (z - value).abs() < epsilon;
 }

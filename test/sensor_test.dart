@@ -90,9 +90,11 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
       final newData = simulatedImu.raw;
       realImu.update(newData);
       simulator.logger.trace("Got new value: ${newData.heading}");
-      simulator.logger.trace("New heading: ${realImu.heading} vs real position: ${north.heading}");
+      simulator.logger.trace("  New heading: ${realImu.heading}");
+      simulator.logger.trace("  Real position: ${north.heading}");
       if (i < 10) continue;
-      if (realImu.isNear(OrientationUtils.north.heading)) count++;
+      simulator.logger.trace("  Values are similar: ${realImu.isNear(north.heading)}");
+      if (realImu.isNear(north.heading)) count++;
     }
 
     final percentage = count / 1000;
@@ -111,7 +113,7 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     GpsUtils.maxErrorMeters = 3;
     final simulator = AutonomySimulator();
     final realGps = RoverGps(collection: simulator);
-    final simulatedGps = GpsSimulator(collection: simulator, maxError: 0);
+    final simulatedGps = GpsSimulator(collection: simulator, maxError: GpsInterface.gpsError);
     var realCoordinates = GpsCoordinates();
     simulatedGps.update(realCoordinates);
     realGps.update(realCoordinates);
@@ -207,6 +209,38 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     expect(simulator.gps.isNear(ocean), isFalse);
     expect(simulator.gps.isNear(newYork), isTrue);
 
+    await simulator.dispose();
+  });
+
+  test("IMU can handle values on the edge", () async {
+    Logger.level = LogLevel.off;
+    final simulator = AutonomySimulator();
+    final simulatedImu = ImuSimulator(collection: simulator, maxError: imuError);
+    final realImu = RoverImu(collection: simulator);
+    final orientation = Orientation(z: 360);
+    simulatedImu.update(orientation);
+    
+    var count = 0;
+    for (var i = 0; i < 1000; i++) {
+      final newData = simulatedImu.raw;
+      realImu.update(newData);
+      simulator.logger.trace("Got new value: ${newData.heading}");
+      simulator.logger.trace("  New heading: ${realImu.heading}");
+      simulator.logger.trace("  Real position: ${orientation.heading}");
+      if (i < 10) continue;
+      simulator.logger.trace("  Values are similar: ${realImu.isNear(orientation.heading)}");
+      if (realImu.isNear(orientation.heading)) count++;
+    }
+
+    final percentage = count / 1000;
+    expect(percentage, greaterThan(0.75), reason: "IMU should be accurate >75% of the time: $percentage");
+
+    final badData = Orientation(z: 10);
+    simulator.logger.info("Final orientation: ${realImu.heading}");
+    simulator.logger.info("Bad orientation: ${badData.heading}");
+    realImu.update(badData);
+    simulator.logger.info("Unaffected orientation: ${realImu.heading}");
+    expect(realImu.isNear(orientation.heading), isTrue);
     await simulator.dispose();
   });
 });
