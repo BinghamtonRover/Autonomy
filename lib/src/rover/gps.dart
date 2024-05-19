@@ -18,6 +18,7 @@ class RoverGps extends GpsInterface {
   void update(GpsCoordinates newValue) {
     _latitudeCorrector.addValue(newValue.latitude);
     _longitudeCorrector.addValue(newValue.longitude);
+    hasValue = true;
   }
 
   @override

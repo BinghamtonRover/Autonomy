@@ -14,10 +14,13 @@ class RoverImu extends ImuInterface {
   Future<void> dispose() async { }
 
   @override
-  void update(Orientation newValue) => _zCorrector.addValue(newValue.clampHeading().heading);
+  void update(Orientation newValue) {
+    _zCorrector.addValue(newValue.clampHeading().heading);
+    hasValue = true;
+  }
 
   @override
-  Orientation get orientation => Orientation(
+  Orientation get raw => Orientation(
     x: 0, 
     y: 0,
     z: _zCorrector.calibratedValue,

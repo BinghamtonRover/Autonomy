@@ -12,10 +12,12 @@ import "package:autonomy/src/rover/gps.dart";
 const imuError = 5.0;
 const gpsPrecision = 7;
 
-void main() => group("Sensors: ", () {
-  test("GPS handles error when stationary", () async {
+void main() => group("[Sensors]", tags: ["sensors"], () {
+  setUp(() => Logger.level = LogLevel.off);
+  tearDown(() => Logger.level = LogLevel.off);
+
+  test("GPS noise when stationary", () async {
     // Set up a simulated and real GPS, both starting at (0, 0)
-    Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     final realGps = RoverGps(collection: simulator);
     final simulatedGps = GpsSimulator(collection: simulator, maxError: GpsInterface.gpsError);
@@ -39,7 +41,7 @@ void main() => group("Sensors: ", () {
     expect(realGps.isNear(origin), isTrue);
   });
 
-  test("IMU error when stationary", () async {
+  test("IMU noise when stationary", () async {
     Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     final simulatedImu = ImuSimulator(collection: simulator, maxError: imuError);
@@ -47,15 +49,15 @@ void main() => group("Sensors: ", () {
     final north = OrientationUtils.north;
     simulatedImu.update(north);
     for (var i = 0; i < 5; i++) {
-      final orientation = simulatedImu.orientation;
+      final orientation = simulatedImu.raw;
       realImu.update(orientation);
     }
     realImu.update(OrientationUtils.south);
-    expect(realImu.orientation.isNear(OrientationUtils.north.heading), isTrue);
+    expect(realImu.isNear(OrientationUtils.north.heading), isTrue);
     await simulator.dispose();
   });
 
-  test("GPS handles errors when moving", () async {
+  test("GPS noise when moving", () async {
     // Set up a simulated and real GPS, both starting at (0, 0)
     Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
@@ -80,5 +82,23 @@ void main() => group("Sensors: ", () {
     simulator.logger.debug("Adding 100, 100");
     simulator.gps.update(GpsCoordinates(latitude: 100, longitude: 100));
     expect(realGps.isNear(realCoordinates), isTrue);
+  });
+
+  test("GPS latitude is set properly", () async {
+    final simulator = AutonomySimulator();
+    const utahLatitude = 38.406683;
+    final utah = GpsCoordinates(latitude: utahLatitude);
+
+    simulator.gps.update(utah);
+    expect(simulator.hasValue, isFalse);
+    expect(GpsInterface.currentLatitude, 0);
+    
+    await simulator.init();
+    await simulator.waitForValue();
+    expect(simulator.hasValue, isTrue);
+    expect(GpsInterface.currentLatitude, utahLatitude);
+    
+    await simulator.dispose();
+    GpsInterface.currentLatitude = 0;
   });
 });

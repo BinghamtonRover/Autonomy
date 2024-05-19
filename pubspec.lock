@@ -12,10 +12,11 @@ packages:
   a_star:
     dependency: "direct main"
     description:
-      name: a_star
-      sha256: bf5c7c1b13bd2e25de2b872ec82b5270feb871c8a536bbe2f4cf7d1be677563d
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: depth
+      resolved-ref: "3b3b5cb17951af37ccb92da78195b132d5abe0ee"
+      url: "https://github.com/Levi-Lesches/dart-a-star.git"
+    source: git
     version: "2.0.0"
   analyzer:
     dependency: transitive
