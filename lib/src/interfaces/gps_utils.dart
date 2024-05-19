@@ -9,18 +9,18 @@ extension RecordToGps on (num, num) {
 }
 
 extension GpsUtils on GpsCoordinates {
-  static int maxErrorMeters = 1;
-  static double get epsilonLatitude => maxErrorMeters / metersPerLatitude; 
-  static double get epsilonLongitude => maxErrorMeters / metersPerLongitude; 
+  static double maxErrorMeters = 1;
+  static double get epsilonLatitude => maxErrorMeters * latitudePerMeter; 
+  static double get epsilonLongitude => maxErrorMeters * longitudePerMeter; 
 
   static GpsCoordinates get east => 
     GpsCoordinates(longitude: -1 / metersPerLongitude);
   static GpsCoordinates get west => 
     GpsCoordinates(longitude: 1 / metersPerLongitude);
   static GpsCoordinates get north => 
-    GpsCoordinates(latitude: 1 / metersPerLatitude);
+    GpsCoordinates(latitude: 1 * latitudePerMeter);
   static GpsCoordinates get south => 
-    GpsCoordinates(latitude: -1 / metersPerLatitude);
+    GpsCoordinates(latitude: -1 * latitudePerMeter);
 
   // Taken from https://stackoverflow.com/a/39540339/9392211
   static const metersPerLatitude = 111.32 * 1000;  // 111.32 km

@@ -14,8 +14,7 @@ abstract class GpsInterface extends Service with Receiver {
   void update(GpsCoordinates newValue);
   GpsCoordinates get coordinates;
 
-  bool isNear(GpsCoordinates coordinates) => 
-    coordinates.isNear(coordinates);
+  bool isNear(GpsCoordinates other) => coordinates.isNear(other);
 
   @override
   Future<void> waitForValue() async {

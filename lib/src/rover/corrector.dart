@@ -9,8 +9,15 @@ class ErrorCorrector {  // non-nullable
   final Queue<double> recentSamples = DoubleLinkedQueue();
   
   void addValue(double value) {
+    if (recentSamples.isEmpty) {
+      recentSamples.add(value);
+      calibratedValue = value;
+      return;
+    }
     final deviation = (calibratedValue - value).abs();
-    if (deviation > maxDeviation) return;
+    if (deviation > maxDeviation) {
+      // print("Threw out value");
+    }
     if (recentSamples.length == maxSamples) recentSamples.removeLast();
     recentSamples.addFirst(value);
     calibratedValue = recentSamples.average();
