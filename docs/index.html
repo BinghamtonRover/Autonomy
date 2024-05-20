@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="generator" content="made with love by dartdoc 7.0.1-wip">
+  <meta name="description" content="autonomy API docs, for the Dart programming language.">
+  <title>autonomy - Dart API docs</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="static-assets/github.css?v1">
+  <link rel="stylesheet" href="static-assets/styles.css?v1">
+  <link rel="icon" href="static-assets/favicon.png?v1">
+
+  
+</head>
+
+
+<body data-base-href="" data-using-base-href="false" class="light-theme">
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li class="self-crumb">autonomy package</li>
+  </ol>
+  <div class="self-name">autonomy</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <div class="toggle" id="theme-button">
+    <label for="theme">
+      <input type="checkbox" id="theme" value="light-theme">
+      <span id="dark-theme-button" class="material-symbols-outlined">
+        brightness_4
+      </span>
+      <span id="light-theme-button" class="material-symbols-outlined">
+        brightness_5
+      </span>
+    </label>
+  </div>
+</header>
+<main>
+
+  <div id="dartdoc-main-content" class="main-content">
+      
+<section class="desc markdown">
+  <h1 id="autonomy-dart">Autonomy (Dart)</h1>
+<p>This repository holds code to operate the rover autonomously.</p>
+<h2 id="running-the-code">Running the code</h2>
+<p>To run the code, simply run</p>
+<pre class="language-dart"><code>dart run
+</code></pre>
+<h2 id="requirements">Requirements</h2>
+<h3 id="competition-requirements">Competition Requirements</h3>
+<p>In the Autonomous Navigation mission, we will be given a few "waypoints" that the rover must navigate to:</p>
+<ol>
+<li>An exact GPS coordinate. The rover must get as close as possible to the coordinate.</li>
+<li>An approximate GPS coordinate with a visual marker (see below). The rover must drive to the coordinate given, then improve its accuracy by finding and approaching the marker.</li>
+<li>An approximate GPS coordinate with two visual markers. The rover must drive to the coordinate given, then drive in between the posts without touching either one.</li>
+</ol>
+<h3 id="code-requirements">Code requirements</h3>
+<p>The rover must</p>
+<ul>
+<li>Communicate with the dashboard</li>
+<li>Start navigating to a waypoint when instructed to via an <code>AutonomyCommand</code></li>
+<li>Report on its environment and planned path via <code>AutonomyData</code> messages</li>
+<li>Read its GPS coordinates and inclination (see below)</li>
+<li>Handle possible errors and automatically abort</li>
+<li>Indicate when it has arrived at a waypoint by flashing the LED bar and sending a message to the dashboard</li>
+<li>Read and stream the RealSense data to the dashboard</li>
+</ul>
+<h2 id="obstacle-avoidance-and-path-planning">Obstacle avoidance and path planning</h2>
+<h3 id="getting-to-the-given-coordinates-a">Getting to the given coordinates: A*</h3>
+<p>To get to the given coordinates, we use the <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A*</a> path-planning algorithm. This yields a path from our current coordinates to the destination in a birds-eye-view grid (that is, 2D). The rover should drive along this path and report it to the dashboard</p>
+<h3 id="obstacle-detection">Obstacle detection</h3>
+<p>We have a RealSense Depth Camera that can detect obstacles directly in fron of the rover, such as a nearby hill or boulder. When such an obstacle is detected, we add it to the A* grid and re-run the path-planning to generate a path around the obstacle. This also includes scanning the ground for possible drops, so we don't run off a cliff. Because we need to use the RealSense API, we must take control of the camera from the <a href="https://github.com/BinghamtonRover/Video">Video</a> program.</p>
+<h3 id="inclination-detection">Inclination detection</h3>
+<p>More important than avoiding obstacles in the barren desert is keeping the rover level. We use an onboard IMU to detect our orientation and if we incline more than 30 degrees up or down, report our current location as an "obstacle" on the map and plan a path around it. We should also report multiple nearby squares so as to bias the A* algorithm to go backwards. Seeing a hill from afar using the RealSense will help us avoid this scenario.</p>
+<h2 id="marker-detection">Marker detection</h2>
+<p>The markers are <a href="https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html">ArUco</a></p>
+<h3 id="one-marker">One marker</h3>
+<p>When we have arrived at the GPS destination, the rover marks out a large 20m x 20m square and drives up and down to cover the entire area. While doing so, we use OpenCV's <code>aruco</code> library to detect any markers in our field of view (see the link above). Once we have found one, we approximate its location using our current position, orientation, and distance to the marker. Then we set our destination to the marker's coordinates and drive to it.</p>
+<p>We may also consider driving towards the marker using visual cues rather than GPS-based: turn until the marker is centered, drive straight, and stop when the marker is some distance away. This would get us closer to the marker and avoid hitting it compared to the GPS approach, but might fail to navigate around obstacles. We should probably consider a combined approach.</p>
+<h3 id="two-markers-a-gate">Two markers (a gate)</h3>
+<p>The procedure is the same as as above but when we detect a marker, we turn slightly until we detect the second marker as well (which will have a distinct ArUco ID). We then calculate GPS coordinates of the two markers and calculate the midpoint between the two and navigate to the midpoint instead. We then drive a small distance forward to say we have driven "through" the gate.</p>
+<p>Similar to the above, we will need to take visual cues into account to ensure we drive through the gate and not hit either post.</p>
+</section>
+
+
+      <section class="summary">
+          <h2>Libraries</h2>
+        <dl>
+          <dt id="autonomy">
+  <span class="name"><a href="autonomy/autonomy-library.html">autonomy</a></span> 
+
+</dt>
+<dd>
+</dd>
+
+          <dt id="interfaces">
+  <span class="name"><a href="interfaces/interfaces-library.html">interfaces</a></span> 
+
+</dt>
+<dd>
+</dd>
+
+          <dt id="rover">
+  <span class="name"><a href="rover/rover-library.html">rover</a></span> 
+
+</dt>
+<dd>
+</dd>
+
+          <dt id="simulator">
+  <span class="name"><a href="simulator/simulator-library.html">simulator</a></span> 
+
+</dt>
+<dd>
+</dd>
+
+        </dl>
+      </section>
+
+  </div> <!-- /.main-content -->
+
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li class="self-crumb">autonomy package</li>
+</ol>
+
+
+    <h5 class="hidden-xs"><span class="package-name">autonomy</span> <span class="package-kind">package</span></h5>
+    <ol>
+      <li class="section-title">Libraries</li>
+      <li><a href="autonomy/autonomy-library.html">autonomy</a></li>
+      <li><a href="interfaces/interfaces-library.html">interfaces</a></li>
+      <li><a href="rover/rover-library.html">rover</a></li>
+      <li><a href="simulator/simulator-library.html">simulator</a></li>
+</ol>
+
+  </div>
+
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div>
+
+</main>
+
+<footer>
+  <span class="no-break">
+    autonomy
+      1.0.0
+  </span>
+
+  
+</footer>
+
+
+
+<script src="static-assets/highlight.pack.js?v1"></script>
+<script src="static-assets/docs.dart.js"></script>
+
+
+
+</body>
+
+</html>
+
