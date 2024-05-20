@@ -6,6 +6,7 @@ void main() async {
   final rover = RoverAutonomy();
   rover.gps = GpsSimulator(collection: rover);
   rover.imu = ImuSimulator(collection: rover);
+  rover.drive = RoverDrive(collection: rover, useGps: false, useImu: false);
   
   await rover.init();
   await rover.waitForValue();
