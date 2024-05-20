@@ -66,7 +66,7 @@ class SensorDrive extends DriveInterface with RoverMotors {
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnRight();  // do NOT clamp!
     setThrottle(maxThrottle);
-    setSpeeds(left: -1, right: 1);
+    setSpeeds(left: 1, right: -1);
     await waitFor(() => collection.imu.orientation == destination); 
     await stop();
   }
