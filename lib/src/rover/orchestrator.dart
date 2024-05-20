@@ -52,10 +52,16 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       }
       // Try to take that path
       final current = collection.gps.coordinates;
-      collection.logger.trace("Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${path.length} steps");
+      collection.logger.info("Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${path.length} steps");
+      collection.logger.debug("Here is a summary of the path");
+      for (final step in path) {
+        collection.logger.debug(step.toString());
+      }
+      return;
+    
       currentState = AutonomyState.DRIVING;
       for (final state in path) {
-	collection.logger.debug(state.toString());
+        collection.logger.debug(state.toString());
         await collection.drive.goDirection(state.direction);
         traversed.add(state.position);
         if (state.direction != DriveDirection.forward) continue;

@@ -8,8 +8,6 @@ void main() async {
   await rover.waitForValue();
   await rover.server.waitForConnection();
 
-  await rover.drive.faceNorth();
-
   rover.logger.info("Done");
   await rover.dispose();
 }
