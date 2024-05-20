@@ -3,6 +3,7 @@ import "package:autonomy/src/rover/drive/motors.dart";
 
 class SensorDrive extends DriveInterface with RoverMotors {
   static const double maxThrottle = 0.2;
+  static const double turnThrottle = 0.1;
   static const predicateDelay = Duration(milliseconds: 10);
   
   SensorDrive({required super.collection});
@@ -40,7 +41,7 @@ class SensorDrive extends DriveInterface with RoverMotors {
   @override
   Future<void> faceNorth() async {
     collection.logger.info("Turning to face north...");
-    setThrottle(maxThrottle);
+    setThrottle(turnThrottle);
     setSpeeds(left: -1, right: 1);
     await waitFor(() {
       collection.logger.trace("Current heading: ${collection.imu.heading}");
