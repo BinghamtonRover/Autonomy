@@ -51,8 +51,6 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         return;
       }
       // Try to take that path
-	for (final step in path) { print(step); }
-//	return;
       final current = collection.gps.coordinates;
       collection.logger.trace("Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${path.length} steps");
       currentState = AutonomyState.DRIVING;

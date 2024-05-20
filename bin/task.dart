@@ -23,5 +23,4 @@ void main() async {
 	await simulator.drive.faceNorth();
 //	await simulator.drive.goForward();
 //  await simulator.server.waitForConnection();
-	print("Finished facing north: ${simulator.imu.heading}");
 }
