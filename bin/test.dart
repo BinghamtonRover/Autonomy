@@ -9,5 +9,7 @@ void main() async {
   await rover.waitForValue();
   rover.logger.info("Waiting for Dashboard...");
   await rover.server.waitForConnection();
-  rover.logger.info("Waiting for commands");
+  rover.logger.info("Done");
+  
+  await rover.dispose();
 }
