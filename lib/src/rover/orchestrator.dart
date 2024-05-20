@@ -57,7 +57,6 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       for (final step in path) {
         collection.logger.debug(step.toString());
       }
-      // return;
     
       currentState = AutonomyState.DRIVING;
       for (final state in path) {

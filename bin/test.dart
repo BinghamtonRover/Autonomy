@@ -4,6 +4,9 @@ import "package:burt_network/logging.dart";
 void main() async {
   Logger.level = LogLevel.all;
   final rover = RoverAutonomy();
+  rover.gps = GpsSimulator(collection: rover);
+  rover.imu = ImuSimulator(collection: rover);
+  
   await rover.init();
   await rover.waitForValue();
   await rover.server.waitForConnection();
