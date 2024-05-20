@@ -2,7 +2,7 @@ import "package:autonomy/interfaces.dart";
 import "package:autonomy/src/rover/drive/motors.dart";
 
 class SensorDrive extends DriveInterface with RoverMotors {
-  static const double maxThrottle = 0.2;
+  static const double maxThrottle = 0.1;
   static const double turnThrottle = 0.1;
   static const predicateDelay = Duration(milliseconds: 10);
   
