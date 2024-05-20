@@ -24,8 +24,8 @@ class RoverAutonomy extends AutonomyInterface {
   @override late GpsInterface gps = RoverGps(collection: this);
   @override late ImuInterface imu = RoverImu(collection: this);
   @override late final logger = BurtLogger(socket: server);
-  @override late final pathfinder = RoverPathfinder(collection: this);
-  @override late final detector = DetectorSimulator(collection: this, obstacles: []);
-  @override late final realsense = RoverRealsense(collection: this);
-  @override late final orchestrator = RoverOrchestrator(collection: this); 
+  @override late PathfindingInterface pathfinder = RoverPathfinder(collection: this);
+  @override late DetectorInterface detector = DetectorSimulator(collection: this, obstacles: []);
+  @override late RealSenseInterface realsense = RoverRealsense(collection: this);
+  @override late OrchestratorInterface orchestrator = RoverOrchestrator(collection: this); 
 }

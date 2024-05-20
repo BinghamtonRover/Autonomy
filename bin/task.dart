@@ -13,9 +13,8 @@ final obstacles = <SimulatedObstacle>[
 
 void main() async {
   Logger.level = LogLevel.all;
-  final simulator = AutonomySimulator();
-  final detector = DetectorSimulator(collection: simulator, obstacles: obstacles);
-  simulator.detector = detector;
+  final simulator = RoverAutonomy();
+  simulator.detector = DetectorSimulator(collection: simulator, obstacles: obstacles);
   simulator.pathfinder = RoverPathfinder(collection: simulator);
   simulator.orchestrator = RoverOrchestrator(collection: simulator);
   simulator.drive = DriveSimulator(collection: simulator, shouldDelay: true);
