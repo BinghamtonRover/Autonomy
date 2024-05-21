@@ -41,7 +41,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       // Calculate a path
       collection.logger.debug("Finding a path");
       currentState = AutonomyState.PATHING;
-      if (collection.imu.orientation == null) await collection.drive.faceNorth();
+      await collection.drive.faceNorth();
       final path = collection.pathfinder.getPath(destination);
       currentPath = path;  // also use local variable path for promotion
       if (path == null) {
