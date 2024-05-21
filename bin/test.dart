@@ -9,8 +9,6 @@ void main() async {
   rover.drive = RoverDrive(collection: rover, useGps: false);
   
   await rover.init();
-  await rover.waitForValue();
-  await rover.server.waitForConnection();
 
   // rover.logger.info("Done");
   // await rover.dispose();
