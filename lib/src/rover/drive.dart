@@ -40,6 +40,17 @@ class RoverDrive extends DriveInterface {
   @override
   Future<void> faceNorth() => useImu ? sensorDrive.faceNorth() : timedDrive.faceNorth();
 
+
+  @override
+  Future<void> faceDirection(DriveOrientation orientation) async {
+    if (useImu) {
+      await sensorDrive.faceDirection(orientation);
+    } else {
+      await timedDrive.faceDirection(orientation);
+    }
+    await super.faceDirection(orientation);
+  }
+
   @override 
   Future<void> goForward() => useGps ? sensorDrive.goForward() : timedDrive.goForward();
 

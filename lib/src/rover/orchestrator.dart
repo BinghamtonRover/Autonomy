@@ -37,6 +37,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     final destination = command.destination;
     collection.logger.info("Got GPS Task: Go to ${destination.prettyPrint()}");
 	collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
+    collection.drive.setLedStrip(ProtoColor.RED);
     while (!collection.gps.coordinates.isNear(destination)) {
       // Calculate a path
       collection.logger.debug("Finding a path");
@@ -73,6 +74,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       }
     }
     collection.logger.info("Task complete");
+    collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
     currentState = AutonomyState.AT_DESTINATION;
     currentCommand = null;
   }

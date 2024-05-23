@@ -57,7 +57,8 @@ abstract class AutonomyInterface extends Service with Receiver {
     logger.info("Waiting for readings...");
     await gps.waitForValue();
     await imu.waitForValue();
-    await realsense.waitForValue();
+//    await realsense.waitForValue();
+    logger.info("Received GPS and IMU values");
   }
 
   @override

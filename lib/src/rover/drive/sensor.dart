@@ -4,7 +4,7 @@ import "package:autonomy/src/rover/drive/motors.dart";
 class SensorDrive extends DriveInterface with RoverMotors {
   static const double maxThrottle = 0.1;
   static const double turnThrottle = 0.1;
-  static const predicateDelay = Duration(milliseconds: 10);
+  static const predicateDelay = Duration(milliseconds: 100);
   
   SensorDrive({required super.collection});
 
@@ -16,7 +16,17 @@ class SensorDrive extends DriveInterface with RoverMotors {
 
   Future<void> waitFor(bool Function() predicate) async {
     while (!predicate()) {
+//	collection.logger.debug("Next turning loop");
+      collection.imu.hasValue = false;
+      setThrottle(maxThrottle);
+      setSpeeds(left: -1, right: 1);
       await Future<void>.delayed(predicateDelay);
+	if (!collection.imu.hasValue) {
+//	collection.logger.trace("IMU has value: ${collection.imu.hasValue}");
+	  await stop();
+//		collection.logger.warning("Checked for IMU value but didn't find it");
+	}
+      await collection.imu.waitForValue();
     }
   }
 
@@ -51,23 +61,47 @@ class SensorDrive extends DriveInterface with RoverMotors {
   }
 
   @override
+  Future<void> faceDirection(DriveOrientation orientation) async {
+    collection.logger.info("Turning to face $orientation...");
+    setThrottle(turnThrottle);
+    setSpeeds(left: -1, right: 1);
+    await waitFor(() {
+      collection.logger.trace("Current heading: ${collection.imu.heading}");
+      return collection.imu.raw.isNear(orientation.angle.toDouble());
+    });
+    await stop();
+    await super.faceDirection(orientation);
+  }
+
+  @override
   Future<void> turnLeft() async {
-    final orientation = collection.imu.orientation!;
-    final destination = orientation.turnLeft();  // do NOT clamp!
+	if (collection.imu.orientation == null) {
+		await faceNorth();
+		await faceDirection(this.orientation);
+	}
+    final orientation = collection.imu.orientation;
+    final destination = orientation!.turnLeft();  // do NOT clamp!
     setThrottle(maxThrottle);
     setSpeeds(left: -1, right: 1);
     await waitFor(() => collection.imu.orientation == destination); 
     await stop();
+	this.orientation = this.orientation.turnLeft();
+
   }
 
   @override
   Future<void> turnRight() async {
     // TODO: Allow corrective turns
+        if (collection.imu.orientation == null) {
+                await faceNorth();
+                await faceDirection(this.orientation);
+        }
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnRight();  // do NOT clamp!
     setThrottle(maxThrottle);
     setSpeeds(left: 1, right: -1);
     await waitFor(() => collection.imu.orientation == destination); 
     await stop();
+	this.orientation = this.orientation.turnRight();
   }
 }
