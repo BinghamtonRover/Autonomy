@@ -60,13 +60,14 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       for (final step in path) {
         collection.logger.debug(step.toString());
       }
-    
       currentState = AutonomyState.DRIVING;
+      int count = 0;
       for (final state in path) {
-        collection.logger.debug(state.toString());
+collection.logger.debug(state.toString());
         await collection.drive.goDirection(state.direction);
         traversed.add(state.position);
         if (state.direction != DriveDirection.forward) continue;
+	if (count++ == 5) break;
         final foundObstacle = collection.detector.findObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path..."); 
@@ -82,22 +83,22 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
   @override
   Future<void> handleArucoTask(AutonomyCommand command) async {
+collection.drive.setLedStrip(ProtoColor.RED);	
+
     // Go to GPS coordinates
     // await handleGpsTask(command);
     collection.logger.info("Got ArUco Task");
 
     currentState = AutonomyState.SEARCHING;
     collection.logger.info("Searching for ArUco tag");
-    final foundInSpin = await collection.drive.spinForAruco();
-    if (foundInSpin) {
-      currentState = AutonomyState.APPROACHING;
-      collection.logger.info("Found aruco tag, approaching");
-      while (true) {
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        final size = collection.video.data.arucoSize;
-        collection.logger.trace("Size of ArUco: $size");
-      }
-    }
+final didSeeAruco = await collection.drive.spinForAruco();
+  if (didSeeAruco) {
+    collection.logger.info("Found aruco");
+	currentState = AutonomyState.APPROACHING;
+    await collection.drive.approachAruco();
+	collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+	currentState = AutonomyState.AT_DESTINATION;
+  }
   } 
 
   @override

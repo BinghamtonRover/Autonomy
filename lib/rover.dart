@@ -14,6 +14,7 @@ import "src/rover/gps.dart";
 import "src/rover/imu.dart";
 import "src/rover/orchestrator.dart";
 import "src/rover/video.dart";
+import "src/rover/detector.dart";
 
 /// A collection of all the different services used by the autonomy program.
 class RoverAutonomy extends AutonomyInterface {
@@ -25,7 +26,7 @@ class RoverAutonomy extends AutonomyInterface {
   @override late ImuInterface imu = RoverImu(collection: this);
   @override late final logger = BurtLogger(socket: server);
   @override late PathfindingInterface pathfinder = RoverPathfinder(collection: this);
-  @override late DetectorInterface detector = DetectorSimulator(collection: this, obstacles: []);
+  @override late DetectorInterface detector = RoverDetector(collection: this);
   @override late VideoInterface video = RoverVideo(collection: this);
   @override late OrchestratorInterface orchestrator = RoverOrchestrator(collection: this); 
 }

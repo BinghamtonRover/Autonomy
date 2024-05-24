@@ -1,4 +1,5 @@
 import "package:autonomy/interfaces.dart";
+import "dart:async";
 import "package:burt_network/generated.dart";
 
 class RoverVideo extends VideoInterface {  
@@ -13,7 +14,11 @@ class RoverVideo extends VideoInterface {
   @override
   void updateFrame(VideoData newData) { 
     data = newData;
-    // collection.logger.info("Is ArUco detected: ${data.arucoDetected}");
+	if (data.arucoDetected == BoolState.YES) {
+		flag = true;
+		Timer(Duration(seconds: 3), () => flag = false);
+	}
+    collection.logger.info("Is ArUco detected: ${data.arucoDetected}");
     hasValue  = true;
   }
 }

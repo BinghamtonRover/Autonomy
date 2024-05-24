@@ -5,8 +5,8 @@ import "motors.dart";
 class TimedDrive extends DriveInterface with RoverMotors {
   static const maxThrottle = 0.1;
   static const turnThrottle = 0.1;
-  static const oneMeterDelay = Duration(seconds: 3);
-  static const turnDelay = Duration(seconds: 1);
+  static const oneMeterDelay = Duration(seconds: 6);
+  static const turnDelay = Duration(milliseconds: 5500);
 
   TimedDrive({required super.collection});
 

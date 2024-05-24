@@ -29,7 +29,7 @@ abstract class AutonomyInterface extends Service with Receiver {
     } else {
       logger.warning("Autonomy could not initialize");
     }
-    await waitForValue();
+//    await waitForValue();
     return result;
 
   }

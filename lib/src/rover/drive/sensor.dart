@@ -7,6 +7,7 @@ class SensorDrive extends DriveInterface with RoverMotors {
   static const double maxThrottle = 0.1;
   static const double turnThrottle = 0.1;
   static const predicateDelay = Duration(milliseconds: 100);
+  static const turnDelay = Duration(milliseconds: 1500);
   
   SensorDrive({required super.collection});
 
@@ -19,16 +20,16 @@ class SensorDrive extends DriveInterface with RoverMotors {
   Future<void> waitFor(bool Function() predicate) async {
     while (!predicate()) {
 //	collection.logger.debug("Next turning loop");
-      collection.imu.hasValue = false;
-      setThrottle(maxThrottle);
-      setSpeeds(left: -1, right: 1);
+//      collection.imu.hasValue = false;
+//      setThrottle(maxThrottle);
+//      setSpeeds(left: -1, right: 1);
       await Future<void>.delayed(predicateDelay);
-	if (!collection.imu.hasValue) {
+//	if (!collection.imu.hasValue) {
 //	collection.logger.trace("IMU has value: ${collection.imu.hasValue}");
-	  await stop();
+//	  await stop();
 //		collection.logger.warning("Checked for IMU value but didn't find it");
-	}
-      await collection.imu.waitForValue();
+//	}
+//      await collection.imu.waitForValue();
     }
   }
 
@@ -109,26 +110,48 @@ class SensorDrive extends DriveInterface with RoverMotors {
 
   @override
   Future<bool> spinForAruco() async {
-    for (var i = 0; i < 4; i++) {
-      await turnLeft();
+	print("Spinning");
+    for (var i = 0; i < 16; i++) {
+	print("Loop $i");
+	        setThrottle(turnThrottle);
+        setSpeeds(left: -1, right: 1);
+        await Future<void>.delayed(turnDelay);
+        await stop();
+
+	for (var j = 0; j < 300; j++) {
+		await Future<void>.delayed(const Duration(milliseconds: 10));
+		collection.logger.trace("Can see aruco? ${collection.detector.canSeeAruco()}");
+		
       if (collection.detector.canSeeAruco()) {
         // Spin a bit more to center it
-        setThrottle(0.1);
-        setSpeeds(left: -1, right: 1);
-        await waitFor(() => collection.video.arucoPosition.abs() < 0.3);
-        await stop();
+//		print("We found it!");
+//        setThrottle(0.1);
+//        setSpeeds(left: -1, right: 1);
+//        await waitFor(() {
+//	final pos = collection.video.arucoPosition;
+//	collection.logger.debug("aruco is at $pos");
+//	return pos > 0.2;
+//	});
+//        await stop();
         return true;
-      }
+      }}
     }
     return false;
   }
 
   @override
   Future<void> approachAruco() async {
+	print("Found aruco");
     setThrottle(maxThrottle);
     setSpeeds(left: 1, right: 1);
     const threshold = 0.2;
-    await waitFor(() => collection.video.arucoSize >= threshold);
+  //  await waitFor(() {
+//	final pos = collection.video.arucoSize;
+//	collection.logger.debug("It is at $pos percent");
+//	return (pos.abs() < 0.00001 && !collection.detector.canSeeAruco()) || pos >= threshold;
+	
+//	});
+	await Future<void>.delayed(Duration(seconds: 10));
     await stop();
   }
 }

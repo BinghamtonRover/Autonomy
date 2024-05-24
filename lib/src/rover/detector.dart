@@ -11,7 +11,8 @@ class RoverDetector extends DetectorInterface {
   bool findObstacles() => false;
 
   @override
-  bool canSeeAruco() => collection.video.data.arucoDetected == BoolState.YES;
+//  bool canSeeAruco() => collection.video.data.arucoDetected == BoolState.YES;
+	bool canSeeAruco() => collection.video.flag;
 
   @override
   Future<bool> init() async => true;

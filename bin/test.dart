@@ -8,7 +8,7 @@ void main() async {
   final rover = RoverAutonomy();
   rover.gps = RoverGps(collection: rover);
   rover.imu = RoverImu(collection: rover);
-  rover.drive = RoverDrive(collection: rover, useGps: false);
+  rover.drive = RoverDrive(collection: rover, useGps: false, useImu: false);
   
   await rover.init();
 

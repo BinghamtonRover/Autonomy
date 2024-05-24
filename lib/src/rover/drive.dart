@@ -40,6 +40,9 @@ class RoverDrive extends DriveInterface {
   @override
   Future<void> faceNorth() => useImu ? sensorDrive.faceNorth() : timedDrive.faceNorth();
 
+  Future<bool> spinForAruco() => sensorDrive.spinForAruco();
+  Future<void> approachAruco() => sensorDrive.approachAruco();
+
 
   @override
   Future<void> faceDirection(DriveOrientation orientation) async {
