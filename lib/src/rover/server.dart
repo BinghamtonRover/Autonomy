@@ -12,6 +12,9 @@ class AutonomyServer extends ServerInterface {
       final message = RoverPosition.fromBuffer(wrapper.data);
       if (message.hasGps()) collection.gps.update(message.gps);
       if (message.hasOrientation()) collection.imu.update(message.orientation);
+    } else if(wrapper.name == VideoData().messageName){
+      final message = VideoData.fromBuffer(wrapper.data);
+      print(message);
     }
     super.onMessage(wrapper);
   }

@@ -52,11 +52,9 @@ packages:
   burt_network:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: c6ad7774c43c72037144d1a32746eda53e33c846
-      url: "https://github.com/BinghamtonRover/Dart-Networking.git"
-    source: git
+      path: "../burt_network"
+      relative: true
+    source: path
     version: "1.1.0"
   collection:
     dependency: transitive

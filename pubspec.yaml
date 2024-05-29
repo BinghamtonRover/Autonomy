@@ -11,7 +11,8 @@ dependencies:
   opencv_ffi: 
     git: https://github.com/BinghamtonRover/OpenCV-FFI.git
   burt_network: 
-    git: https://github.com/BinghamtonRover/Dart-Networking.git
+    path: ../burt_network
+    #git: https://github.com/BinghamtonRover/Dart-Networking.git
   a_star: ^2.0.0
   meta: ^1.11.0
 
