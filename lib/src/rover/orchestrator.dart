@@ -71,7 +71,13 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
   @override
   Future<void> handleArucoTask(AutonomyCommand command) async {
-
+    // Go to GPS coordinates
+    // await handleGpsTask(command);
+    collection.logger.info("Got ArUco Task");
+    collection.logger.info("Is ArUco Detected: ${collection.video.data.arucoDetected}");
+    while(true){
+      collection.logger.info("Is ArUco Detected: ${collection.video.data.arucoDetected}");
+    }
   }
 
   @override

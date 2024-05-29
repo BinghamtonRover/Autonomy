@@ -11,15 +11,16 @@ abstract class OrchestratorInterface extends Service {
   AutonomyCommand? currentCommand;
   AutonomyState currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
   Future<void> onCommand(AutonomyCommand command) async {
-    if (!collection.hasValue) {
-      collection.logger.error("Sensors haven't gotten any readings yet!");
-      currentState = AutonomyState.NO_SOLUTION;
-      return;
-    }
+    // if (!collection.hasValue) {
+    //   collection.logger.error("Sensors haven't gotten any readings yet!");
+    //   currentState = AutonomyState.NO_SOLUTION;
+    //   return;
+    // }
     await collection.drive.faceNorth();
     currentCommand = command;
     switch (command.task) {
-      case AutonomyTask.GPS_ONLY: await handleGpsTask(command);
+      // case AutonomyTask.GPS_ONLY: await handleGpsTask(command);
+      // case AutonomyTask.GPS_ONLY: await handleArucoTask(command);
       case AutonomyTask.VISUAL_MARKER: await handleArucoTask(command);
       // TODO: Add more tasks 
       default: collection.logger.error("Unrecognized task: ${command.task}");  // ignore: no_default_cases
