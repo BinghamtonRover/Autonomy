@@ -109,22 +109,18 @@ class SensorDrive extends DriveInterface with RoverMotors {
 
   @override
   Future<bool> spinForAruco() async {
-    final currentOrientation = collection.imu.heading;
-    final destination = Orientation(z: currentOrientation + 180).clampHeading();
-    setThrottle(maxThrottle);
-    setSpeeds(left: -1, right: 1);
-    await waitFor(() => collection.detector.canSeeAruco() || collection.imu.isNear(destination.heading));
-    if (!collection.detector.canSeeAruco()) {
-      // Spin another 180
-      await waitFor(() => collection.detector.canSeeAruco() || collection.imu.isNear(destination.heading));
+    for (var i = 0; i < 4; i++) {
+      await turnLeft();
+      if (collection.detector.canSeeAruco()) {
+        // Spin a bit more to center it
+        setThrottle(0.1);
+        setSpeeds(left: -1, right: 1);
+        await waitFor(() => collection.video.arucoPosition.abs() < 0.3);
+        await stop();
+        return true;
+      }
     }
-    // Either we've done a 360, or we found an aruco
-    if (collection.detector.canSeeAruco()) {
-      // Spin a bit more to center it
-      await waitFor(() => collection.video.arucoPosition.abs() < 0.3);
-    }
-    await stop();
-    return collection.detector.canSeeAruco();
+    return false;
   }
 
   @override
