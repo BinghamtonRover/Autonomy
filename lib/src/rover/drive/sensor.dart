@@ -1,5 +1,7 @@
+import "package:autonomy/autonomy.dart";
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/src/rover/drive/motors.dart";
+import "package:burt_network/generated.dart";
 
 class SensorDrive extends DriveInterface with RoverMotors {
   static const double maxThrottle = 0.1;
@@ -103,5 +105,34 @@ class SensorDrive extends DriveInterface with RoverMotors {
     await waitFor(() => collection.imu.orientation == destination); 
     await stop();
 	this.orientation = this.orientation.turnRight();
+  }
+
+  @override
+  Future<bool> spinForAruco() async {
+    final currentOrientation = collection.imu.heading;
+    final destination = Orientation(z: currentOrientation + 180).clampHeading();
+    setThrottle(maxThrottle);
+    setSpeeds(left: -1, right: 1);
+    await waitFor(() => collection.detector.canSeeAruco() || collection.imu.isNear(destination.heading));
+    if (!collection.detector.canSeeAruco()) {
+      // Spin another 180
+      await waitFor(() => collection.detector.canSeeAruco() || collection.imu.isNear(destination.heading));
+    }
+    // Either we've done a 360, or we found an aruco
+    if (collection.detector.canSeeAruco()) {
+      // Spin a bit more to center it
+      await waitFor(() => collection.video.arucoPosition.abs() < 0.3);
+    }
+    await stop();
+    return collection.detector.canSeeAruco();
+  }
+
+  @override
+  Future<void> approachAruco() async {
+    setThrottle(maxThrottle);
+    setSpeeds(left: 1, right: 1);
+    const threshold = 0.2;
+    await waitFor(() => collection.video.arucoSize >= threshold);
+    await stop();
   }
 }

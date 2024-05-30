@@ -73,4 +73,7 @@ abstract class DriveInterface extends Service {
     final command = DriveCommand(color: color, blink: blink ? BoolState.YES : BoolState.NO);
     collection.server.sendCommand(command);
   }
+
+  Future<bool> spinForAruco() async => false;
+  Future<void> approachAruco() async { }
 }

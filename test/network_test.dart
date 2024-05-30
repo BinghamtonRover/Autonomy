@@ -74,27 +74,27 @@ void main() => group("[Network]", tags: ["network"], () {
     expect(rover.hasValue, isFalse);
     expect(rover.gps.hasValue, isFalse);
     expect(rover.imu.hasValue, isFalse);
-    expect(rover.realsense.hasValue, isFalse);
+    expect(rover.video.hasValue, isFalse);
 
     subsystems.sendMessage(posGps);
     await Future<void>.delayed(networkDelay);
     expect(rover.hasValue, isFalse);
     expect(rover.gps.hasValue, isTrue);
     expect(rover.imu.hasValue, isFalse);
-    expect(rover.realsense.hasValue, isFalse);
+    expect(rover.video.hasValue, isFalse);
 
     subsystems.sendMessage(posImu);
     await Future<void>.delayed(networkDelay);
     expect(rover.hasValue, isFalse);
     expect(rover.gps.hasValue, isTrue);
     expect(rover.imu.hasValue, isTrue);
-    expect(rover.realsense.hasValue, isFalse);
+    expect(rover.video.hasValue, isFalse);
 
     subsystems.sendMessage(depth);
     await Future<void>.delayed(networkDelay);
     expect(rover.gps.hasValue, isTrue);
     expect(rover.imu.hasValue, isTrue);
-    expect(rover.realsense.hasValue, isTrue);
+    expect(rover.video.hasValue, isTrue);
     expect(rover.hasValue, isTrue);
   });
 

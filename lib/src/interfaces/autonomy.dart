@@ -10,7 +10,7 @@ abstract class AutonomyInterface extends Service with Receiver {
   ServerInterface get server;
   PathfindingInterface get pathfinder;
   DetectorInterface get detector;
-  RealSenseInterface get realsense;
+  VideoInterface get video;
   OrchestratorInterface get orchestrator;
   
   @override
@@ -22,7 +22,7 @@ abstract class AutonomyInterface extends Service with Receiver {
     result &= await server.init();
     result &= await pathfinder.init();
     result &= await detector.init();
-    result &= await realsense.init();
+    result &= await video.init();
     result &= await orchestrator.init();
     if (result) {
       logger.info("Autonomy initialized");
@@ -42,7 +42,7 @@ abstract class AutonomyInterface extends Service with Receiver {
     await drive.dispose();
     await pathfinder.dispose();
     await detector.dispose();
-    await realsense.dispose();
+    await video.dispose();
     await orchestrator.dispose();
     logger.info("Autonomy disposed");
   }
@@ -57,10 +57,10 @@ abstract class AutonomyInterface extends Service with Receiver {
     logger.info("Waiting for readings...");
     await gps.waitForValue();
     await imu.waitForValue();
-//    await realsense.waitForValue();
+    await video.waitForValue();
     logger.info("Received GPS and IMU values");
   }
 
   @override
-  bool get hasValue => gps.hasValue && imu.hasValue && realsense.hasValue;
+  bool get hasValue => gps.hasValue && imu.hasValue && video.hasValue;
 }

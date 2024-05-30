@@ -1,5 +1,3 @@
-import "dart:typed_data";
-
 import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 
@@ -17,9 +15,8 @@ class AutonomyServer extends ServerInterface {
       if (message.hasOrientation()) collection.imu.update(message.orientation);
     } else if (wrapper.name == VideoData().messageName) {
       final message = VideoData.fromBuffer(wrapper.data);
-      if (!message.hasFrame()) return;
-      final buffer = Uint16List.fromList(message.frame);
-      collection.realsense.updateFrame(buffer);
+      // logger.info("ArUco detected on autonomy: ${message.arucoDetected}");
+      collection.video.updateFrame(message);
     }
     super.onMessage(wrapper);
   }
