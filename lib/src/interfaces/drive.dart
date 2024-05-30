@@ -63,4 +63,7 @@ abstract class DriveInterface extends Service {
       await goDirection(state.direction);
     }
   }
+
+  Future<bool> spinForAruco() async => false;
+  Future<void> approachAruco() async { }
 }

@@ -1,5 +1,6 @@
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
+import "dart:async";
 
 class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   final List<GpsCoordinates> traversed = [];
@@ -74,11 +75,20 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     // Go to GPS coordinates
     // await handleGpsTask(command);
     collection.logger.info("Got ArUco Task");
-    collection.logger.info("Is ArUco Detected: ${collection.video.data.arucoDetected}");
-    while(true){
-      collection.logger.info("Is ArUco Detected: ${collection.video.data.arucoDetected}");
+
+    currentState = AutonomyState.SEARCHING;
+    collection.logger.info("Searching for ArUco tag");
+    final foundInSpin = await collection.drive.spinForAruco();
+    if (foundInSpin) {
+      currentState = AutonomyState.APPROACHING;
+      collection.logger.info("Found aruco tag, approaching");
+      while (true) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        final size = collection.video.data.arucoSize;
+        collection.logger.trace("Size of ArUco: $size");
+      }
     }
-  }
+  } 
 
   @override
   Future<void> handleHammerTask(AutonomyCommand command) async {

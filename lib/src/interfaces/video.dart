@@ -1,5 +1,3 @@
-import "dart:typed_data";
-
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
@@ -11,4 +9,7 @@ abstract class VideoInterface extends Service with Receiver {
   VideoData data = VideoData();
 
   void updateFrame(VideoData newData);
+
+  double get arucoSize => data.arucoSize;
+  double get arucoPosition => data.arucoPosition;
 }

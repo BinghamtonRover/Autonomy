@@ -13,10 +13,10 @@ packages:
     dependency: "direct main"
     description:
       name: a_star
-      sha256: bf5c7c1b13bd2e25de2b872ec82b5270feb871c8a536bbe2f4cf7d1be677563d
+      sha256: e76e163888a193c0f8fe79d05396839fa663f1afa6aed8e58609c0b4799767a0
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "3.0.0"
   analyzer:
     dependency: transitive
     description:

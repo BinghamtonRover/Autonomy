@@ -2,7 +2,7 @@ export "src/simulator/detector.dart";
 export "src/simulator/drive.dart";
 export "src/simulator/gps.dart";
 export "src/simulator/imu.dart";
-export 'src/simulator/realsense.dart';
+export "src/simulator/realsense.dart";
 export "src/simulator/server.dart";
 
 import "package:autonomy/interfaces.dart";
@@ -14,7 +14,7 @@ import "src/simulator/drive.dart";
 import "src/simulator/gps.dart";
 import "src/simulator/imu.dart";
 import "src/simulator/pathfinding.dart";
-import 'src/simulator/realsense.dart';
+import "src/simulator/realsense.dart";
 import "src/simulator/server.dart";
 
 class AutonomySimulator extends AutonomyInterface {
