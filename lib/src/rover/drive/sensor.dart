@@ -141,7 +141,7 @@ class SensorDrive extends DriveInterface with RoverMotors {
   Future<void> approachAruco() async {
     setThrottle(maxThrottle);
     setSpeeds(left: 1, right: 1);
-    const threshold = 0.2;
+    // const threshold = 0.2;
     //  await waitFor(() {
       //	final pos = collection.video.arucoSize;
       //	collection.logger.debug("It is at $pos percent");

@@ -1,5 +1,4 @@
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/generated.dart";
 
 class RoverDetector extends DetectorInterface {
   RoverDetector({required super.collection});
