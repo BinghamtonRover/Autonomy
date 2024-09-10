@@ -1,4 +1,4 @@
-import "package:burt_network/logging.dart";
+import "package:burt_network/burt_network.dart";
 
 import "package:autonomy/interfaces.dart";
 
@@ -7,12 +7,12 @@ abstract class AutonomyInterface extends Service with Receiver {
   GpsInterface get gps;
   ImuInterface get imu;
   DriveInterface get drive;
-  ServerInterface get server;
+  RoverSocket get server;
   PathfindingInterface get pathfinder;
   DetectorInterface get detector;
   VideoInterface get video;
   OrchestratorInterface get orchestrator;
-  
+
   @override
   Future<bool> init() async {
     var result = true;
@@ -33,10 +33,9 @@ abstract class AutonomyInterface extends Service with Receiver {
     return result;
 
   }
-  
+
   @override
   Future<void> dispose() async {
-    await server.dispose();
     await gps.dispose();
     await imu.dispose();
     await drive.dispose();
@@ -44,14 +43,15 @@ abstract class AutonomyInterface extends Service with Receiver {
     await detector.dispose();
     await video.dispose();
     await orchestrator.dispose();
+    await server.dispose();
     logger.info("Autonomy disposed");
   }
-  
+
   Future<void> restart() async {
     await dispose();
     await init();
   }
-  
+
   @override
   Future<void> waitForValue() async {
     logger.info("Waiting for readings...");

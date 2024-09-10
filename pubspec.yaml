@@ -4,13 +4,13 @@ version: 1.0.0
 publish_to: none
 
 environment:
-  sdk: 3.2.0
+  sdk: 3.5.0
 
 # Add regular dependencies here.
 dependencies:
-  opencv_ffi: 
+  opencv_ffi:
     git: https://github.com/BinghamtonRover/OpenCV-FFI.git
-  burt_network: 
+  burt_network:
     # git: https://github.com/BinghamtonRover/Dart-Networking.git
     path: ../burt_network
   a_star: ^3.0.0

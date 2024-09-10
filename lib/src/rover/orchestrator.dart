@@ -15,7 +15,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     traversed.clear();
     await super.dispose();
   }
-  
+
   @override
   AutonomyData get statusMessage => AutonomyData(
     destination: currentCommand?.destination,
@@ -32,12 +32,12 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
   @override
   Message getMessage() => statusMessage;
-  
+
   @override
   Future<void> handleGpsTask(AutonomyCommand command) async {
     final destination = command.destination;
     collection.logger.info("Got GPS Task: Go to ${destination.prettyPrint()}");
-	collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
+    collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
     collection.drive.setLedStrip(ProtoColor.RED);
     while (!collection.gps.coordinates.isNear(destination)) {
       // Calculate a path
@@ -61,16 +61,16 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         collection.logger.debug(step.toString());
       }
       currentState = AutonomyState.DRIVING;
-      int count = 0;
+      var count = 0;
       for (final state in path) {
-collection.logger.debug(state.toString());
+        collection.logger.debug(state.toString());
         await collection.drive.goDirection(state.direction);
         traversed.add(state.position);
         if (state.direction != DriveDirection.forward) continue;
-	if (count++ == 5) break;
+        if (count++ == 5) break;
         final foundObstacle = collection.detector.findObstacles();
         if (foundObstacle) {
-          collection.logger.debug("Found an obstacle. Recalculating path..."); 
+          collection.logger.debug("Found an obstacle. Recalculating path...");
           break;  // calculate a new path
         }
       }
@@ -83,7 +83,7 @@ collection.logger.debug(state.toString());
 
   @override
   Future<void> handleArucoTask(AutonomyCommand command) async {
-collection.drive.setLedStrip(ProtoColor.RED);	
+collection.drive.setLedStrip(ProtoColor.RED);
 
     // Go to GPS coordinates
     // await handleGpsTask(command);
@@ -99,7 +99,7 @@ final didSeeAruco = await collection.drive.spinForAruco();
 	collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
 	currentState = AutonomyState.AT_DESTINATION;
   }
-  } 
+  }
 
   @override
   Future<void> handleHammerTask(AutonomyCommand command) async {
