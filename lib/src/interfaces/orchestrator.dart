@@ -18,11 +18,11 @@ abstract class OrchestratorInterface extends Service {
       return;
     }
 
-    // if (!collection.hasValue) {
-    //   collection.logger.error("Sensors haven't gotten any readings yet!");
-    //   currentState = AutonomyState.NO_SOLUTION;
-    //   return;
-    // }
+    if (!collection.hasValue) {
+      collection.logger.error("Sensors haven't gotten any readings yet!");
+      currentState = AutonomyState.NO_SOLUTION;
+      return;
+    }
     await collection.drive.faceNorth();
     currentCommand = command;
     switch (command.task) {
