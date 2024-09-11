@@ -1,3 +1,5 @@
+import "dart:math";
+
 import "package:autonomy/interfaces.dart";
 
 import "../utils/motors.dart";
@@ -31,7 +33,7 @@ class TimedDrive extends DriveInterface with RoverMotors {
 
   @override
   Future<void> driveForward(AutonomyAStarState state) async {
-    await goForward();
+    await goForward(collection.imu.nearest.isPerpendicular ? 1 : sqrt2);
   }
   
   @override
@@ -58,10 +60,11 @@ class TimedDrive extends DriveInterface with RoverMotors {
     setSpeeds(left: 0, right: 0);
   }
 
-  Future<void> goForward() async {
+  Future<void> goForward([double distance = 1]) async {
+    collection.logger.info("Driving forward $distance meters");
     setThrottle(maxThrottle);
     setSpeeds(left: 1, right: 1);
-    await Future<void>.delayed(oneMeterDelay);
+    await Future<void>.delayed(oneMeterDelay * distance);
     await stop();
   }
 

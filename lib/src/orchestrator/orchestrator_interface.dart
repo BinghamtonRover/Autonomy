@@ -23,7 +23,7 @@ abstract class OrchestratorInterface extends Service {
       currentState = AutonomyState.NO_SOLUTION;
       return;
     }
-    await collection.drive.faceNorth();
+    await collection.drive.resolveOrientation();
     currentCommand = command;
     switch (command.task) {
       case AutonomyTask.GPS_ONLY: await handleGpsTask(command);

@@ -42,6 +42,7 @@ class SensorDrive extends DriveInterface with RoverMotors {
 
   @override
   Future<void> driveForward(AutonomyAStarState state) async {
+    collection.logger.info("Driving forward one meter");
     setThrottle(maxThrottle);
     setSpeeds(left: 1, right: 1);
     await waitFor(() => collection.gps.coordinates.isNear(state.endPosition));
@@ -52,7 +53,6 @@ class SensorDrive extends DriveInterface with RoverMotors {
   Future<void> faceDirection(DriveOrientation orientation) async {
     collection.logger.info("Turning to face $orientation...");
     setThrottle(turnThrottle);
-    setSpeeds(left: -1, right: 1);
     await runFeedback(
       () {
         var delta = orientation.angle.toDouble() - collection.imu.raw.z;

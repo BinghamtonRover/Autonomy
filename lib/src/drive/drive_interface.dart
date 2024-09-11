@@ -122,9 +122,7 @@ abstract class DriveInterface extends Service {
     this.orientation = orientation;
   }
 
-  Future<void> resolveOrientation() async {
-    await faceDirection(collection.imu.nearest);
-  }
+  Future<void> resolveOrientation() => faceDirection(collection.imu.nearest);
 
   Future<void> driveState(AutonomyAStarState state) {
     if (state.direction == DriveDirection.stop) {
