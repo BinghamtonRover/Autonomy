@@ -33,6 +33,8 @@ enum DriveOrientation {
     return null;
   }
 
+  bool get isPerpendicular => angle.abs() % 90 == 0;
+
   DriveOrientation turnLeft() => switch (this) {
     north => west,
     west => south,

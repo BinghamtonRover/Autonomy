@@ -65,37 +65,59 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
             : depth + 2,
   );
 
+  /// Returns whether or not the rover will drive between or right next to an obstacle diagonally<br/>
+  /// <br/>
+  /// Case 1:<br/>
+  /// 0 X<br/>
+  /// X R<br/>
+  /// Assuming the rover is facing 0 and trying to drive forward, will return false<br/>
+  /// <br/>
+  /// Case 2:<br/>
+  /// 0 X<br/>
+  /// X R<br/>
+  /// Assuming the rover is facing north and trying to turn 45 degrees left, will return false<br/>
+  /// <br/>
+  /// Case 3:<br/>
+  /// 0 X<br/>
+  /// 0 R<br/>
+  /// If the rover is facing left but trying to turn 45 degrees right, will return false<br/>
+  /// <br/>
+  /// Case 4:<br/>
+  /// 0 X 0<br/>
+  /// 0 R 0<br/>
+  /// If the rover is facing northeast to 0 and trying to turn left, will return false
   bool drivingThroughObstacle(AutonomyAStarState state) {
     final isTurn = state.direction != DriveDirection.forward;
     final isQuarterTurn = state.direction == DriveDirection.forwardLeft || state.direction == DriveDirection.forwardRight;
 
     // Forward drive across the perpendicular axis
-    if (!isTurn && state.orientation.angle.abs() % 90 == 0) {
+    if (!isTurn && state.orientation.isPerpendicular) {
       return false;
     }
 
     // Not encountering any sort of diagonal angle
-    if (isTurn && isQuarterTurn && state.orientation.angle.abs() % 90 == 0) {
+    if (isTurn && isQuarterTurn && state.orientation.isPerpendicular) {
       return false;
     }
 
     // No diagonal movement, won't drive between obstacles
-    if (!isQuarterTurn && orientation.angle.abs() % 90 == 0) {
+    if (!isQuarterTurn && orientation.isPerpendicular) {
       return false;
     }
 
     DriveOrientation orientation1;
     DriveOrientation orientation2;
 
+    // Case 1, trying to drive while facing a 45 degree angle
     if (!isTurn) {
       orientation1 = state.orientation.turnQuarterLeft();
       orientation2 = state.orientation.turnQuarterRight();
-    } else if (isQuarterTurn) {
+    } else if (isQuarterTurn) { // Case 2 and Case 3
       orientation1 = orientation;
       orientation2 = (state.direction == DriveDirection.forwardLeft)
           ? orientation1.turnLeft()
           : orientation1.turnRight();
-    } else {
+    } else { // Case 4
       orientation1 = (state.direction == DriveDirection.left)
           ? orientation.turnQuarterLeft()
           : orientation.turnQuarterRight();
