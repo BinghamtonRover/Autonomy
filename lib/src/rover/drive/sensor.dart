@@ -69,16 +69,16 @@ class SensorDrive extends DriveInterface with RoverMotors {
 
   @override
   Future<void> turnLeft() async {
-      await collection.imu.waitForValue();
+    await collection.imu.waitForValue();
 
-	if (collection.imu.orientation == null) {
-		await faceNorth();
-		await faceDirection(this.orientation);
-	}
-      await collection.imu.waitForValue();
+    if (collection.imu.orientation == null) {
+      await faceNorth();
+      await faceDirection(this.orientation);
+    }
+    await collection.imu.waitForValue();
 
     final orientation = collection.imu.orientation;
-    final destination = orientation!.turnLeft();  // do NOT clamp!
+    final destination = orientation!.turnLeft(); // do NOT clamp!
     print("Going from ${orientation} to ${destination}");
     setThrottle(maxThrottle);
     setSpeeds(left: -1, right: 1);
@@ -89,31 +89,59 @@ class SensorDrive extends DriveInterface with RoverMotors {
 
   @override
   Future<void> turnRight() async {
-      await collection.imu.waitForValue();
-        if (collection.imu.orientation == null) {
-                await faceNorth();
-                await faceDirection(this.orientation);
-        }
-      await collection.imu.waitForValue();
+    await collection.imu.waitForValue();
+    if (collection.imu.orientation == null) {
+      await faceNorth();
+      await faceDirection(this.orientation);
+    }
+    await collection.imu.waitForValue();
     final orientation = collection.imu.orientation;
-    final destination = orientation!.turnRight();  // do NOT clamp!
+    final destination = orientation!.turnRight(); // do NOT clamp!
     setThrottle(maxThrottle);
     setSpeeds(left: 1, right: -1);
     await waitFor(() => collection.imu.orientation == destination);
     await stop();
-	this.orientation = this.orientation.turnRight();
+    this.orientation = this.orientation.turnRight();
   }
 
   @override
-  Future<void> turnQuarterLeft() {
-    // TODO: implement turnQuarterLeft
-    throw UnimplementedError();
+  Future<void> turnQuarterLeft() async {
+    await collection.imu.waitForValue();
+
+    if (collection.imu.orientation == null) {
+      await faceNorth();
+      await faceDirection(this.orientation);
+    }
+    await collection.imu.waitForValue();
+
+    final orientation = collection.imu.orientation;
+    final destination = orientation!.turnQuarterLeft(); // do NOT clamp!
+    print("Going from ${orientation} to ${destination}");
+    setThrottle(maxThrottle);
+    setSpeeds(left: -1, right: 1);
+    await waitFor(() => collection.imu.orientation == destination);
+    await stop();
+    this.orientation = this.orientation.turnQuarterLeft();
   }
 
   @override
-  Future<void> turnQuarterRight() {
-    // TODO: implement turnQuarterRight
-    throw UnimplementedError();
+  Future<void> turnQuarterRight() async {
+    await collection.imu.waitForValue();
+
+    if (collection.imu.orientation == null) {
+      await faceNorth();
+      await faceDirection(this.orientation);
+    }
+    await collection.imu.waitForValue();
+
+    final orientation = collection.imu.orientation;
+    final destination = orientation!.turnQuarterRight(); // do NOT clamp!
+    print("Going from ${orientation} to ${destination}");
+    setThrottle(maxThrottle);
+    setSpeeds(left: 1, right: -1);
+    await waitFor(() => collection.imu.orientation == destination);
+    await stop();
+    this.orientation = this.orientation.turnQuarterRight();
   }
 
   @override

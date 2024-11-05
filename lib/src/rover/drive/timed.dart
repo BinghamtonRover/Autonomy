@@ -50,14 +50,18 @@ class TimedDrive extends DriveInterface with RoverMotors {
   }
 
   @override
-  Future<void> turnQuarterLeft() {
-    // TODO: implement turnQuarterLeft
-    throw UnimplementedError();
+  Future<void> turnQuarterLeft() async {
+    setThrottle(turnThrottle);
+    setSpeeds(left: -1, right: 1);
+    await Future<void>.delayed(turnDelay * 0.5);
+    await stop();
   }
 
   @override
-  Future<void> turnQuarterRight() {
-    // TODO: implement turnQuarterRight
-    throw UnimplementedError();
+  Future<void> turnQuarterRight() async {
+    setThrottle(turnThrottle);
+    setSpeeds(left: 1, right: -1);
+    await Future<void>.delayed(turnDelay * 0.5);
+    await stop();
   }
 }
