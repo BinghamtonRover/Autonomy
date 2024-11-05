@@ -61,4 +61,16 @@ class SensorlessDrive extends DriveInterface {
     await simulatedDrive.turnRight();
     await realDrive.turnRight();
   }
+
+  @override
+  Future<void> turnQuarterLeft() {
+    // TODO: implement turnQuarterLeft
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> turnQuarterRight() {
+    // TODO: implement turnQuarterRight
+    throw UnimplementedError();
+  }
 }

@@ -39,11 +39,13 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     collection.logger.info("Got GPS Task: Go to ${destination.prettyPrint()}");
     collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
     collection.drive.setLedStrip(ProtoColor.RED);
+    collection.detector.findObstacles();
+    // await collection.drive.faceNorth();
     while (!collection.gps.coordinates.isNear(destination)) {
       // Calculate a path
       collection.logger.debug("Finding a path");
       currentState = AutonomyState.PATHING;
-      await collection.drive.faceNorth();
+      // await collection.drive.faceNorth();
       final path = collection.pathfinder.getPath(destination);
       currentPath = path;  // also use local variable path for promotion
       if (path == null) {
@@ -61,13 +63,13 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         collection.logger.debug(step.toString());
       }
       currentState = AutonomyState.DRIVING;
-      var count = 0;
+      // var count = 0;
       for (final state in path) {
         collection.logger.debug(state.toString());
         await collection.drive.goDirection(state.direction);
         traversed.add(state.position);
-        if (state.direction != DriveDirection.forward) continue;
-        if (count++ == 5) break;
+        // if (state.direction != DriveDirection.forward) continue;
+        // if (count++ == 5) break;
         final foundObstacle = collection.detector.findObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path...");

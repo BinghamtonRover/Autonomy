@@ -5,14 +5,22 @@ enum DriveDirection {
   forward, 
   left,
   right,
-  stop,
+  forwardLeft,
+  forwardRight,
+  stop;
+
+  bool get isTurn => this != forward && this != stop;
 }
 
 enum DriveOrientation {
   north(0),
   west(90),
   south(180),
-  east(270);
+  east(270),
+  northEast(360 - 45),
+  northWest(45),
+  southEast(180 + 45),
+  southWest(180 - 45);
 
   final int angle;
   const DriveOrientation(this.angle);
@@ -30,6 +38,10 @@ enum DriveOrientation {
     west => south,
     south => east,
     east => north,
+    northEast => northWest,
+    northWest => southWest,
+    southWest => southEast,
+    southEast => northEast,
   };
 
   DriveOrientation turnRight() => switch (this) {
@@ -37,6 +49,32 @@ enum DriveOrientation {
     west => north,
     south => west,
     east => south,
+    northEast => southEast,
+    southEast => southWest,
+    southWest => northWest,
+    northWest => northEast,
+  };
+
+  DriveOrientation turnQuarterLeft() => switch (this) {
+    north => northWest,
+    northWest => west,
+    west => southWest,
+    southWest => south,
+    south => southEast,
+    southEast => east,
+    east => northEast,
+    northEast => north,
+  };
+
+  DriveOrientation turnQuarterRight() => switch (this) {
+    north => northEast,
+    northEast => east,
+    east => southEast,
+    southEast => south,
+    south => southWest,
+    southWest => west,
+    west => northWest,
+    northWest => north,
   };
 }
 
@@ -49,6 +87,8 @@ abstract class DriveInterface extends Service {
     DriveDirection.forward => await goForward(),
     DriveDirection.left => await turnLeft(),
     DriveDirection.right => await turnRight(),
+    DriveDirection.forwardLeft => await turnQuarterLeft(),
+    DriveDirection.forwardRight => await turnQuarterRight(),
     DriveDirection.stop => await stop(),
   };
 
@@ -57,6 +97,8 @@ abstract class DriveInterface extends Service {
   Future<void> goForward();
   Future<void> turnLeft();
   Future<void> turnRight();
+  Future<void> turnQuarterLeft();
+  Future<void> turnQuarterRight();
   Future<void> stop();
 
   Future<void> faceDirection(DriveOrientation orientation) async {

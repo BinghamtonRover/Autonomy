@@ -48,4 +48,16 @@ class TimedDrive extends DriveInterface with RoverMotors {
     await Future<void>.delayed(turnDelay);
     await stop();
   }
+
+  @override
+  Future<void> turnQuarterLeft() {
+    // TODO: implement turnQuarterLeft
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> turnQuarterRight() {
+    // TODO: implement turnQuarterRight
+    throw UnimplementedError();
+  }
 }

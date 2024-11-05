@@ -21,6 +21,14 @@ extension GpsUtils on GpsCoordinates {
     GpsCoordinates(latitude: 1 * latitudePerMeter);
   static GpsCoordinates get south => 
     GpsCoordinates(latitude: -1 * latitudePerMeter);
+  static GpsCoordinates get northEast => GpsCoordinates(
+      latitude: 1 * latitudePerMeter, longitude: -1 / metersPerLongitude);
+  static GpsCoordinates get northWest => GpsCoordinates(
+      latitude: 1 * latitudePerMeter, longitude: 1 / metersPerLongitude);
+  static GpsCoordinates get southEast => GpsCoordinates(
+      latitude: -1 * latitudePerMeter, longitude: -1 / metersPerLongitude);
+  static GpsCoordinates get southWest => GpsCoordinates(
+      latitude: -1 * latitudePerMeter, longitude: 1 / metersPerLongitude);
 
   // Taken from https://stackoverflow.com/a/39540339/9392211
   // static const metersPerLatitude = 111.32 * 1000;  // 111.32 km
@@ -58,5 +66,9 @@ extension GpsUtils on GpsCoordinates {
     DriveOrientation.south => GpsUtils.south,
     DriveOrientation.west => GpsUtils.west,
     DriveOrientation.east => GpsUtils.east,
+    DriveOrientation.northEast => GpsUtils.northEast,
+    DriveOrientation.northWest => GpsUtils.northWest,
+    DriveOrientation.southEast => GpsUtils.southEast,
+    DriveOrientation.southWest => GpsUtils.southWest,
   };
 }

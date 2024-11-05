@@ -33,15 +33,16 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
 
     var turnCount = 0;
     for (final step in path) {
-      if (step.direction == DriveDirection.left || step.direction == DriveDirection.right) {
+      if (step.direction.isTurn) {
         turnCount++;
       }
       simulator.logger.trace(step.toString());
     }
 
     // start + 5 forward + 1 turn + 5 right = 12 steps
+    // start + quarter turn left + 7 forward = 8 steps
     expect(turnCount, 1);
-    expect(path.length, 11);
+    expect(path.length, 7);
     
     GpsUtils.maxErrorMeters = oldError;
   });
@@ -69,13 +70,16 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     simulator.pathfinder.recordObstacle((1, 0).toGps());
     simulator.pathfinder.recordObstacle((2, 0).toGps());
     final path = simulator.pathfinder.getPath(destination);
-    expect(path, isNotNull); if (path == null) return;
+    expect(path, isNotNull);
+    if (path == null) {
+      return;
+    }
     expect(path, isNotEmpty);
     for (final step in path) {
       simulator.logger.trace(step.toString());
       expect(simulator.pathfinder.isObstacle(step.position), isFalse);
     }
-    expect(path.length, 10, reason: "1 Stop + 5 detour + 4 forward = 10 steps total");
+    expect(path.length, 10, reason: "1 turn + 1 forward + 1 turn + 4 forward + 1 45 degree turn + 1 forward + 1 stop = 10 steps total");
     await simulator.drive.followPath(path);
     expect(simulator.gps.isNear(destination), isTrue);
     await simulator.dispose();

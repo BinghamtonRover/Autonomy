@@ -64,4 +64,10 @@ class RoverDrive extends DriveInterface {
 
   @override
   Future<void> turnRight() => useImu ? sensorDrive.turnRight() : timedDrive.turnRight();
+
+  @override
+  Future<void> turnQuarterLeft() => useImu ? sensorDrive.turnQuarterLeft() : timedDrive.turnQuarterLeft();
+
+  @override
+  Future<void> turnQuarterRight() => useImu ? sensorDrive.turnQuarterRight() : timedDrive.turnQuarterRight();
 }

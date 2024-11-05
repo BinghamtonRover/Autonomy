@@ -29,6 +29,7 @@ class DriveSimulator extends DriveInterface {
   @override
   Future<void> faceNorth() async {
     collection.imu.update(OrientationUtils.north);
+    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -45,6 +46,24 @@ class DriveSimulator extends DriveInterface {
     collection.logger.debug("Turning right");
     final heading = collection.imu.heading;
     final orientation = Orientation(z: heading - 90);
+    collection.imu.update(orientation);
+    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
+  }
+
+  @override
+  Future<void> turnQuarterLeft() async {
+    collection.logger.debug("Turning quarter left");
+    final heading = collection.imu.heading;
+    final orientation = Orientation(z: heading + 45).clampHeading();
+    collection.imu.update(orientation);
+    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
+  }
+
+  @override
+  Future<void> turnQuarterRight() async {
+    collection.logger.debug("Turning quarter right");
+    final heading = collection.imu.heading;
+    final orientation = Orientation(z: heading - 45).clampHeading();
     collection.imu.update(orientation);
     if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
   }

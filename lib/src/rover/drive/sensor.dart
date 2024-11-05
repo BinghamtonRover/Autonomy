@@ -105,6 +105,18 @@ class SensorDrive extends DriveInterface with RoverMotors {
   }
 
   @override
+  Future<void> turnQuarterLeft() {
+    // TODO: implement turnQuarterLeft
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> turnQuarterRight() {
+    // TODO: implement turnQuarterRight
+    throw UnimplementedError();
+  }
+
+  @override
   Future<bool> spinForAruco() async {
     for (var i = 0; i < 16; i++) {
       setThrottle(turnThrottle);
