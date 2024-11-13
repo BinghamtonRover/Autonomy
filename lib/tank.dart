@@ -16,18 +16,23 @@ const pwmZero = 75000.0;
 const pwmMinNeg = 73500.0;
 const pwmMaxNeg = 67500.0;
 
-class Tank extends Service {
-  late final server = RoverSocket(port: 8004, device: Device.SUBSYSTEMS, collection: this);
+const dataInterval = Duration(milliseconds: 250);
+final driveVersion = Version(major: 1, minor: 1);
 
-  late RpiGpio gpio;
-  late GpioPwm leftPin;
-  late GpioPwm rightPin;
+class Tank extends Service {
+  late final server = RoverSocket(port: 8001, device: Device.SUBSYSTEMS, collection: this);
+  late final logger = BurtLogger(socket: server);
 
   double _leftSpeed = 0;
   double _rightSpeed = 0;
   double _throttle = 0;
 
+  RpiGpio? gpio;
+  GpioPwm? leftPin;
+  GpioPwm? rightPin;
+
   StreamSubscription<DriveCommand>? _subscription;
+  Timer? _dataTimer;
 
   @override
   Future<bool> init() async {
@@ -38,20 +43,23 @@ class Tank extends Service {
         constructor: DriveCommand.fromBuffer,
         callback: _handleDriveCommand,
       );
+      _dataTimer = Timer.periodic(dataInterval, _sendData);
       gpio = await initialize_RpiGpio();
-      leftPin = gpio.pwm(leftPinNumber);
-      rightPin = gpio.pwm(rightPinNumber);
+      leftPin = gpio?.pwm(leftPinNumber);
+      rightPin = gpio?.pwm(rightPinNumber);
       return true;
-    } on GpioException {
+    } catch (error) {
+      logger.critical("Could not initialize the Tank", body: error.toString());
       return false;
     }
   }
 
   @override
   Future<void> dispose() async {
+    _dataTimer?.cancel();
     await _subscription?.cancel();
     await server.dispose();
-    await gpio.dispose();
+    await gpio?.dispose();
   }
 
   @override
@@ -63,6 +71,13 @@ class Tank extends Service {
     await super.onDisconnect();
   }
 
+  void _sendData(Timer t) => server.sendMessage(DriveData(
+    setLeft: true, left: _leftSpeed,
+    setRight: true, right: _rightSpeed,
+    setThrottle: true, throttle: _throttle,
+    version: driveVersion,
+  ),);
+
   void _handleDriveCommand(DriveCommand command) {
     _leftSpeed = command.setLeft ? command.left : _leftSpeed;
     _rightSpeed = command.setRight ? command.right : _rightSpeed;
@@ -71,8 +86,9 @@ class Tank extends Service {
   }
 
   void _updateMotors() {
-    _setVelocity(leftPin, _leftSpeed * _throttle);
-    _setVelocity(rightPin, _rightSpeed * _throttle);
+    if (gpio == null) return;
+    _setVelocity(leftPin!, _leftSpeed * _throttle);
+    _setVelocity(rightPin!, _rightSpeed * _throttle);
   }
 
   void _setVelocity(GpioPwm pin, double speed) {
