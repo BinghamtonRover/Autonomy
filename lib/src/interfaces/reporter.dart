@@ -13,7 +13,7 @@ mixin ValueReporter on Service {
   @override
   Future<bool> init() async {
     timer = Timer.periodic(reportInterval, (timer) => _reportValue());
-    return await super.init();
+    return super.init();
   }
 
   @override
