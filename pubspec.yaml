@@ -14,6 +14,7 @@ dependencies:
     git: https://github.com/BinghamtonRover/Dart-Networking.git
   a_star: ^3.0.0
   meta: ^1.11.0
+  rpi_gpio: ^0.10.0
 
 dev_dependencies:
   test: ^1.21.0
