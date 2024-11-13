@@ -2,22 +2,22 @@ import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
 enum DriveDirection {
-  forward, 
+  forward,
   left,
   right,
   stop,
 }
 
-enum DriveOrientation {
+enum CardinalDirection {
   north(0),
   west(90),
   south(180),
   east(270);
 
   final int angle;
-  const DriveOrientation(this.angle);
+  const CardinalDirection(this.angle);
 
-  static DriveOrientation? fromRaw(Orientation orientation) {
+  static CardinalDirection? fromRaw(Orientation orientation) {
     // TODO: Make this more precise.
     for (final value in values) {
       if (orientation.isNear(value.angle.toDouble())) return value;
@@ -25,14 +25,14 @@ enum DriveOrientation {
     return null;
   }
 
-  DriveOrientation turnLeft() => switch (this) {
+  CardinalDirection turnLeft() => switch (this) {
     north => west,
     west => south,
     south => east,
     east => north,
   };
 
-  DriveOrientation turnRight() => switch (this) {
+  CardinalDirection turnRight() => switch (this) {
     north => east,
     west => north,
     south => west,
@@ -42,7 +42,7 @@ enum DriveOrientation {
 
 abstract class DriveInterface extends Service {
   AutonomyInterface collection;
-  DriveOrientation orientation = DriveOrientation.north;
+  CardinalDirection orientation = CardinalDirection.north;
   DriveInterface({required this.collection});
 
   Future<void> goDirection(DriveDirection direction) async => switch (direction) {
@@ -53,13 +53,13 @@ abstract class DriveInterface extends Service {
   };
 
   Future<void> faceNorth();
-  
+
   Future<void> goForward();
   Future<void> turnLeft();
   Future<void> turnRight();
   Future<void> stop();
 
-  Future<void> faceDirection(DriveOrientation orientation) async {
+  Future<void> faceDirection(CardinalDirection orientation) async {
     this.orientation = orientation;
   }
 

@@ -5,8 +5,8 @@ import "package:autonomy/simulator.dart";
 class SensorlessDrive extends DriveInterface {
   final DriveInterface simulatedDrive;
   final DriveInterface realDrive;
-  
-  SensorlessDrive({required super.collection, bool useGps = true, bool useImu = true}) : 
+
+  SensorlessDrive({required super.collection, bool useGps = true, bool useImu = true}) :
     simulatedDrive = DriveSimulator(collection: collection),
     realDrive = RoverDrive(collection: collection, useGps: useGps, useImu: useImu);
 
@@ -44,7 +44,7 @@ class SensorlessDrive extends DriveInterface {
 
 
   @override
-  Future<void> faceDirection(DriveOrientation orientation) async {
+  Future<void> faceDirection(CardinalDirection orientation) async {
     await simulatedDrive.faceDirection(orientation);
     await realDrive.faceDirection(orientation);
     await super.faceDirection(orientation);
