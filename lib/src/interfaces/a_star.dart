@@ -50,7 +50,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   String hash() => "${position.prettyPrint()} ($orientation)";
 
   @override
-  bool isGoal() => position.isNear(goal);
+  bool isGoal() => position.isNear(goal, min(GpsUtils.moveLengthMeters, GpsUtils.maxErrorMeters));
 
   AutonomyAStarState copyWith({required DriveDirection direction, required DriveOrientation orientation, required GpsCoordinates position}) => AutonomyAStarState(
     collection: collection,
@@ -62,7 +62,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
         ? depth + 1
         : (direction == DriveDirection.forwardLeft || direction == DriveDirection.forwardRight)
             ? depth + sqrt2
-            : depth + 2,
+            : depth + 2 * sqrt2,
   );
 
   /// Returns whether or not the rover will drive between or right next to an obstacle diagonally<br/>

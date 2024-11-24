@@ -14,3 +14,4 @@ export "src/interfaces/receiver.dart";
 export "src/interfaces/reporter.dart";
 export "src/interfaces/service.dart";
 export "src/interfaces/orchestrator.dart";
+export "package:burt_network/src/utils.dart";
