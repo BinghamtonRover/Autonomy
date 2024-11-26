@@ -1,7 +1,8 @@
 import "package:burt_network/generated.dart";
 
 extension OrientationUtils on Orientation {
-  static const double epsilon = 10;
+  static const double epsilon = 3.5;
+  static const double orientationEpsilon = 10;
   
   static final north = Orientation(z: 0);
   static final west = Orientation(z: 90);
@@ -19,9 +20,9 @@ extension OrientationUtils on Orientation {
     return Orientation(x: x, y: y, z: adjustedHeading);
   }
 
-  bool isNear(double value) => value > 270 && z < 90
-    ? (z + 360 - value).abs() < epsilon
+  bool isNear(double value, [double tolerance = epsilon]) => value > 270 && z < 90
+    ? (z + 360 - value).abs() < tolerance
     : value < 90 && z > 270 
-      ? (z - value - 360).abs() < epsilon
-      : (z - value).abs() < epsilon;
+      ? (z - value - 360).abs() < tolerance
+      : (z - value).abs() < tolerance;
 }

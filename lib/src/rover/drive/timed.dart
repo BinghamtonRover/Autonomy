@@ -3,10 +3,23 @@ import "package:autonomy/interfaces.dart";
 import "motors.dart";
 
 class TimedDrive extends DriveInterface with RoverMotors {
-  static const maxThrottle = 0.1;
-  static const turnThrottle = 0.1;
-  static const oneMeterDelay = Duration(milliseconds: 5500);
-  static const turnDelay = Duration(milliseconds: 4500);
+  static const maxThrottleTank = 0.3;
+  static const turnThrottleTank = 0.35;
+
+  static const maxThrottleRover = 0.1;
+  static const turnThrottleRover = 0.1;
+
+  static const oneMeterDelayRover = Duration(milliseconds: 5500);
+  static const turnDelayRover = Duration(milliseconds: 4500);
+
+  static const oneMeterDelayTank = Duration(milliseconds: 2000);
+  static const turnDelayTank = Duration(milliseconds: 1000);
+
+  static double get maxThrottle => isRover ? maxThrottleRover : maxThrottleTank;
+  static double get turnThrottle => isRover ? turnThrottleRover : turnThrottleTank;
+
+  static Duration get oneMeterDelay => isRover ? oneMeterDelayRover : oneMeterDelayTank;
+  static Duration get turnDelay => isRover ? turnDelayRover : turnDelayTank;
 
   TimedDrive({required super.collection});
 
@@ -28,7 +41,13 @@ class TimedDrive extends DriveInterface with RoverMotors {
   @override
   Future<void> goForward() async {
     setThrottle(maxThrottle);
-    setSpeeds(left: 1, right: 1);
+    setSpeeds(left: 1 * 0.9, right: 1);
+    final position = collection.gps.coordinates;
+    final orientation = collection.imu.orientation;
+    if (orientation != null) {
+      final newPosition = position.goForward(orientation);
+      collection.gps.update(newPosition);
+    }
     await Future<void>.delayed(oneMeterDelay);
     await stop();
   }
@@ -36,7 +55,7 @@ class TimedDrive extends DriveInterface with RoverMotors {
   @override
   Future<void> turnLeft() async {
     setThrottle(turnThrottle);
-    setSpeeds(left: -1, right: 1);
+    setSpeeds(left: -1 * 0.9, right: 1);
     await Future<void>.delayed(turnDelay);
     await stop();
   }

@@ -1,6 +1,8 @@
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
+const bool isRover = false;
+
 enum DriveDirection {
   forward, 
   left,
@@ -28,7 +30,7 @@ enum DriveOrientation {
   static DriveOrientation? fromRaw(Orientation orientation) {
     // TODO: Make this more precise.
     for (final value in values) {
-      if (orientation.isNear(value.angle.toDouble())) return value;
+      if (orientation.isNear(value.angle.toDouble(), OrientationUtils.orientationEpsilon)) return value;
     }
     return null;
   }

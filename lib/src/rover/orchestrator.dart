@@ -41,7 +41,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     traversed.clear();
     collection.drive.setLedStrip(ProtoColor.RED);
     collection.detector.findObstacles();
-    await collection.drive.faceNorth();
+    // await collection.drive.faceNorth();
     while (!collection.gps.coordinates.isNear(destination)) {
       // Calculate a path
       collection.logger.debug("Finding a path");

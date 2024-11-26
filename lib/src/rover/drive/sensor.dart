@@ -5,7 +5,11 @@ import "motors.dart";
 
 class SensorDrive extends DriveInterface with RoverMotors {
   static const double maxThrottle = 0.1;
-  static const double turnThrottle = 0.1;
+  static const double turnThrottleRover = 0.1;
+  static const double turnThrottleTank = 0.35;
+
+  static double get turnThrottle => isRover ? turnThrottleRover : turnThrottleTank;
+
   static const predicateDelay = Duration(milliseconds: 100);
   static const turnDelay = Duration(milliseconds: 1500);
 
@@ -21,6 +25,12 @@ class SensorDrive extends DriveInterface with RoverMotors {
     while (!predicate()) {
       await Future<void>.delayed(predicateDelay);
       await collection.imu.waitForValue();
+    }
+  }
+
+  Future<void> runFeedback(bool Function() completed, [Duration period = predicateDelay]) async {
+    while (!completed()) {
+      await Future<void>.delayed(period);
     }
   }
 
@@ -46,11 +56,12 @@ class SensorDrive extends DriveInterface with RoverMotors {
   Future<void> faceNorth() async {
     collection.logger.info("Turning to face north...");
     setThrottle(turnThrottle);
-    setSpeeds(left: -1, right: 1);
-    await waitFor(() {
-      collection.logger.trace("Current heading: ${collection.imu.heading}");
-      return collection.imu.raw.isNear(0);
-    });
+    // setSpeeds(left: -1, right: 1);
+    // await waitFor(() {
+    //   collection.logger.trace("Current heading: ${collection.imu.heading}");
+    //   return collection.imu.raw.isNear(0, OrientationUtils.orientationEpsilon);
+    // });
+    await faceDirection(DriveOrientation.north);
     await stop();
   }
 
@@ -59,10 +70,25 @@ class SensorDrive extends DriveInterface with RoverMotors {
     collection.logger.info("Turning to face $orientation...");
     setThrottle(turnThrottle);
     setSpeeds(left: -1, right: 1);
-    await waitFor(() {
-      collection.logger.trace("Current heading: ${collection.imu.heading}");
-      return collection.imu.raw.isNear(orientation.angle.toDouble());
-    });
+    await runFeedback(
+      () {
+        var delta = orientation.angle.toDouble() - collection.imu.raw.z;
+        if (delta < -180) {
+          delta += 360;
+        } else if (delta > 180) {
+          delta -= 360;
+        }
+
+        if (delta < 0) {
+          setSpeeds(left: 1, right: -1);
+        } else {
+          setSpeeds(left: -1, right: 1);
+        }
+        collection.logger.trace("Current heading: ${collection.imu.heading}");
+        return collection.imu.raw.isNear(orientation.angle.toDouble());
+      },
+      const Duration(milliseconds: 10),
+    );
     await stop();
     await super.faceDirection(orientation);
   }
@@ -80,9 +106,10 @@ class SensorDrive extends DriveInterface with RoverMotors {
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnLeft(); // do NOT clamp!
     print("Going from ${orientation} to ${destination}");
-    setThrottle(maxThrottle);
-    setSpeeds(left: -1, right: 1);
-    await waitFor(() => collection.imu.orientation == destination);
+    setThrottle(turnThrottle);
+    // setSpeeds(left: -1, right: 1);
+    // await waitFor(() => collection.imu.orientation == destination);
+    await faceDirection(destination);
     await stop();
     this.orientation = this.orientation.turnLeft();
   }
@@ -97,9 +124,10 @@ class SensorDrive extends DriveInterface with RoverMotors {
     await collection.imu.waitForValue();
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnRight(); // do NOT clamp!
-    setThrottle(maxThrottle);
-    setSpeeds(left: 1, right: -1);
-    await waitFor(() => collection.imu.orientation == destination);
+    setThrottle(turnThrottle);
+    // setSpeeds(left: 1, right: -1);
+    // await waitFor(() => collection.imu.orientation == destination);
+    await faceDirection(destination);
     await stop();
     this.orientation = this.orientation.turnRight();
   }
@@ -117,9 +145,10 @@ class SensorDrive extends DriveInterface with RoverMotors {
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnQuarterLeft(); // do NOT clamp!
     print("Going from ${orientation} to ${destination}");
-    setThrottle(maxThrottle);
-    setSpeeds(left: -1, right: 1);
-    await waitFor(() => collection.imu.orientation == destination);
+    setThrottle(turnThrottle);
+    // setSpeeds(left: -1, right: 1);
+    // await waitFor(() => collection.imu.orientation == destination);
+    await faceDirection(destination);
     await stop();
     this.orientation = this.orientation.turnQuarterLeft();
   }
@@ -137,9 +166,10 @@ class SensorDrive extends DriveInterface with RoverMotors {
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnQuarterRight(); // do NOT clamp!
     print("Going from ${orientation} to ${destination}");
-    setThrottle(maxThrottle);
-    setSpeeds(left: 1, right: -1);
-    await waitFor(() => collection.imu.orientation == destination);
+    setThrottle(turnThrottle);
+    // setSpeeds(left: 1, right: -1);
+    // await waitFor(() => collection.imu.orientation == destination);
+    await faceDirection(destination);
     await stop();
     this.orientation = this.orientation.turnQuarterRight();
   }
