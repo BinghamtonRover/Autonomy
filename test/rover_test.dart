@@ -21,7 +21,7 @@ void main() => group("[Rover]", tags: ["rover"], () {
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     await testPath(simulator);
-    simulator.gps.update((0, 0).toGps());
+    simulator.gps.update((lat: 0, long: 0).toGps());
     simulator.imu.update(Orientation());
     await testPath2(simulator);
     await simulator.dispose();
@@ -29,7 +29,7 @@ void main() => group("[Rover]", tags: ["rover"], () {
 
   test("Waits for sensor data", () async {
     final rover = RoverAutonomy();
-    final position = (5, 5).toGps();
+    final position = (lat: 5, long: 5).toGps();
     final orientation = Orientation();
     final data = VideoData();
 
@@ -58,7 +58,7 @@ void main() => group("[Rover]", tags: ["rover"], () {
 });
 
 Future<void> testPath(AutonomyInterface simulator) async {
-  final destination = (5, 5).toGps();
+  final destination = (lat: 5, long: 5).toGps();
   final result = simulator.pathfinder.getPath(destination);
   expect(simulator.gps.latitude, 0);
   expect(simulator.gps.longitude, 0);
@@ -78,10 +78,10 @@ Future<void> testPath(AutonomyInterface simulator) async {
 
 Future<void> testPath2(AutonomyInterface simulator) async {
   // Logger.level = LogLevel.all;
-  final destination = (4, 0).toGps();
-  simulator.pathfinder.recordObstacle((2, 0).toGps());
-  simulator.pathfinder.recordObstacle((4, -1).toGps());
-  simulator.pathfinder.recordObstacle((4, 1).toGps());
+  final destination = (lat: 4, long: 0).toGps();
+  simulator.pathfinder.recordObstacle((lat: 2, long: 0).toGps());
+  simulator.pathfinder.recordObstacle((lat: 4, long: -1).toGps());
+  simulator.pathfinder.recordObstacle((lat: 4, long: 1).toGps());
   final result = simulator.pathfinder.getPath(destination);
   expect(simulator.gps.latitude, 0);
   expect(simulator.gps.longitude, 0);

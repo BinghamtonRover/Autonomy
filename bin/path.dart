@@ -4,7 +4,7 @@ import "package:autonomy/simulator.dart";
 
 void main() {
   GpsUtils.maxErrorMeters = 1;
-  final destination = (1000, 1000).toGps();
+  final destination = (lat: 1000, long: 1000).toGps();
   final simulator = AutonomySimulator();
   simulator.pathfinder = RoverPathfinder(collection: simulator);
   final path = simulator.pathfinder.getPath(destination);

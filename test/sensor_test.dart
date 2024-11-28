@@ -16,13 +16,13 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
   tearDown(() => Logger.level = LogLevel.off);
 
   test("GpsUtils.isNear", () {
-    final origin = (0, 0).toGps();
+    final origin = (lat: 0, long: 0).toGps();
     expect(GpsCoordinates(latitude: 0, longitude: 0), origin);
     expect(origin.isNear(origin), isTrue);
 
-    final a = (5, 5).toGps();
-    final a2 = (5, 5).toGps();
-    final b = (5, 6.5).toGps();
+    final a = (lat: 5, long: 5).toGps();
+    final a2 = (lat: 5, long: 5).toGps();
+    final b = (lat: 5, long: 6.5).toGps();
 
     expect(a.isNear(a), isTrue);
     expect(a.isNear(a2), isTrue);
@@ -36,8 +36,8 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     expect(c.isNear(e), isFalse);
     expect(d.isNear(e), isFalse);
 
-    final f = (12, 12).toGps();
-    final g = (12.2, 12.2).toGps();
+    final f = (lat: 12, long: 12).toGps();
+    final g = (lat: 12.2, long: 12.2).toGps();
     expect(f.isNear(g), isTrue);
   });
 

@@ -11,7 +11,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
 
   test("Simple path from (0, 0) to (5, 5) exists", () {
     final simulator = AutonomySimulator();
-    final destination = (5, 5).toGps();
+    final destination = (lat: 5, long: 5).toGps();
     simulator.logger.info("Each step is ${GpsUtils.north.latitude.toStringAsFixed(5)}");
     simulator.logger.info("Going to ${destination.prettyPrint()}");
     simulator.pathfinder = RoverPathfinder(collection: simulator);  
@@ -26,7 +26,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
 
     // Plan a path from (0, 0) to (5, 5)
     simulator.pathfinder = RoverPathfinder(collection: simulator);  
-    final destination = (5, 5).toGps();
+    final destination = (lat: 5, long: 5).toGps();
     simulator.logger.info("Going to ${destination.prettyPrint()}");
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNotNull); if (path == null) return;
@@ -49,7 +49,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
   
   test("Following path gets to the end", () async { 
     final simulator = AutonomySimulator();
-    final destination = (5, 5).toGps();
+    final destination = (lat: 5, long: 5).toGps();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     final path = simulator.pathfinder.getPath(destination);
     
@@ -65,10 +65,10 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
   test("Avoid obstacles but reach the goal", () async {
     // Logger.level = LogLevel.all;
     final simulator = AutonomySimulator();
-    final destination = (5, 0).toGps();
+    final destination = (lat: 5, long: 0).toGps();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
-    simulator.pathfinder.recordObstacle((1, 0).toGps());
-    simulator.pathfinder.recordObstacle((2, 0).toGps());
+    simulator.pathfinder.recordObstacle((lat: 1, long: 0).toGps());
+    simulator.pathfinder.recordObstacle((lat: 2, long: 0).toGps());
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNotNull);
     if (path == null) {
@@ -92,7 +92,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.logger.trace("Starting from ${simulator.gps.coordinates.prettyPrint()}");
     simulator.logger.trace("Each step is +/- ${GpsUtils.north.prettyPrint()}");
-    final destination = (1000, 1000).toGps();
+    final destination = (lat: 1000, long: 1000).toGps();
     simulator.logger.info("Going to ${destination.prettyPrint()}");
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNotNull);
@@ -103,11 +103,11 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
   test("Impossible paths are reported", () async {
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
-    final destination = (5, 5).toGps();
+    final destination = (lat: 5, long: 5).toGps();
     final obstacles = {
-      (1, -1).toGps(),  (1, 0).toGps(),  (1, 1).toGps(),
-      (0, -1).toGps(),   /* Rover */     (0, 1).toGps(),
-      (-1, -1).toGps(), (-1, 0).toGps(), (-1, 1).toGps(),
+      (lat: 1, long: -1).toGps(),  (lat: 1, long: 0).toGps(),  (lat: 1, long: 1).toGps(),
+      (lat: 0, long: -1).toGps(),          /* Rover */         (lat: 0, long: 1).toGps(),
+      (lat: -1, long: -1).toGps(), (lat: -1, long: 0).toGps(), (lat: -1, long: 1).toGps(),
     };
     for (final obstacle in obstacles) {
       simulator.pathfinder.recordObstacle(obstacle);

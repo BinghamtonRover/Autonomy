@@ -110,7 +110,7 @@ void main() => group("[Network]", tags: ["network"], () {
     expect(simulator.imu.orientation, DriveOrientation.north);
 
     final origin = GpsCoordinates(latitude: 0, longitude: 0);
-    final oneMeter = (1, 0).toGps();
+    final oneMeter = (lat: 1, long: 0).toGps();
     expect(subsystems.throttle, 0);
     expect(subsystems.left, 0);
     expect(subsystems.right, 0);
