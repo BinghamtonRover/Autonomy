@@ -42,8 +42,17 @@ extension GpsUtils on GpsCoordinates {
 
   bool isNear(GpsCoordinates other, [double? tolerance]) {
     tolerance ??= maxErrorMeters;
-    return (latitude - other.latitude).abs() < tolerance * latitudePerMeter &&
-        (longitude - other.longitude).abs() < tolerance * longitudePerMeter;
+    final currentMeters = inMeters;
+    final otherMeters = other.inMeters;
+
+    final (deltaX, deltaY) = (
+      currentMeters.lat - otherMeters.lat,
+      currentMeters.long - otherMeters.long
+    );
+
+    final distance = sqrt(pow(deltaX, 2) + pow(deltaY, 2));
+
+    return distance < tolerance;
   }
 
   GpsCoordinates operator +(GpsCoordinates other) => GpsCoordinates(
