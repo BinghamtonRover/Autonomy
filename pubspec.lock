@@ -58,11 +58,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: HEAD
-      resolved-ref: ceeb9602a332d612bd9392d2b865403eea76b465
-      url: "https://github.com/BinghamtonRover/Dart-Networking.git"
+      ref: "2.2.0"
+      resolved-ref: "7ec80052bd9d2777782f7ce44cfcfc1e69e8a582"
+      url: "https://github.com/BinghamtonRover/Networking.git"
     source: git
-    version: "2.0.0"
+    version: "2.2.0"
   collection:
     dependency: transitive
     description:
