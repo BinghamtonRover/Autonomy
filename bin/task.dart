@@ -3,10 +3,10 @@ import "package:autonomy/simulator.dart";
 import "package:autonomy/rover.dart";
 import "package:burt_network/logging.dart";
 
-final chair = (2, 0).toGps();
+final chair = (lat: 2, long: 0).toGps();
 final obstacles = <SimulatedObstacle>[
-  SimulatedObstacle(coordinates: (6, -1).toGps(), radius: 3),
-  SimulatedObstacle(coordinates: (6, 1).toGps(), radius: 3),
+  SimulatedObstacle(coordinates: (lat: 6, long: -1).toGps(), radius: 3),
+  SimulatedObstacle(coordinates: (lat: 6, long: 1).toGps(), radius: 3),
 ];
 // Enter in the Dashboard: Destination = (lat=7, long=0);
 
