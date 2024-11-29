@@ -1,18 +1,18 @@
-export "src/rover/drive.dart";
-export "src/rover/pathfinding.dart";
-export "src/rover/orchestrator.dart";
-export "src/rover/sensorless.dart";
+export "src/drive/rover_drive.dart";
+export "src/pathfinding/rover_pathfinding.dart";
+export "src/orchestrator/rover_orchestrator.dart";
+export "src/drive/sensorless_drive.dart";
 
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/burt_network.dart";
 
-import "src/rover/pathfinding.dart";
-import "src/rover/drive.dart";
-import "src/rover/gps.dart";
-import "src/rover/imu.dart";
-import "src/rover/orchestrator.dart";
-import "src/rover/video.dart";
-import "src/rover/detector.dart";
+import "src/pathfinding/rover_pathfinding.dart";
+import "src/drive/rover_drive.dart";
+import "src/gps/rover_gps.dart";
+import "src/imu/rover_imu.dart";
+import "src/orchestrator/rover_orchestrator.dart";
+import "src/video/rover_video.dart";
+import "src/detector/rover_detector.dart";
 
 /// A collection of all the different services used by the autonomy program.
 class RoverAutonomy extends AutonomyInterface {

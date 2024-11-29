@@ -1,7 +1,7 @@
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
-const bool isRover = false;
+const bool isRover = true;
 
 enum DriveDirection {
   forward, 

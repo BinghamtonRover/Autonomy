@@ -3,8 +3,8 @@
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
 import "package:autonomy/simulator.dart";
-import "package:autonomy/src/rover/imu.dart";
-import "package:autonomy/src/simulator/network_detector.dart";
+import "package:autonomy/src/imu/rover_imu.dart";
+import "package:autonomy/src/detector/network_detector.dart";
 import "package:burt_network/burt_network.dart";
 
 void main() async {

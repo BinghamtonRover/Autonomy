@@ -5,7 +5,7 @@ import "package:autonomy/interfaces.dart";
 import "package:burt_network/generated.dart";
 
 extension GpsUtils on GpsCoordinates {
-  static double maxErrorMeters = 1;
+  static double maxErrorMeters = 0.5;
   static double moveLengthMeters = 1;
   static double get epsilonLatitude => maxErrorMeters * latitudePerMeter; 
   static double get epsilonLongitude => maxErrorMeters * longitudePerMeter;

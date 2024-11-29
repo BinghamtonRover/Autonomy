@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
 import "package:autonomy/interfaces.dart";
-import "package:autonomy/src/rover/corrector.dart";
+import "package:autonomy/src/math/corrector.dart";
 
 const maxError = GpsInterface.gpsError;
 const maxSamples = 10;

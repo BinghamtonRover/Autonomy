@@ -1,7 +1,7 @@
 import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 
-import "corrector.dart";
+import "../math/corrector.dart";
 
 class RoverImu extends ImuInterface {
   final _zCorrector = ErrorCorrector(maxSamples: 10, maxDeviation: 15);
@@ -30,7 +30,7 @@ class RoverImu extends ImuInterface {
   void update(Orientation newValue) {
     //  _zCorrector.addValue(newValue.heading);
     //	collection.logger.trace("Got IMU value");
-    print("Got imu: ${newValue.heading}. Direction: ${collection.drive.orientation}");
+    // print("Got imu: ${newValue.heading}. Direction: ${collection.drive.orientation}");
     hasValue = true;
     value = newValue;
 	}

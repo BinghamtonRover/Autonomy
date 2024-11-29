@@ -1,6 +1,6 @@
 import "package:autonomy/interfaces.dart";
 
-import "motors.dart";
+import "../utils/motors.dart";
 
 class TimedDrive extends DriveInterface with RoverMotors {
   static const maxThrottleTank = 0.3;
