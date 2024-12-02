@@ -15,7 +15,7 @@ class RoverImu extends ImuInterface {
       name: RoverPosition().messageName,
       constructor: RoverPosition.fromBuffer,
       callback: (pos) {
-        if (pos.hasOrientation()) update(pos.orientation);
+        if (pos.hasOrientation()) _internalUpdate(pos.orientation);
       },
     );
     return super.init();
@@ -28,12 +28,16 @@ class RoverImu extends ImuInterface {
 
   @override
   void update(Orientation newValue) {
+    // Do nothing, since this should only be internally updated
+	}
+
+  void _internalUpdate(Orientation newValue) {
     //  _zCorrector.addValue(newValue.heading);
     //	collection.logger.trace("Got IMU value");
     print("Got imu: ${newValue.heading}. Direction: ${collection.drive.orientation}");
     hasValue = true;
     value = newValue;
-	}
+  }
 
   @override
   Orientation get raw => Orientation(

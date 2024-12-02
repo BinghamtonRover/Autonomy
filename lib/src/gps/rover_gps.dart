@@ -14,7 +14,7 @@ class RoverGps extends GpsInterface {
       name: RoverPosition().messageName,
       constructor: RoverPosition.fromBuffer,
       callback: (pos) {
-        if (pos.hasGps()) update(pos.gps);
+        if (pos.hasGps()) _internalUpdate(pos.gps);
       },
     );
     return super.init();
@@ -28,6 +28,10 @@ class RoverGps extends GpsInterface {
 
 	@override
   void update(GpsCoordinates newValue) {
+    // Do nothing, since this should only be internally updated
+  }
+
+  void _internalUpdate(GpsCoordinates newValue) {
     _latitudeCorrector.addValue(newValue.latitude);
     _longitudeCorrector.addValue(newValue.longitude);
     hasValue = true;

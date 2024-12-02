@@ -1,5 +1,7 @@
 import "package:autonomy/src/drive/sensor_drive.dart";
 import "package:autonomy/src/drive/timed_drive.dart";
+import "package:autonomy/src/gps/rover_gps.dart";
+import "package:autonomy/src/imu/rover_imu.dart";
 import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 
@@ -25,6 +27,21 @@ class RoverDrive extends DriveInterface {
 	/// Initializes the rover's drive subsystems.
 	@override
   Future<bool> init() async {
+    if (!useImu && collection.imu is RoverImu) {
+      collection.logger.critical(
+        "Cannot use Rover IMU with simulated turning",
+        body: "Set useImu to true, or use the simulated IMU",
+      );
+      return false;
+    }
+    if (!useGps && collection.imu is RoverGps) {
+      collection.logger.critical(
+        "Cannot use Rover GPS with simulated driving",
+        body: "Set useGps to true, or use the simulated GPS",
+      );
+      return false;
+    }
+
     var result = true;
     result &= await sensorDrive.init();
     result &= await timedDrive.init();
