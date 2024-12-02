@@ -1,9 +1,15 @@
+import "dart:async";
+
 mixin Receiver {
-  bool hasValue = false;
-  
-  Future<void> waitForValue() async {
-    while (!hasValue) {
-      await Future<void>.delayed(const Duration(seconds: 1));
+  final Completer<bool> _value = Completer();
+
+  set hasValue(bool value) {
+    if (!_value.isCompleted) {
+      _value.complete(value);
     }
   }
+
+  bool get hasValue => _value.isCompleted;
+  
+  Future<bool> waitForValue() => _value.future;
 }

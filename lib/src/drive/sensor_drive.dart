@@ -10,6 +10,7 @@ class SensorDrive extends DriveInterface with RoverMotors {
   static double get turnThrottle => isRover ? turnThrottleRover : turnThrottleTank;
 
   static const predicateDelay = Duration(milliseconds: 100);
+  static const defaultFeedbackPeriod = Duration(milliseconds: 10);
   static const turnDelay = Duration(milliseconds: 1500);
 
   SensorDrive({required super.collection});
@@ -20,14 +21,14 @@ class SensorDrive extends DriveInterface with RoverMotors {
     setSpeeds(left: 0, right: 0);
   }
 
-  Future<void> waitFor(bool Function() predicate) async {
+  Future<void> waitFor(bool Function() predicate, [Duration period = predicateDelay]) async {
     while (!predicate()) {
-      await Future<void>.delayed(predicateDelay);
+      await Future<void>.delayed(period);
       await collection.imu.waitForValue();
     }
   }
 
-  Future<void> runFeedback(bool Function() completed, [Duration period = predicateDelay]) async {
+  Future<void> runFeedback(bool Function() completed, [Duration period = defaultFeedbackPeriod]) async {
     while (!completed()) {
       await Future<void>.delayed(period);
     }
@@ -41,7 +42,11 @@ class SensorDrive extends DriveInterface with RoverMotors {
 
   @override
   Future<void> goForward() async {
-   final orientation = collection.imu.orientation;
+    var orientation = collection.imu.orientation;
+    if (orientation == null) {
+      await resolveOrientation();
+      orientation = collection.imu.orientation;
+    }
     final currentCoordinates = collection.gps.coordinates;
     final destination = currentCoordinates.goForward(orientation!);
 
@@ -86,7 +91,6 @@ class SensorDrive extends DriveInterface with RoverMotors {
         collection.logger.trace("Current heading: ${collection.imu.heading}");
         return collection.imu.raw.isNear(orientation.angle.toDouble());
       },
-      const Duration(milliseconds: 10),
     );
     await stop();
     await super.faceDirection(orientation);
@@ -97,28 +101,25 @@ class SensorDrive extends DriveInterface with RoverMotors {
     await collection.imu.waitForValue();
 
     if (collection.imu.orientation == null) {
-      await faceNorth();
-      await faceDirection(this.orientation);
+      await resolveOrientation();
     }
     await collection.imu.waitForValue();
 
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnLeft(); // do NOT clamp!
-    print("Going from ${orientation} to ${destination}");
+    collection.logger.trace("Going from $orientation to $destination");
     setThrottle(turnThrottle);
     // setSpeeds(left: -1, right: 1);
     // await waitFor(() => collection.imu.orientation == destination);
     await faceDirection(destination);
     await stop();
-    this.orientation = this.orientation.turnLeft();
   }
 
   @override
   Future<void> turnRight() async {
     await collection.imu.waitForValue();
     if (collection.imu.orientation == null) {
-      await faceNorth();
-      await faceDirection(this.orientation);
+      await resolveOrientation();
     }
     await collection.imu.waitForValue();
     final orientation = collection.imu.orientation;
@@ -128,7 +129,6 @@ class SensorDrive extends DriveInterface with RoverMotors {
     // await waitFor(() => collection.imu.orientation == destination);
     await faceDirection(destination);
     await stop();
-    this.orientation = this.orientation.turnRight();
   }
 
   @override
@@ -136,20 +136,18 @@ class SensorDrive extends DriveInterface with RoverMotors {
     await collection.imu.waitForValue();
 
     if (collection.imu.orientation == null) {
-      await faceNorth();
-      await faceDirection(this.orientation);
+      await resolveOrientation();
     }
     await collection.imu.waitForValue();
 
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnQuarterLeft(); // do NOT clamp!
-    print("Going from ${orientation} to ${destination}");
+    collection.logger.trace("Going from $orientation to $destination");
     setThrottle(turnThrottle);
     // setSpeeds(left: -1, right: 1);
     // await waitFor(() => collection.imu.orientation == destination);
     await faceDirection(destination);
     await stop();
-    this.orientation = this.orientation.turnQuarterLeft();
   }
 
   @override
@@ -157,20 +155,18 @@ class SensorDrive extends DriveInterface with RoverMotors {
     await collection.imu.waitForValue();
 
     if (collection.imu.orientation == null) {
-      await faceNorth();
-      await faceDirection(this.orientation);
+      await resolveOrientation();
     }
     await collection.imu.waitForValue();
 
     final orientation = collection.imu.orientation;
     final destination = orientation!.turnQuarterRight(); // do NOT clamp!
-    print("Going from ${orientation} to ${destination}");
+    collection.logger.trace("Going from $orientation to $destination");
     setThrottle(turnThrottle);
     // setSpeeds(left: 1, right: -1);
     // await waitFor(() => collection.imu.orientation == destination);
     await faceDirection(destination);
     await stop();
-    this.orientation = this.orientation.turnQuarterRight();
   }
 
   @override

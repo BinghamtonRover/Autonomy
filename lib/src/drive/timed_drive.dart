@@ -41,13 +41,7 @@ class TimedDrive extends DriveInterface with RoverMotors {
   @override
   Future<void> goForward() async {
     setThrottle(maxThrottle);
-    setSpeeds(left: 1 * 0.9, right: 1);
-    final position = collection.gps.coordinates;
-    final orientation = collection.imu.orientation;
-    if (orientation != null) {
-      final newPosition = position.goForward(orientation);
-      collection.gps.update(newPosition);
-    }
+    setSpeeds(left: 1, right: 1);
     await Future<void>.delayed(oneMeterDelay);
     await stop();
   }
@@ -55,7 +49,7 @@ class TimedDrive extends DriveInterface with RoverMotors {
   @override
   Future<void> turnLeft() async {
     setThrottle(turnThrottle);
-    setSpeeds(left: -1 * 0.9, right: 1);
+    setSpeeds(left: -1, right: 1);
     await Future<void>.delayed(turnDelay);
     await stop();
   }

@@ -54,12 +54,14 @@ abstract class AutonomyInterface extends Service with Receiver {
   }
 
   @override
-  Future<void> waitForValue() async {
+  Future<bool> waitForValue() async {
     logger.info("Waiting for readings...");
-    await gps.waitForValue();
-    await imu.waitForValue();
-    await video.waitForValue();
+    var result = true;
+    result &= await gps.waitForValue();
+    result &= await imu.waitForValue();
+    result &= await video.waitForValue();
     logger.info("Received GPS and IMU values");
+    return result;
   }
 
   @override

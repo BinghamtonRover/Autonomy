@@ -27,12 +27,35 @@ enum DriveOrientation {
   final int angle;
   const DriveOrientation(this.angle);
 
+  Orientation get orientation => Orientation(z: angle.toDouble());
+
   static DriveOrientation? fromRaw(Orientation orientation) {
     // TODO: Make this more precise.
     for (final value in values) {
       if (orientation.isNear(value.angle.toDouble(), OrientationUtils.orientationEpsilon)) return value;
     }
     return null;
+  }
+
+  static DriveOrientation nearest(Orientation orientation) {
+    var smallestDiff = double.infinity;
+    var closestOrientation = DriveOrientation.north;
+
+    for (final value in values) {
+      var diff = value.angle.toDouble() - orientation.z;
+      if (diff < -180) {
+        diff += 360;
+      } else if (diff > 180) {
+        diff -= 360;
+      }
+
+      if (diff.abs() < smallestDiff) {
+        smallestDiff = diff.abs();
+        closestOrientation = value;
+      }
+    }
+
+    return closestOrientation;
   }
 
   bool get isPerpendicular => angle.abs() % 90 == 0;
@@ -107,6 +130,10 @@ abstract class DriveInterface extends Service {
 
   Future<void> faceDirection(DriveOrientation orientation) async {
     this.orientation = orientation;
+  }
+
+  Future<void> resolveOrientation() async {
+    await faceDirection(collection.imu.nearest);
   }
 
   Future<void> followPath(List<AutonomyAStarState> path) async {

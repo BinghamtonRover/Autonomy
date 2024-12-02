@@ -34,8 +34,8 @@ class RoverGps extends GpsInterface {
   }
 
   @override
- GpsCoordinates get coordinates => GpsCoordinates(
-   latitude: _latitudeCorrector.calibratedValue,
-   longitude: _longitudeCorrector.calibratedValue,
- );
+  GpsCoordinates get coordinates => GpsCoordinates(
+    latitude: _latitudeCorrector.calibratedValue,
+    longitude: _longitudeCorrector.calibratedValue,
+  );
 }

@@ -52,7 +52,9 @@ class RoverDrive extends DriveInterface {
 
   @override
   Future<void> stop() async {
+    await sensorDrive.stop();
     await timedDrive.stop();
+    await simDrive?.stop();
   }
 
   @override
@@ -61,9 +63,8 @@ class RoverDrive extends DriveInterface {
       await sensorDrive.faceNorth();
     } else {
       await timedDrive.faceNorth();
+      await simDrive?.faceNorth();
     }
-
-    await simDrive?.faceNorth();
   }
 
   @override
@@ -72,15 +73,14 @@ class RoverDrive extends DriveInterface {
   @override
   Future<void> approachAruco() => sensorDrive.approachAruco();
 
-
   @override
   Future<void> faceDirection(DriveOrientation orientation) async {
     if (useImu) {
       await sensorDrive.faceDirection(orientation);
     } else {
       await timedDrive.faceDirection(orientation);
+      await simDrive?.faceDirection(orientation);
     }
-    await simDrive?.faceDirection(orientation);
     await super.faceDirection(orientation);
   }
 
@@ -90,9 +90,8 @@ class RoverDrive extends DriveInterface {
       await sensorDrive.goForward();
     } else {
       await timedDrive.goForward();
+      await simDrive?.goForward();
     }
-
-    await simDrive?.goForward();
   }
 
   @override
@@ -101,9 +100,8 @@ class RoverDrive extends DriveInterface {
       await sensorDrive.turnLeft();
     } else {
       await timedDrive.turnLeft();
+      await simDrive?.turnLeft();
     }
-
-    await simDrive?.turnLeft();
   }
 
   @override
@@ -112,9 +110,8 @@ class RoverDrive extends DriveInterface {
       await sensorDrive.turnRight();
     } else {
       await timedDrive.turnRight();
+      await simDrive?.turnRight();
     }
-
-    await simDrive?.turnRight();
   }
 
   @override
@@ -123,9 +120,8 @@ class RoverDrive extends DriveInterface {
       await sensorDrive.turnQuarterLeft();
     } else {
       await timedDrive.turnQuarterLeft();
+      await simDrive?.turnQuarterLeft();
     }
-
-    await simDrive?.turnQuarterLeft();
   }
 
   @override
@@ -134,8 +130,7 @@ class RoverDrive extends DriveInterface {
       await sensorDrive.turnQuarterRight();
     } else {
       await timedDrive.turnQuarterRight();
+      await simDrive?.turnQuarterRight();
     }
-
-    await simDrive?.turnQuarterRight();
   }
 }

@@ -17,9 +17,10 @@ abstract class GpsInterface extends Service with Receiver {
   bool isNear(GpsCoordinates other) => coordinates.isNear(other);
 
   @override
-  Future<void> waitForValue() async {
-    await super.waitForValue();
+  Future<bool> waitForValue() async {
+    final value = await super.waitForValue();
     currentLatitude = coordinates.latitude;
+    return value;
   }
 
   @override
