@@ -36,7 +36,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   @override
   Future<void> handleGpsTask(AutonomyCommand command) async {
     final destination = command.destination;
-    collection.logger.info("Got GPS Task: Go to ${destination.prettyPrint()}");
+    collection.logger.info("Got GPS Task", body: "Go to ${destination.prettyPrint()}");
     collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
     traversed.clear();
     collection.drive.setLedStrip(ProtoColor.RED);
