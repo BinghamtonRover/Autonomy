@@ -60,10 +60,26 @@ extension GpsUtils on GpsCoordinates {
     longitude: longitude + other.longitude,
   );
 
+  GpsCoordinates operator -(GpsCoordinates other) => GpsCoordinates(
+      latitude: latitude - other.latitude,
+      longitude: longitude - other.longitude,
+    );
+
 //  String prettyPrint() => "(lat=${(latitude * GpsUtils.metersPerLatitude).toStringAsFixed(2)}, long=${(longitude * GpsUtils.metersPerLongitude).toStringAsFixed(2)})";
   String prettyPrint() => toProto3Json().toString();
 
   GpsCoordinates goForward(DriveOrientation orientation) => this + switch(orientation) {
+    DriveOrientation.north => GpsUtils.north,
+    DriveOrientation.south => GpsUtils.south,
+    DriveOrientation.west => GpsUtils.west,
+    DriveOrientation.east => GpsUtils.east,
+    DriveOrientation.northEast => GpsUtils.northEast,
+    DriveOrientation.northWest => GpsUtils.northWest,
+    DriveOrientation.southEast => GpsUtils.southEast,
+    DriveOrientation.southWest => GpsUtils.southWest,
+  };
+
+  GpsCoordinates goBackward(DriveOrientation orientation) => this - switch (orientation) {
     DriveOrientation.north => GpsUtils.north,
     DriveOrientation.south => GpsUtils.south,
     DriveOrientation.west => GpsUtils.west,

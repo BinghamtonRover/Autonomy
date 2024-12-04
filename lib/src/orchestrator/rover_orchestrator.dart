@@ -23,7 +23,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     obstacles: collection.pathfinder.obstacles,
     path: [
       for (final transition in currentPath ?? <AutonomyAStarState>[])
-        transition.position,
+        transition.endPosition,
       ...traversed,
     ],
     task: currentCommand?.task,
@@ -67,8 +67,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       var count = 0;
       for (final state in path) {
         collection.logger.debug(state.toString());
-        await collection.drive.goDirection(state.direction);
-        traversed.add(state.position);
+        await collection.drive.driveState(state);
+        traversed.add(state.endPosition);
         // if (state.direction != DriveDirection.forward) continue;
         if (count++ == 5) break;
         final foundObstacle = collection.detector.findObstacles();

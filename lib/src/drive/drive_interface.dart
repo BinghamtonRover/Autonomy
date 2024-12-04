@@ -110,23 +110,13 @@ abstract class DriveInterface extends Service {
   DriveOrientation orientation = DriveOrientation.north;
   DriveInterface({required this.collection});
 
-  Future<void> goDirection(DriveDirection direction) async => switch (direction) {
-    DriveDirection.forward => await goForward(),
-    DriveDirection.left => await turnLeft(),
-    DriveDirection.right => await turnRight(),
-    DriveDirection.forwardLeft => await turnQuarterLeft(),
-    DriveDirection.forwardRight => await turnQuarterRight(),
-    DriveDirection.stop => await stop(),
-  };
-
-  Future<void> faceNorth();
-  
-  Future<void> goForward();
-  Future<void> turnLeft();
-  Future<void> turnRight();
-  Future<void> turnQuarterLeft();
-  Future<void> turnQuarterRight();
   Future<void> stop();
+
+  Future<void> driveForward(AutonomyAStarState state);
+
+  Future<void> turn(AutonomyAStarState state) => faceDirection(state.endOrientation);
+
+  Future<void> faceNorth() => faceDirection(DriveOrientation.north);
 
   Future<void> faceDirection(DriveOrientation orientation) async {
     this.orientation = orientation;
@@ -136,10 +126,16 @@ abstract class DriveInterface extends Service {
     await faceDirection(collection.imu.nearest);
   }
 
-  Future<void> followPath(List<AutonomyAStarState> path) async {
-    for (final state in path) {
-      await goDirection(state.direction);
+  Future<void> driveState(AutonomyAStarState state) {
+    if (state.direction == DriveDirection.stop) {
+      return stop();
     }
+
+    if (state.direction == DriveDirection.forward) {
+      return driveForward(state);
+    }
+
+    return turn(state);
   }
 
   void setLedStrip(ProtoColor color, {bool blink = false}) {

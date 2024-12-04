@@ -1,7 +1,6 @@
 // ignore_for_file: cascade_invocations
 
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/generated.dart";
 
 class DriveSimulator extends DriveInterface {
   final bool shouldDelay;
@@ -14,64 +13,15 @@ class DriveSimulator extends DriveInterface {
   Future<void> dispose() async { }
 
   @override
-  Future<void> goForward() async {
-    final position = collection.gps.coordinates;
-    final orientation = collection.imu.orientation;
-    final newPosition = position.goForward(orientation!);
-    collection.logger.debug("Going forward");
-    collection.logger.trace("  Old position: ${position.prettyPrint()}");
-    collection.logger.trace("  Orientation: $orientation");
-    collection.logger.trace("  New position: ${newPosition.prettyPrint()}");
-    collection.gps.update(newPosition);
+  Future<void> driveForward(AutonomyAStarState state) async {
     if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
-  }
-
-  @override
-  Future<void> faceNorth() async {
-    collection.imu.update(OrientationUtils.north);
-    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
+    collection.gps.update(state.endPosition);
   }
 
   @override
   Future<void> faceDirection(DriveOrientation orientation) async {
+    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
     collection.imu.update(orientation.orientation);
-    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
-  }
-
-  @override
-  Future<void> turnLeft() async  {
-    collection.logger.debug("Turning left");
-    final heading = collection.imu.heading;
-    final orientation = Orientation(z: heading + 90);
-    collection.imu.update(orientation);
-    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
-  }
-
-  @override
-  Future<void> turnRight() async  {
-    collection.logger.debug("Turning right");
-    final heading = collection.imu.heading;
-    final orientation = Orientation(z: heading - 90);
-    collection.imu.update(orientation);
-    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
-  }
-
-  @override
-  Future<void> turnQuarterLeft() async {
-    collection.logger.debug("Turning quarter left");
-    final heading = collection.imu.heading;
-    final orientation = Orientation(z: heading + 45).clampHeading();
-    collection.imu.update(orientation);
-    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
-  }
-
-  @override
-  Future<void> turnQuarterRight() async {
-    collection.logger.debug("Turning quarter right");
-    final heading = collection.imu.heading;
-    final orientation = Orientation(z: heading - 45).clampHeading();
-    collection.imu.update(orientation);
-    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
   @override

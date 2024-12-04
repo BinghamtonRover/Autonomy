@@ -75,16 +75,6 @@ class RoverDrive extends DriveInterface {
   }
 
   @override
-  Future<void> faceNorth() async {
-    if (useImu) {
-      await sensorDrive.faceNorth();
-    } else {
-      await timedDrive.faceNorth();
-      await simDrive?.faceNorth();
-    }
-  }
-
-  @override
   Future<bool> spinForAruco() => sensorDrive.spinForAruco();
 
   @override
@@ -100,54 +90,14 @@ class RoverDrive extends DriveInterface {
     }
     await super.faceDirection(orientation);
   }
-
+  
   @override
-  Future<void> goForward() async {
+  Future<void> driveForward(AutonomyAStarState state) async {
     if (useGps) {
-      await sensorDrive.goForward();
+      await sensorDrive.driveForward(state);
     } else {
-      await timedDrive.goForward();
-      await simDrive?.goForward();
-    }
-  }
-
-  @override
-  Future<void> turnLeft() async {
-    if (useImu) {
-      await sensorDrive.turnLeft();
-    } else {
-      await timedDrive.turnLeft();
-      await simDrive?.turnLeft();
-    }
-  }
-
-  @override
-  Future<void> turnRight() async {
-    if (useImu) {
-      await sensorDrive.turnRight();
-    } else {
-      await timedDrive.turnRight();
-      await simDrive?.turnRight();
-    }
-  }
-
-  @override
-  Future<void> turnQuarterLeft() async {
-    if (useImu) {
-      await sensorDrive.turnQuarterLeft();
-    } else {
-      await timedDrive.turnQuarterLeft();
-      await simDrive?.turnQuarterLeft();
-    }
-  }
-
-  @override
-  Future<void> turnQuarterRight() async {
-    if (useImu) {
-      await sensorDrive.turnQuarterRight();
-    } else {
-      await timedDrive.turnQuarterRight();
-      await simDrive?.turnQuarterRight();
+      await timedDrive.driveForward(state);
+      await simDrive?.driveForward(state);
     }
   }
 }
