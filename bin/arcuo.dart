@@ -2,7 +2,7 @@ import "package:autonomy/autonomy.dart";
 
 void main() async {
   final rover = RoverAutonomy();
-	rover.drive = RoverDrive(collection: rover, useImu: false, useGps: false);
+  rover.drive = RoverDrive(collection: rover, useImu: false, useGps: false);
   await rover.init();
   //await rover.waitForValue();
   final didSeeAruco = await rover.drive.spinForAruco();

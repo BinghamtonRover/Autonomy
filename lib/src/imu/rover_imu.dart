@@ -5,7 +5,7 @@ class RoverImu extends ImuInterface {
   final _zCorrector = ErrorCorrector(maxSamples: 10, maxDeviation: 15);
   RoverImu({required super.collection});
 
-	Orientation value = Orientation();
+  Orientation value = Orientation();
 
   @override
   Future<bool> init() async {
@@ -27,11 +27,11 @@ class RoverImu extends ImuInterface {
   @override
   void update(Orientation newValue) {
     // Do nothing, since this should only be internally updated
-	}
+  }
 
   void _internalUpdate(Orientation newValue) {
     //  _zCorrector.addValue(newValue.heading);
-    //	collection.logger.trace("Got IMU value");
+    //  collection.logger.trace("Got IMU value");
     hasValue = true;
     value = newValue;
   }

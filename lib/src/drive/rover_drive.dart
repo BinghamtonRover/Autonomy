@@ -24,8 +24,8 @@ class RoverDrive extends DriveInterface {
   })  : sensorDrive = sensorDrive ?? SensorDrive(collection: collection),
         timedDrive = timedDrive ?? TimedDrive(collection: collection);
 
-	/// Initializes the rover's drive subsystems.
-	@override
+  /// Initializes the rover's drive subsystems.
+  @override
   Future<bool> init() async {
     if (!useImu && collection.imu is RoverImu) {
       collection.logger.critical(
@@ -52,20 +52,20 @@ class RoverDrive extends DriveInterface {
     return result;
   }
 
-	/// Stops the rover from driving.
-	@override
+  /// Stops the rover from driving.
+  @override
   Future<void> dispose() => Future.wait([
         sensorDrive.dispose(),
         timedDrive.dispose(),
         if (simDrive != null) simDrive!.dispose(),
       ]);
 
-	/// Sets the angle of the front camera.
-	void setCameraAngle({required double swivel, required double tilt}) {
-		collection.logger.trace("Setting camera angles to $swivel (swivel) and $tilt (tilt)");
-		final command = DriveCommand(frontSwivel: swivel, frontTilt: tilt);
-		collection.server.sendCommand(command);
-	}
+  /// Sets the angle of the front camera.
+  void setCameraAngle({required double swivel, required double tilt}) {
+    collection.logger.trace("Setting camera angles to $swivel (swivel) and $tilt (tilt)");
+    final command = DriveCommand(frontSwivel: swivel, frontTilt: tilt);
+    collection.server.sendCommand(command);
+  }
 
   @override
   Future<void> stop() async {

@@ -97,7 +97,7 @@ class SensorDrive extends DriveInterface with RoverMotors {
             // final pos = collection.video.arucoPosition;
             // collection.logger.debug("aruco is at $pos");
             // return pos > 0.2;
-          //	});
+          //  });
           // await stop();
         return true;
       }}
@@ -111,10 +111,10 @@ class SensorDrive extends DriveInterface with RoverMotors {
     setSpeeds(left: 1, right: 1);
     // const threshold = 0.2;
     //  await waitFor(() {
-      //	final pos = collection.video.arucoSize;
-      //	collection.logger.debug("It is at $pos percent");
-      //	return (pos.abs() < 0.00001 && !collection.detector.canSeeAruco()) || pos >= threshold;
-    //	});
+      //  final pos = collection.video.arucoSize;
+      //  collection.logger.debug("It is at $pos percent");
+      //  return (pos.abs() < 0.00001 && !collection.detector.canSeeAruco()) || pos >= threshold;
+    //  });
     await Future<void>.delayed(const Duration(seconds: 10));
     await stop();
   }

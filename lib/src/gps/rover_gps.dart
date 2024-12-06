@@ -24,7 +24,7 @@ class RoverGps extends GpsInterface {
     _longitudeCorrector.clear();
   }
 
-	@override
+  @override
   void update(GpsCoordinates newValue) {
     // Do nothing, since this should only be internally updated
   }

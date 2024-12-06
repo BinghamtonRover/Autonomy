@@ -14,11 +14,11 @@ import "package:burt_network/burt_network.dart";
 
 /// A collection of all the different services used by the autonomy program.
 class RoverAutonomy extends AutonomyInterface {
-	/// A server to communicate with the dashboard and receive data from the subsystems.
-	// @override late final AutonomyServer server = AutonomyServer(collection: this);
+  /// A server to communicate with the dashboard and receive data from the subsystems.
+  // @override late final AutonomyServer server = AutonomyServer(collection: this);
   @override late final server = RoverSocket(port: 8003, device: Device.AUTONOMY, collection: this);
-	/// A helper class to handle driving the rover.
-	@override late DriveInterface drive = RoverDrive(collection: this);
+  /// A helper class to handle driving the rover.
+  @override late DriveInterface drive = RoverDrive(collection: this);
   @override late GpsInterface gps = RoverGps(collection: this);
   @override late ImuInterface imu = RoverImu(collection: this);
   @override late final logger = BurtLogger(socket: server);
