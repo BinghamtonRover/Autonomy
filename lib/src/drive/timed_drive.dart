@@ -39,8 +39,6 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   @override
   Future<void> turn(AutonomyAStarState state) async {
     switch (state.instruction) {
-      case DriveDirection.forward:
-        break;
       case DriveDirection.left:
         await turnLeft();
       case DriveDirection.right:
@@ -49,7 +47,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
         await turnQuarterLeft();
       case DriveDirection.quarterRight:
         await turnQuarterRight();
-      case DriveDirection.stop:
+      case DriveDirection.forward || DriveDirection.stop:
         break;
     }
   }
@@ -98,6 +96,5 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
 
   @override
   Future<void> faceDirection(CardinalDirection orientation) =>
-    // TODO: Implement this
-    throw UnimplementedError("Cannot face any arbitrary direction using TimedDrive");
+    throw UnsupportedError("Cannot face any arbitrary direction using TimedDrive");
 }
