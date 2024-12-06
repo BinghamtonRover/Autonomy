@@ -37,7 +37,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   @override
-  Future<void> turn(AutonomyAStarState state) async {
+  Future<void> turnState(AutonomyAStarState state) async {
     switch (state.instruction) {
       case DriveDirection.left:
         await turnLeft();

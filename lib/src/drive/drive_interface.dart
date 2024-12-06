@@ -22,14 +22,14 @@ abstract class DriveInterface extends Service {
 
   Future<void> driveForward(AutonomyAStarState state);
 
-  /// Turns to face the state's [AutonomyAStarState.orientation].
-  ///
-  /// Exists so that the TimedDrive can implement this in terms of [AutonomyAStarState.instruction].
-  Future<void> turn(AutonomyAStarState state) => faceDirection(state.orientation);
-
   Future<void> faceDirection(CardinalDirection orientation);
 
   Future<void> resolveOrientation() => faceDirection(collection.imu.nearest);
+
+  /// Turns to face the state's [AutonomyAStarState.orientation].
+  ///
+  /// Exists so that the TimedDrive can implement this in terms of [AutonomyAStarState.instruction].
+  Future<void> turnState(AutonomyAStarState state) => faceDirection(state.orientation);
 
   Future<void> driveState(AutonomyAStarState state) {
     if (state.instruction == DriveDirection.stop) {
@@ -37,7 +37,7 @@ abstract class DriveInterface extends Service {
     } else if (state.instruction == DriveDirection.forward) {
       return driveForward(state);
     } else {
-      return turn(state);
+      return turnState(state);
     }
   }
 

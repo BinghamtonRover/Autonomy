@@ -3,6 +3,8 @@
 import "package:autonomy/interfaces.dart";
 
 class DriveSimulator extends DriveInterface {
+  static const delay = Duration(milliseconds: 500);
+
   final bool shouldDelay;
   DriveSimulator({required super.collection, this.shouldDelay = false});
 
@@ -14,7 +16,7 @@ class DriveSimulator extends DriveInterface {
 
   @override
   Future<void> driveForward(AutonomyAStarState state) async {
-    if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
+    if (shouldDelay) await Future<void>.delayed(delay);
     collection.gps.update(state.position);
   }
 
