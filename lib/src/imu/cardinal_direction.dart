@@ -6,23 +6,15 @@ enum CardinalDirection {
   west(90),
   south(180),
   east(270),
-  northEast(360 - 45),
-  northWest(45),
-  southEast(180 + 45),
-  southWest(180 - 45);
+  northEast(000 + 45),
+  northWest(360 - 45),
+  southWest(180 + 45),
+  southEast(180 - 45);
 
   final double angle;
   const CardinalDirection(this.angle);
 
   Orientation get orientation => Orientation(z: angle);
-
-  static CardinalDirection? fromRaw(Orientation orientation) {
-    // TODO: Make this more precise.
-    for (final value in values) {
-      if (orientation.isNear(value.angle, OrientationUtils.orientationEpsilon)) return value;
-    }
-    return null;
-  }
 
   static CardinalDirection nearest(Orientation orientation) {
     var smallestDiff = double.infinity;
