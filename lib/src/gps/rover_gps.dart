@@ -1,8 +1,8 @@
 import "package:autonomy/interfaces.dart";
 
 class RoverGps extends GpsInterface {
-  final _latitudeCorrector = ErrorCorrector(maxSamples: 1, maxDeviation: GpsInterface.gpsError * 10);
-  final _longitudeCorrector = ErrorCorrector(maxSamples: 1, maxDeviation: GpsInterface.gpsError * 10);
+  final _latitudeCorrector = ErrorCorrector.disabled();
+  final _longitudeCorrector = ErrorCorrector.disabled();
   RoverGps({required super.collection});
 
   @override
@@ -10,9 +10,7 @@ class RoverGps extends GpsInterface {
     collection.server.messages.onMessage(
       name: RoverPosition().messageName,
       constructor: RoverPosition.fromBuffer,
-      callback: (pos) {
-        if (pos.hasGps()) _internalUpdate(pos.gps);
-      },
+      callback: _internalUpdate,
     );
     return super.init();
   }
@@ -28,9 +26,11 @@ class RoverGps extends GpsInterface {
     // Do nothing, since this should only be internally updated
   }
 
-  void _internalUpdate(GpsCoordinates newValue) {
-    _latitudeCorrector.addValue(newValue.latitude);
-    _longitudeCorrector.addValue(newValue.longitude);
+  void _internalUpdate(RoverPosition newValue) {
+    if (!newValue.hasGps()) return;
+    final position = newValue.gps;
+    _latitudeCorrector.addValue(position.latitude);
+    _longitudeCorrector.addValue(position.longitude);
     hasValue = true;
   }
 

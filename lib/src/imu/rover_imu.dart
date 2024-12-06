@@ -1,19 +1,17 @@
 import "package:autonomy/interfaces.dart";
 
 class RoverImu extends ImuInterface {
-  final _zCorrector = ErrorCorrector(maxSamples: 10, maxDeviation: 15);
+  final _xCorrector = ErrorCorrector.disabled();
+  final _yCorrector = ErrorCorrector.disabled();
+  final _zCorrector = ErrorCorrector.disabled();
   RoverImu({required super.collection});
-
-  Orientation value = Orientation();
 
   @override
   Future<bool> init() async {
     collection.server.messages.onMessage(
       name: RoverPosition().messageName,
       constructor: RoverPosition.fromBuffer,
-      callback: (pos) {
-        if (pos.hasOrientation()) _internalUpdate(pos.orientation);
-      },
+      callback: _internalUpdate,
     );
     return super.init();
   }
@@ -28,17 +26,18 @@ class RoverImu extends ImuInterface {
     // Do nothing, since this should only be internally updated
   }
 
-  void _internalUpdate(Orientation newValue) {
-    //  _zCorrector.addValue(newValue.heading);
-    //  collection.logger.trace("Got IMU value");
+  void _internalUpdate(RoverPosition newValue) {
+    if (!newValue.hasOrientation()) return;
+    _xCorrector.addValue(newValue.orientation.x);
+    _yCorrector.addValue(newValue.orientation.y);
+    _zCorrector.addValue(newValue.orientation.z);
     hasValue = true;
-    value = newValue;
   }
 
   @override
   Orientation get raw => Orientation(
-    x: 0,
-    y: 0,
-    z: value.z.clampAngle(),
+    x: _xCorrector.calibratedValue.clampAngle(),
+    y: _yCorrector.calibratedValue.clampAngle(),
+    z: _zCorrector.calibratedValue.clampAngle(),
   );
 }
