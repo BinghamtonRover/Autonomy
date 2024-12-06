@@ -9,7 +9,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   static double getCost(DriveDirection direction) {
     if (direction == DriveDirection.forward) {
       return 1;
-    } else if (direction == DriveDirection.forwardLeft || direction == DriveDirection.forwardRight) {
+    } else if (direction == DriveDirection.quarterLeft || direction == DriveDirection.quarterRight) {
       return sqrt2;
     } else {
       return 2 * sqrt2;
@@ -62,8 +62,8 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
     DriveDirection.left => "Turn left to face $instruction",
     DriveDirection.right => "Turn right to face $instruction",
     DriveDirection.stop => "Start/Stop at ${position.prettyPrint()}",
-    DriveDirection.forwardLeft => "Turn 45 degrees left to face $instruction",
-    DriveDirection.forwardRight => "Turn 45 degrees right to face $instruction",
+    DriveDirection.quarterLeft => "Turn 45 degrees left to face $instruction",
+    DriveDirection.quarterRight => "Turn 45 degrees right to face $instruction",
   };
 
   @override
@@ -98,7 +98,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   /// If the rover is facing northeast to 0 and trying to turn left, will return false
   bool willDriveThroughObstacle(AutonomyAStarState state) {
     final isTurn = state.instruction != DriveDirection.forward;
-    final isQuarterTurn = state.instruction == DriveDirection.forwardLeft || state.instruction == DriveDirection.forwardRight;
+    final isQuarterTurn = state.instruction == DriveDirection.quarterLeft || state.instruction == DriveDirection.quarterRight;
 
     if (
       // Can't hit an obstacle while turning
@@ -125,7 +125,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
       orientation2 = state.orientation.turnQuarterRight();
     } else if (isQuarterTurn) { // Case 2 and Case 3
       orientation1 = orientation;
-      orientation2 = (state.instruction == DriveDirection.forwardLeft)
+      orientation2 = (state.instruction == DriveDirection.quarterLeft)
         ? orientation1.turnLeft()
         : orientation1.turnRight();
     } else { // Case 4
@@ -164,12 +164,12 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
       position: position,
     ),
     copyWith(
-      direction: DriveDirection.forwardLeft,
+      direction: DriveDirection.quarterLeft,
       orientation: orientation.turnQuarterLeft(),
       position: position,
     ),
     copyWith(
-      direction: DriveDirection.forwardRight,
+      direction: DriveDirection.quarterRight,
       orientation: orientation.turnQuarterRight(),
       position: position,
     ),

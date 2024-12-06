@@ -45,9 +45,9 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
         await turnLeft();
       case DriveDirection.right:
         await turnRight();
-      case DriveDirection.forwardLeft:
+      case DriveDirection.quarterLeft:
         await turnQuarterLeft();
-      case DriveDirection.forwardRight:
+      case DriveDirection.quarterRight:
         await turnQuarterRight();
       case DriveDirection.stop:
         break;

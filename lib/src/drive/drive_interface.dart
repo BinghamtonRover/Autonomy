@@ -7,8 +7,8 @@ enum DriveDirection {
   forward,
   left,
   right,
-  forwardLeft,
-  forwardRight,
+  quarterLeft,
+  quarterRight,
   stop;
 
   bool get isTurn => this != forward && this != stop;
