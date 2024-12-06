@@ -73,7 +73,6 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
       },
     );
     await stop();
-    await super.faceDirection(orientation);
   }
 
   @override

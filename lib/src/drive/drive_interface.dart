@@ -107,7 +107,6 @@ enum DriveOrientation {
 
 abstract class DriveInterface extends Service {
   AutonomyInterface collection;
-  DriveOrientation orientation = DriveOrientation.north;
   DriveInterface({required this.collection});
 
   Future<void> stop();
@@ -118,9 +117,7 @@ abstract class DriveInterface extends Service {
 
   Future<void> faceNorth() => faceDirection(DriveOrientation.north);
 
-  Future<void> faceDirection(DriveOrientation orientation) async {
-    this.orientation = orientation;
-  }
+  Future<void> faceDirection(DriveOrientation orientation);
 
   Future<void> resolveOrientation() => faceDirection(collection.imu.nearest);
 

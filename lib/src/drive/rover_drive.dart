@@ -74,7 +74,6 @@ class RoverDrive extends DriveInterface {
       await timedDrive.faceDirection(orientation);
       await simDrive.faceDirection(orientation);
     }
-    await super.faceDirection(orientation);
   }
 
   @override
