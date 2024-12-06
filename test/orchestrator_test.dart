@@ -1,4 +1,3 @@
-import "package:autonomy/src/gps/rover_gps.dart";
 import "package:test/test.dart";
 import "package:autonomy/autonomy.dart";
 import "package:burt_network/burt_network.dart";

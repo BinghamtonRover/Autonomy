@@ -1,6 +1,7 @@
 import "package:autonomy/autonomy.dart";
 import "package:autonomy/interfaces.dart";
-import "package:autonomy/src/utils/motors.dart";
+
+import "motors.dart";
 
 class SensorDrive extends DriveInterface with RoverMotors {
   static const double maxThrottle = 0.1;

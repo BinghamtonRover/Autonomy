@@ -3,6 +3,7 @@ export "src/pathfinding/rover_pathfinding.dart";
 export "src/orchestrator/rover_orchestrator.dart";
 export "src/drive/sensorless_drive.dart";
 export "src/imu/rover_imu.dart";
+export "src/gps/rover_gps.dart";
 export "src/detector/network_detector.dart";
 
 import "package:autonomy/interfaces.dart";

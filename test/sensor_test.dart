@@ -1,12 +1,10 @@
-import "package:autonomy/src/imu/rover_imu.dart";
-import "package:burt_network/logging.dart";
 import "package:test/test.dart";
 
 import "package:burt_network/protobuf.dart";
+import "package:burt_network/logging.dart";
 
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/simulator.dart";
-import "package:autonomy/src/gps/rover_gps.dart";
 
 const imuError = 2.5;
 const gpsPrecision = 7;

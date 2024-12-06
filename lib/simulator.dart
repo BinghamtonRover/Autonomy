@@ -3,17 +3,12 @@ export "src/drive/sim_drive.dart";
 export "src/gps/sim_gps.dart";
 export "src/imu/sim_imu.dart";
 export "src/video/sim_video.dart";
+export "src/pathfinding/sim_pathfinding.dart";
+export "src/orchestrator/sim_orchestrator.dart";
 
 import "package:autonomy/interfaces.dart";
-import "package:autonomy/src/orchestrator/sim_orchestrator.dart";
+import "package:autonomy/simulator.dart";
 import "package:burt_network/burt_network.dart";
-
-import "src/detector/sim_detector.dart";
-import "src/drive/sim_drive.dart";
-import "src/gps/sim_gps.dart";
-import "src/imu/sim_imu.dart";
-import "src/pathfinding/sim_pathfinding.dart";
-import "src/video/sim_video.dart";
 
 class AutonomySimulator extends AutonomyInterface {
   @override late final logger = BurtLogger(socket: server);

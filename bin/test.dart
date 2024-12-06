@@ -1,17 +1,15 @@
 // import "package:autonomy/autonomy.dart";
 // import "package:burt_network/logging.dart";
-// import "package:autonomy/src/gps/rover_gps.dart";
-// import "package:autonomy/src/imu/rover_imu.dart";
 
 // void main() async {
 //   Logger.level = LogLevel.all;
 //   final rover = RoverAutonomy();
 //   rover.gps = RoverGps(collection: rover);
 //   rover.imu = RoverImu(collection: rover);
-//   rover.drive = RoverDrive(collection: rover, useGps: false, useImu: true);
+//   rover.drive = RoverDrive(collection: rover, useGps: false);
 
 //   await rover.init();
-//   print("Waiting for readings");
+//   rover.logger.info("Waiting for readings");
 // //  await rover.waitForReadings();
 // //  await rover.waitForConnection();
 

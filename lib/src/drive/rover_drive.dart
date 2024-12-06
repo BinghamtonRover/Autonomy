@@ -1,9 +1,9 @@
-import "package:autonomy/src/drive/sensor_drive.dart";
-import "package:autonomy/src/drive/timed_drive.dart";
-import "package:autonomy/src/gps/rover_gps.dart";
-import "package:autonomy/src/imu/rover_imu.dart";
 import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
+import "package:autonomy/rover.dart";
+
+import "sensor_drive.dart";
+import "timed_drive.dart";
 
 /// A helper class to send drive commands to the rover with a simpler API.
 class RoverDrive extends DriveInterface {
@@ -90,7 +90,7 @@ class RoverDrive extends DriveInterface {
     }
     await super.faceDirection(orientation);
   }
-  
+
   @override
   Future<void> driveForward(AutonomyAStarState state) async {
     if (useGps) {
