@@ -1,5 +1,3 @@
-// ignore_for_file: cascade_invocations
-
 import "package:autonomy/interfaces.dart";
 
 class DriveSimulator extends DriveInterface {

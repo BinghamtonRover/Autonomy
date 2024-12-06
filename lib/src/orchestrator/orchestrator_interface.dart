@@ -27,10 +27,10 @@ abstract class OrchestratorInterface extends Service {
     await collection.drive.resolveOrientation();
     currentCommand = command;
     switch (command.task) {
+      case AutonomyTask.BETWEEN_GATES: break;  // TODO
+      case AutonomyTask.AUTONOMY_TASK_UNDEFINED: break;
       case AutonomyTask.GPS_ONLY: await handleGpsTask(command);
       case AutonomyTask.VISUAL_MARKER: await handleArucoTask(command);
-      // TODO: Add more tasks
-      default: collection.logger.error("Unrecognized task: ${command.task}");  // ignore: no_default_cases
     }
   }
 
