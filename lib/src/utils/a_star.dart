@@ -6,27 +6,28 @@ import "package:burt_network/protobuf.dart";
 import "package:autonomy/interfaces.dart";
 
 class AutonomyAStarState extends AStarState<AutonomyAStarState> {
-  final DriveDirection direction;
-  final GpsCoordinates endPosition;
-  final CardinalDirection endOrientation;
-  final GpsCoordinates pathGoal;
+  static double getCost(DriveDirection direction) {
+    if (direction == DriveDirection.forward) {
+      return 1;
+    } else if (direction == DriveDirection.forwardLeft || direction == DriveDirection.forwardRight) {
+      return sqrt2;
+    } else {
+      return 2 * sqrt2;
+    }
+  }
+
+  final DriveDirection instruction;
+  final GpsCoordinates position;
+  final CardinalDirection orientation;
+  final GpsCoordinates goal;
   final AutonomyInterface collection;
 
-  CardinalDirection get startOrientation => switch (direction) {
-      DriveDirection.forward => endOrientation,
-      DriveDirection.left => endOrientation.turnRight(),
-      DriveDirection.right => endOrientation.turnLeft(),
-      DriveDirection.forwardLeft => endOrientation.turnQuarterRight(),
-      DriveDirection.forwardRight => endOrientation.turnQuarterLeft(),
-      DriveDirection.stop => endOrientation,
-    };
-
   AutonomyAStarState({
-    required this.endPosition,
-    required this.pathGoal,
+    required this.position,
+    required this.goal,
     required this.collection,
-    required this.direction,
-    required this.endOrientation,
+    required this.instruction,
+    required this.orientation,
     required super.depth,
   });
 
@@ -34,78 +35,45 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
     required AutonomyInterface collection,
     required GpsCoordinates goal,
   }) => AutonomyAStarState(
-    endPosition: collection.gps.coordinates,
-    pathGoal: goal,
+    position: collection.gps.coordinates,
+    goal: goal,
     collection: collection,
-    direction: DriveDirection.stop,
-    endOrientation: collection.imu.orientation ?? collection.imu.nearest,
+    instruction: DriveDirection.stop,
+    orientation: collection.imu.orientation ?? collection.imu.nearest,
     depth: 0,
   );
 
+  AutonomyAStarState copyWith({
+    required DriveDirection direction,
+    required CardinalDirection orientation,
+    required GpsCoordinates position,
+  }) => AutonomyAStarState(
+    collection: collection,
+    position: position,
+    orientation: orientation,
+    instruction: direction,
+    goal: goal,
+    depth: depth + getCost(direction),
+  );
+
   @override
-  String toString() => switch(direction) {
-    DriveDirection.forward => "Go forward to ${endPosition.prettyPrint()}",
-    DriveDirection.left => "Turn left to face $direction",
-    DriveDirection.right => "Turn right to face $direction",
-    DriveDirection.stop => "Start/Stop at ${endPosition.prettyPrint()}",
-    DriveDirection.forwardLeft => "Turn 45 degrees left to face $direction",
-    DriveDirection.forwardRight => "Turn 45 degrees right to face $direction",
+  String toString() => switch(instruction) {
+    DriveDirection.forward => "Go forward to ${position.prettyPrint()}",
+    DriveDirection.left => "Turn left to face $instruction",
+    DriveDirection.right => "Turn right to face $instruction",
+    DriveDirection.stop => "Start/Stop at ${position.prettyPrint()}",
+    DriveDirection.forwardLeft => "Turn 45 degrees left to face $instruction",
+    DriveDirection.forwardRight => "Turn 45 degrees right to face $instruction",
   };
 
   @override
-  double heuristic() => endPosition.distanceTo(pathGoal);
+  double heuristic() => position.distanceTo(goal);
 
   @override
-  String hash() => "${endPosition.prettyPrint()} ($endOrientation)";
+  String hash() => "${position.prettyPrint()} ($orientation)";
 
   @override
-  bool isGoal() => endPosition.isNear(pathGoal, min(GpsUtils.moveLengthMeters, GpsUtils.maxErrorMeters));
-
-  AutonomyAStarState copyWith({required DriveDirection direction, required CardinalDirection orientation, required GpsCoordinates position}) => AutonomyAStarState(
-    collection: collection,
-    endPosition: position,
-    endOrientation: orientation,
-    direction: direction,
-    pathGoal: pathGoal,
-    depth: (direction == DriveDirection.forward)
-        ? depth + 1
-        : (direction == DriveDirection.forwardLeft || direction == DriveDirection.forwardRight)
-            ? depth + sqrt2
-            : depth + 2 * sqrt2,
-  );
-
-  AutonomyAStarState moveDirection(DriveDirection direction) => switch(direction) {
-      DriveDirection.forward => copyWith(
-          direction: direction,
-          orientation: endOrientation,
-          position: endPosition.goForward(endOrientation),
-        ),
-      DriveDirection.left => copyWith(
-          direction: direction,
-          orientation: endOrientation.turnLeft(),
-          position: endPosition,
-        ),
-      DriveDirection.right => copyWith(
-          direction: direction,
-          orientation: endOrientation.turnRight(),
-          position: endPosition,
-        ),
-      DriveDirection.forwardLeft => copyWith(
-          direction: direction,
-          orientation: endOrientation.turnQuarterLeft(),
-          position: endPosition,
-        ),
-      DriveDirection.forwardRight => copyWith(
-          direction: direction,
-          orientation: endOrientation.turnQuarterRight(),
-          position: endPosition,
-        ),
-      DriveDirection.stop => copyWith(
-          direction: direction,
-          orientation: endOrientation,
-          position: endPosition,
-        ),
-    };
+  bool isGoal() => position.isNear(goal, min(GpsUtils.moveLengthMeters, GpsUtils.maxErrorMeters));
 
   /// Returns whether or not the rover will drive between or right next to an obstacle diagonally<br/>
   /// <br/>
@@ -128,66 +96,90 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   /// 0 X 0<br/>
   /// 0 R 0<br/>
   /// If the rover is facing northeast to 0 and trying to turn left, will return false
-  bool drivingThroughObstacle(AutonomyAStarState state) {
-    final isTurn = state.direction != DriveDirection.forward;
-    final isQuarterTurn = state.direction == DriveDirection.forwardLeft || state.direction == DriveDirection.forwardRight;
+  bool willDriveThroughObstacle(AutonomyAStarState state) {
+    final isTurn = state.instruction != DriveDirection.forward;
+    final isQuarterTurn = state.instruction == DriveDirection.forwardLeft || state.instruction == DriveDirection.forwardRight;
 
-    if (state.direction != DriveDirection.forward) {
+    if (
+      // Can't hit an obstacle while turning
+      state.instruction != DriveDirection.forward
+
+      // Forward drive across the perpendicular axis
+      || (!isTurn && state.orientation.isPerpendicular)
+
+      // Not encountering any sort of diagonal angle
+      || (isTurn && isQuarterTurn && state.orientation.isPerpendicular)
+
+      // No diagonal movement, won't drive between obstacles
+      || (!isQuarterTurn && orientation.isPerpendicular)
+    ) {
       return false;
     }
 
-    // Forward drive across the perpendicular axis
-    if (!isTurn && state.endOrientation.isPerpendicular) {
-      return false;
-    }
-
-    // Not encountering any sort of diagonal angle
-    if (isTurn && isQuarterTurn && state.endOrientation.isPerpendicular) {
-      return false;
-    }
-
-    // No diagonal movement, won't drive between obstacles
-    if (!isQuarterTurn && endOrientation.isPerpendicular) {
-      return false;
-    }
-
-    CardinalDirection orientation1;
-    CardinalDirection orientation2;
+    final CardinalDirection orientation1;
+    final CardinalDirection orientation2;
 
     // Case 1, trying to drive while facing a 45 degree angle
     if (!isTurn) {
-      orientation1 = state.endOrientation.turnQuarterLeft();
-      orientation2 = state.endOrientation.turnQuarterRight();
+      orientation1 = state.orientation.turnQuarterLeft();
+      orientation2 = state.orientation.turnQuarterRight();
     } else if (isQuarterTurn) { // Case 2 and Case 3
-      orientation1 = endOrientation;
-      orientation2 = (state.direction == DriveDirection.forwardLeft)
-          ? orientation1.turnLeft()
-          : orientation1.turnRight();
+      orientation1 = orientation;
+      orientation2 = (state.instruction == DriveDirection.forwardLeft)
+        ? orientation1.turnLeft()
+        : orientation1.turnRight();
     } else { // Case 4
-      orientation1 = (state.direction == DriveDirection.left)
-          ? endOrientation.turnQuarterLeft()
-          : endOrientation.turnQuarterRight();
-      orientation2 = (state.direction == DriveDirection.left)
-          ? state.endOrientation.turnQuarterLeft()
-          : state.endOrientation.turnQuarterRight();
+      orientation1 = (state.instruction == DriveDirection.left)
+        ? orientation.turnQuarterLeft()
+        : orientation.turnQuarterRight();
+      orientation2 = (state.instruction == DriveDirection.left)
+        ? state.orientation.turnQuarterLeft()
+        : state.orientation.turnQuarterRight();
     }
 
     // Since the state being passed has a position of moving after the
     // turn, we have to check the position of where it started
-    return collection.pathfinder.isObstacle(
-          endPosition.goForward(orientation1),
-        ) ||
-        collection.pathfinder.isObstacle(
-          endPosition.goForward(orientation2),
-        );
+    return collection.pathfinder.isObstacle(position.goForward(orientation1))
+      || collection.pathfinder.isObstacle(position.goForward(orientation2));
   }
 
   bool isValidState(AutonomyAStarState state) =>
-    !collection.pathfinder.isObstacle(state.endPosition)
-    && !drivingThroughObstacle(state);
+    !collection.pathfinder.isObstacle(state.position)
+    && !willDriveThroughObstacle(state);
+
+  Iterable<AutonomyAStarState> _allNeighbors() => [
+    copyWith(
+      direction: DriveDirection.forward,
+      orientation: orientation,
+      position: position.goForward(orientation),
+    ),
+    copyWith(
+      direction: DriveDirection.left,
+      orientation: orientation.turnLeft(),
+      position: position,
+    ),
+    copyWith(
+      direction: DriveDirection.right,
+      orientation: orientation.turnRight(),
+      position: position,
+    ),
+    copyWith(
+      direction: DriveDirection.forwardLeft,
+      orientation: orientation.turnQuarterLeft(),
+      position: position,
+    ),
+    copyWith(
+      direction: DriveDirection.forwardRight,
+      orientation: orientation.turnQuarterRight(),
+      position: position,
+    ),
+    copyWith(
+      direction: DriveDirection.stop,
+      orientation: orientation,
+      position: position,
+    ),
+  ];
 
   @override
-  Iterable<AutonomyAStarState> expand() => DriveDirection.values
-    .map(moveDirection)
-    .where(isValidState);
+  Iterable<AutonomyAStarState> expand() => _allNeighbors().where(isValidState);
 }

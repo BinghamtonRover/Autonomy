@@ -15,7 +15,7 @@ class DriveSimulator extends DriveInterface {
   @override
   Future<void> driveForward(AutonomyAStarState state) async {
     if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
-    collection.gps.update(state.endPosition);
+    collection.gps.update(state.position);
   }
 
   @override

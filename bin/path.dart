@@ -20,7 +20,7 @@ void main() {
   }
   var turnCount = 0;
   for (final step in path) {
-    if (step.direction == DriveDirection.left || step.direction == DriveDirection.right) {
+    if (step.instruction == DriveDirection.left || step.instruction == DriveDirection.right) {
       turnCount++;
     }
   }

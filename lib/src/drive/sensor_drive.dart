@@ -46,7 +46,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
     collection.logger.info("Driving forward one meter");
     setThrottle(maxThrottle);
     setSpeeds(left: 1, right: 1);
-    await waitFor(() => collection.gps.coordinates.isNear(state.endPosition));
+    await waitFor(() => collection.gps.coordinates.isNear(state.position));
     await stop();
   }
 

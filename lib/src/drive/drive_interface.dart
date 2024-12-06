@@ -22,18 +22,18 @@ abstract class DriveInterface extends Service {
 
   Future<void> driveForward(AutonomyAStarState state);
 
-  Future<void> turn(AutonomyAStarState state) => faceDirection(state.endOrientation);
+  Future<void> turn(AutonomyAStarState state) => faceDirection(state.orientation);
 
   Future<void> faceDirection(CardinalDirection orientation);
 
   Future<void> resolveOrientation() => faceDirection(collection.imu.nearest);
 
   Future<void> driveState(AutonomyAStarState state) {
-    if (state.direction == DriveDirection.stop) {
+    if (state.instruction == DriveDirection.stop) {
       return stop();
     }
 
-    if (state.direction == DriveDirection.forward) {
+    if (state.instruction == DriveDirection.forward) {
       return driveForward(state);
     }
 
