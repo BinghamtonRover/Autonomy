@@ -26,6 +26,9 @@ abstract class DriveInterface extends Service {
 
   Future<void> faceDirection(CardinalDirection orientation);
 
+  void sendCommand(Message message) => collection.server
+    .sendMessage(message, destination: config.subsystems);
+
   Future<void> resolveOrientation() => faceDirection(collection.imu.nearest);
 
   /// Turns to face the state's [AutonomyAStarState.orientation].
@@ -45,7 +48,7 @@ abstract class DriveInterface extends Service {
 
   void setLedStrip(ProtoColor color, {bool blink = false}) {
     final command = DriveCommand(color: color, blink: blink ? BoolState.YES : BoolState.NO);
-    collection.server.sendCommand(command);
+    sendCommand(command);
   }
 
   Future<bool> spinForAruco() async => false;

@@ -28,7 +28,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
     collection.logger.info("Driving forward one meter");
     setThrottle(config.forwardThrottle);
     moveForward();
-    await waitFor(() => collection.gps.coordinates.isNear(state.position));
+    await waitFor(() => collection.gps.isNear(state.position));
     await stop();
   }
 
@@ -62,41 +62,26 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
 
   @override
   Future<bool> spinForAruco() async {
-    for (var i = 0; i < 16; i++) {
-      setThrottle(config.turnThrottle);
-      spinLeft();
-      for (var j = 0; j < 300; j++) {
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        collection.logger.trace("Can see aruco? ${collection.detector.canSeeAruco()}");
-
-        if (collection.detector.canSeeAruco()) {
-          // Spin a bit more to center it
-          // print("We found it!");
-          // setThrottle(0.1);
-          // setSpeeds(left: -1, right: 1);
-          // await waitFor(() {
-            // final pos = collection.video.arucoPosition;
-            // collection.logger.debug("aruco is at $pos");
-            // return pos > 0.2;
-          //  });
-          // await stop();
-        return true;
-      }}
-    }
-    return false;
+    setThrottle(config.turnThrottle);
+    spinLeft();
+    final result = await waitFor(() => collection.detector.canSeeAruco())
+      .then((_) => true)
+      .timeout(config.turnDelay * 4, onTimeout: () => false);
+    await stop();
+    return result;
   }
 
   @override
   Future<void> approachAruco() async {
+    const sizeThreshold = 0.2;
+    const epsilon = 0.00001;
     setThrottle(config.forwardThrottle);
     moveForward();
-    // const threshold = 0.2;
-    //  await waitFor(() {
-      //  final pos = collection.video.arucoSize;
-      //  collection.logger.debug("It is at $pos percent");
-      //  return (pos.abs() < 0.00001 && !collection.detector.canSeeAruco()) || pos >= threshold;
-    //  });
-    await Future<void>.delayed(const Duration(seconds: 10));
+    await waitFor(() {
+      final size = collection.video.arucoSize;
+      collection.logger.trace("The Aruco tag is at $size percent");
+      return (size.abs() < epsilon && !collection.detector.canSeeAruco()) || size >= sizeThreshold;
+    }).timeout(config.oneMeterDelay * 5);
     await stop();
   }
 }
