@@ -24,7 +24,6 @@ extension GpsUtils on GpsCoordinates {
 
   // Taken from https://stackoverflow.com/a/39540339/9392211
   static const metersPerLatitude = 111.32 * 1000;  // 111.32 km
-  // static const metersPerLatitude = 1;
   static const radiansPerDegree = pi / 180;
   static double get metersPerLongitude => 40075 * cos(GpsInterface.currentLatitude * radiansPerDegree) / 360 * 1000.0;
 
@@ -60,26 +59,9 @@ extension GpsUtils on GpsCoordinates {
     longitude: longitude + other.longitude,
   );
 
-  GpsCoordinates operator -(GpsCoordinates other) => GpsCoordinates(
-      latitude: latitude - other.latitude,
-      longitude: longitude - other.longitude,
-    );
-
-//  String prettyPrint() => "(lat=${(latitude * GpsUtils.metersPerLatitude).toStringAsFixed(2)}, long=${(longitude * GpsUtils.metersPerLongitude).toStringAsFixed(2)})";
   String prettyPrint() => toProto3Json().toString();
 
   GpsCoordinates goForward(DriveOrientation orientation) => this + switch(orientation) {
-    DriveOrientation.north => GpsUtils.north,
-    DriveOrientation.south => GpsUtils.south,
-    DriveOrientation.west => GpsUtils.west,
-    DriveOrientation.east => GpsUtils.east,
-    DriveOrientation.northEast => GpsUtils.northEast,
-    DriveOrientation.northWest => GpsUtils.northWest,
-    DriveOrientation.southEast => GpsUtils.southEast,
-    DriveOrientation.southWest => GpsUtils.southWest,
-  };
-
-  GpsCoordinates goBackward(DriveOrientation orientation) => this - switch (orientation) {
     DriveOrientation.north => GpsUtils.north,
     DriveOrientation.south => GpsUtils.south,
     DriveOrientation.west => GpsUtils.west,

@@ -12,15 +12,6 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   final GpsCoordinates pathGoal;
   final AutonomyInterface collection;
 
-  GpsCoordinates get startPosition => switch(direction) {
-    DriveDirection.forward => endPosition.goBackward(endOrientation),
-    DriveDirection.left => endPosition,
-    DriveDirection.right => endPosition,
-    DriveDirection.forwardLeft => endPosition,
-    DriveDirection.forwardRight => endPosition,
-    DriveDirection.stop => endPosition,
-  };
-
   DriveOrientation get startOrientation => switch (direction) {
       DriveDirection.forward => endOrientation,
       DriveDirection.left => endOrientation.turnRight(),
