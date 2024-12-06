@@ -13,11 +13,15 @@ extension OrientationUtils on Orientation {
 
   bool get isEmpty => x == 0 && y == 0 && z == 0;
 
-  bool isNear(double value, [double tolerance = epsilon]) => value > 270 && z < 90
-    ? (z + 360 - value).abs() < tolerance
-    : value < 90 && z > 270
-      ? (z - value - 360).abs() < tolerance
-      : (z - value).abs() < tolerance;
+  bool isNear(double value) {
+    if (value > 270 && z < 90) {
+      return (z + 360 - value).abs() < epsilon;
+    } else if (value < 90 && z > 270) {
+      return (z - value - 360).abs() < epsilon;
+    } else {
+      return (z - value).abs() < epsilon;
+    }
+  }
 }
 
 extension AngleUtils on double {
