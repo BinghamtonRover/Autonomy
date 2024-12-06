@@ -40,6 +40,6 @@ class RoverImu extends ImuInterface {
   Orientation get raw => Orientation(
     x: 0,
     y: 0,
-    z: value.z,
-  ).clampHeading();
+    z: value.z.clampAngle(),
+  );
 }

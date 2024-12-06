@@ -42,15 +42,9 @@ enum DriveOrientation {
     var closestOrientation = DriveOrientation.north;
 
     for (final value in values) {
-      var diff = value.angle.toDouble() - orientation.z;
-      if (diff < -180) {
-        diff += 360;
-      } else if (diff > 180) {
-        diff -= 360;
-      }
-
-      if (diff.abs() < smallestDiff) {
-        smallestDiff = diff.abs();
+      final diff = (value.angle - orientation.z).clampAngle();
+      if (diff < smallestDiff) {
+        smallestDiff = diff;
         closestOrientation = value;
       }
     }

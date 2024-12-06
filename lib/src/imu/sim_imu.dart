@@ -19,7 +19,7 @@ class ImuSimulator extends ImuInterface with ValueReporter {
   );
 
   @override
-  void update(Orientation newValue) => _orientation = newValue.clampHeading();
+  void update(Orientation newValue) => _orientation = newValue;
 
   @override
   Future<bool> init() async {

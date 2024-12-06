@@ -13,16 +13,21 @@ extension OrientationUtils on Orientation {
 
   bool get isEmpty => x == 0 && y == 0 && z == 0;
 
-  Orientation clampHeading() {
-    var adjustedHeading = heading;
-    if (heading >= 360) adjustedHeading -= 360;
-    if (heading < 0) adjustedHeading = 360 + heading;
-    return Orientation(x: x, y: y, z: adjustedHeading);
-  }
-
   bool isNear(double value, [double tolerance = epsilon]) => value > 270 && z < 90
     ? (z + 360 - value).abs() < tolerance
     : value < 90 && z > 270
       ? (z - value - 360).abs() < tolerance
       : (z - value).abs() < tolerance;
+}
+
+extension AngleUtils on double {
+  double clampAngle() {
+    if (this >= 360) {
+      return this - 360;
+    } else if (this < 0) {
+      return this + 360;
+    } else {
+      return this;
+    }
+  }
 }
