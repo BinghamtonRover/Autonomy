@@ -1,7 +1,7 @@
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/protobuf.dart";
 
-const bool isRover = true;
+import "drive_config.dart";
 
 enum DriveDirection {
   forward,
@@ -17,6 +17,8 @@ enum DriveDirection {
 abstract class DriveInterface extends Service {
   AutonomyInterface collection;
   DriveInterface({required this.collection});
+
+  DriveConfig get config => roverConfig;
 
   Future<void> stop();
 

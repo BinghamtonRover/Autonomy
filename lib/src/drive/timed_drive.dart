@@ -5,24 +5,6 @@ import "package:autonomy/interfaces.dart";
 import "drive_commands.dart";
 
 class TimedDrive extends DriveInterface with RoverDriveCommands {
-  static const forwardThrottleTank = 0.3;
-  static const turnThrottleTank = 0.35;
-
-  static const forwardThrottleRover = 0.1;
-  static const turnThrottleRover = 0.1;
-
-  static const oneMeterDelayRover = Duration(milliseconds: 5500);
-  static const turnDelayRover = Duration(milliseconds: 4500);
-
-  static const oneMeterDelayTank = Duration(milliseconds: 2000);
-  static const turnDelayTank = Duration(milliseconds: 1000);
-
-  static double get maxThrottle => isRover ? forwardThrottleRover : forwardThrottleTank;
-  static double get turnThrottle => isRover ? turnThrottleRover : turnThrottleTank;
-
-  static Duration get oneMeterDelay => isRover ? oneMeterDelayRover : oneMeterDelayTank;
-  static Duration get turnDelay => isRover ? turnDelayRover : turnDelayTank;
-
   TimedDrive({required super.collection});
 
   @override
@@ -57,37 +39,37 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
 
   Future<void> goForward([double distance = 1]) async {
     collection.logger.info("Driving forward $distance meters");
-    setThrottle(maxThrottle);
+    setThrottle(config.forwardThrottle);
     moveForward();
-    await Future<void>.delayed(oneMeterDelay * distance);
+    await Future<void>.delayed(config.oneMeterDelay * distance);
     await stop();
   }
 
   Future<void> turnLeft() async {
-    setThrottle(turnThrottle);
+    setThrottle(config.turnThrottle);
     spinLeft();
-    await Future<void>.delayed(turnDelay);
+    await Future<void>.delayed(config.turnDelay);
     await stop();
   }
 
   Future<void> turnRight() async {
-    setThrottle(turnThrottle);
+    setThrottle(config.turnThrottle);
     spinRight();
-    await Future<void>.delayed(turnDelay);
+    await Future<void>.delayed(config.turnDelay);
     await stop();
   }
 
   Future<void> turnQuarterLeft() async {
-    setThrottle(turnThrottle);
+    setThrottle(config.turnThrottle);
     spinLeft();
-    await Future<void>.delayed(turnDelay * 0.5);
+    await Future<void>.delayed(config.turnDelay * 0.5);
     await stop();
   }
 
   Future<void> turnQuarterRight() async {
-    setThrottle(turnThrottle);
+    setThrottle(config.turnThrottle);
     spinRight();
-    await Future<void>.delayed(turnDelay * 0.5);
+    await Future<void>.delayed(config.turnDelay * 0.5);
     await stop();
   }
 

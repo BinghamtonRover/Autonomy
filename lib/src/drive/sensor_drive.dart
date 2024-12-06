@@ -4,14 +4,7 @@ import "package:autonomy/interfaces.dart";
 import "drive_commands.dart";
 
 class SensorDrive extends DriveInterface with RoverDriveCommands {
-  static const double maxThrottle = 0.1;
-  static const double turnThrottleRover = 0.1;
-  static const double turnThrottleTank = 0.35;
-
-  static double get turnThrottle => isRover ? turnThrottleRover : turnThrottleTank;
-
   static const predicateDelay = Duration(milliseconds: 10);
-  static const turnDelay = Duration(milliseconds: 1500);
 
   SensorDrive({required super.collection});
 
@@ -33,7 +26,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   @override
   Future<void> driveForward(AutonomyAStarState state) async {
     collection.logger.info("Driving forward one meter");
-    setThrottle(maxThrottle);
+    setThrottle(config.forwardThrottle);
     moveForward();
     await waitFor(() => collection.gps.coordinates.isNear(state.position));
     await stop();
@@ -42,7 +35,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   @override
   Future<void> faceDirection(CardinalDirection orientation) async {
     collection.logger.info("Turning to face $orientation...");
-    setThrottle(turnThrottle);
+    setThrottle(config.turnThrottle);
     await waitFor(() => _tryToFace(orientation));
     await stop();
   }
@@ -70,11 +63,8 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   @override
   Future<bool> spinForAruco() async {
     for (var i = 0; i < 16; i++) {
-      setThrottle(turnThrottle);
+      setThrottle(config.turnThrottle);
       spinLeft();
-      await Future<void>.delayed(turnDelay);
-      await stop();
-
       for (var j = 0; j < 300; j++) {
         await Future<void>.delayed(const Duration(milliseconds: 10));
         collection.logger.trace("Can see aruco? ${collection.detector.canSeeAruco()}");
@@ -98,7 +88,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
 
   @override
   Future<void> approachAruco() async {
-    setThrottle(maxThrottle);
+    setThrottle(config.forwardThrottle);
     moveForward();
     // const threshold = 0.2;
     //  await waitFor(() {
