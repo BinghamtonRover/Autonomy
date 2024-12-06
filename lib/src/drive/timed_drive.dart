@@ -2,9 +2,9 @@ import "dart:math";
 
 import "package:autonomy/interfaces.dart";
 
-import "motors.dart";
+import "drive_commands.dart";
 
-class TimedDrive extends DriveInterface with RoverMotors {
+class TimedDrive extends DriveInterface with RoverDriveCommands {
   static const forwardThrottleTank = 0.3;
   static const turnThrottleTank = 0.35;
 

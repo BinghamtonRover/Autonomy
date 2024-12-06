@@ -1,28 +1,24 @@
-import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
 
 import "sensor_drive.dart";
 import "timed_drive.dart";
+import "sim_drive.dart";
 
 /// A helper class to send drive commands to the rover with a simpler API.
 class RoverDrive extends DriveInterface {
   final bool useGps;
   final bool useImu;
 
-  final DriveInterface sensorDrive;
-  final DriveInterface timedDrive;
-  final DriveInterface? simDrive;
+  late final sensorDrive = SensorDrive(collection: collection);
+  late final timedDrive = TimedDrive(collection: collection);
+  late final simDrive = DriveSimulator(collection: collection);
 
   RoverDrive({
     required super.collection,
-    DriveInterface? sensorDrive,
-    DriveInterface? timedDrive,
-    this.simDrive,
     this.useGps = true,
     this.useImu = true,
-  })  : sensorDrive = sensorDrive ?? SensorDrive(collection: collection),
-        timedDrive = timedDrive ?? TimedDrive(collection: collection);
+  });
 
   /// Initializes the rover's drive subsystems.
   @override
@@ -45,33 +41,23 @@ class RoverDrive extends DriveInterface {
     var result = true;
     result &= await sensorDrive.init();
     result &= await timedDrive.init();
-    if (simDrive != null) {
-      result &= await simDrive!.init();
-    }
-
+    result &= await simDrive.init();
     return result;
   }
 
   /// Stops the rover from driving.
   @override
-  Future<void> dispose() => Future.wait([
-        sensorDrive.dispose(),
-        timedDrive.dispose(),
-        if (simDrive != null) simDrive!.dispose(),
-      ]);
-
-  /// Sets the angle of the front camera.
-  void setCameraAngle({required double swivel, required double tilt}) {
-    collection.logger.trace("Setting camera angles to $swivel (swivel) and $tilt (tilt)");
-    final command = DriveCommand(frontSwivel: swivel, frontTilt: tilt);
-    collection.server.sendCommand(command);
+  Future<void> dispose() async {
+    await sensorDrive.dispose();
+    await timedDrive.dispose();
+    await simDrive.dispose();
   }
 
   @override
   Future<void> stop() async {
     await sensorDrive.stop();
     await timedDrive.stop();
-    await simDrive?.stop();
+    await simDrive.stop();
   }
 
   @override
@@ -86,7 +72,7 @@ class RoverDrive extends DriveInterface {
       await sensorDrive.faceDirection(orientation);
     } else {
       await timedDrive.faceDirection(orientation);
-      await simDrive?.faceDirection(orientation);
+      await simDrive.faceDirection(orientation);
     }
     await super.faceDirection(orientation);
   }
@@ -97,7 +83,7 @@ class RoverDrive extends DriveInterface {
       await sensorDrive.driveForward(state);
     } else {
       await timedDrive.driveForward(state);
-      await simDrive?.driveForward(state);
+      await simDrive.driveForward(state);
     }
   }
 }

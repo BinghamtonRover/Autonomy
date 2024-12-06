@@ -1,7 +1,7 @@
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/protobuf.dart";
 
-mixin RoverMotors {
+mixin RoverDriveCommands {
   AutonomyInterface get collection;
 
   /// Sets the max speed of the rover.
@@ -22,5 +22,12 @@ mixin RoverMotors {
     collection.logger.trace("Setting speeds to $left and $right");
     collection.server.sendCommand(DriveCommand(left: left, setLeft: true));
     collection.server.sendCommand(DriveCommand(right: right, setRight: true));
+  }
+
+  /// Sets the angle of the front camera.
+  void setCameraAngle({required double swivel, required double tilt}) {
+    collection.logger.trace("Setting camera angles to $swivel (swivel) and $tilt (tilt)");
+    final command = DriveCommand(frontSwivel: swivel, frontTilt: tilt);
+    collection.server.sendCommand(command);
   }
 }
