@@ -2,7 +2,6 @@
 import "dart:math";
 
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/protobuf.dart";
 
 extension GpsUtils on GpsCoordinates {
   static double maxErrorMeters = 0.5;

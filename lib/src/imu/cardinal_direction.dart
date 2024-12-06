@@ -1,5 +1,4 @@
 
-import "package:burt_network/protobuf.dart";
 import "package:autonomy/interfaces.dart";
 
 enum CardinalDirection {

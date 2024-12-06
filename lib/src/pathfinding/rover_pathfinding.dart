@@ -1,8 +1,6 @@
 import "package:a_star/a_star.dart";
 
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/burt_network.dart";
-import "package:burt_network/protobuf.dart";
 
 class RoverPathfinder extends PathfindingInterface {
   RoverPathfinder({required super.collection});

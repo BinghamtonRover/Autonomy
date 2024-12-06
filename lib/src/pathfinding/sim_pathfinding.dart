@@ -1,5 +1,4 @@
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/burt_network.dart";
 
 class PathfindingSimulator extends PathfindingInterface {
   static int i = 0;

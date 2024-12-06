@@ -1,4 +1,3 @@
-import "package:burt_network/protobuf.dart";
 import "package:autonomy/interfaces.dart";
 
 class GpsSimulator extends GpsInterface with ValueReporter {

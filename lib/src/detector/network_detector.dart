@@ -1,5 +1,4 @@
-﻿import "package:autonomy/autonomy.dart";
-import "package:burt_network/burt_network.dart";
+import "package:autonomy/autonomy.dart";
 
 class NetworkDetector extends DetectorInterface {
   final List<GpsCoordinates> _newObstacles = [];

@@ -14,7 +14,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   Future<void> dispose() async { }
 
   @override
-  Future<void> driveForward(AutonomyAStarState state) async {
+  Future<void> driveForward(GpsCoordinates position) async {
     await goForward(collection.imu.nearest.isPerpendicular ? 1 : sqrt2);
   }
 

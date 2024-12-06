@@ -1,5 +1,4 @@
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/protobuf.dart";
 
 import "drive_config.dart";
 
@@ -22,7 +21,7 @@ abstract class DriveInterface extends Service {
 
   Future<void> stop();
 
-  Future<void> driveForward(AutonomyAStarState state);
+  Future<void> driveForward(GpsCoordinates position);
 
   Future<void> faceDirection(CardinalDirection orientation);
 
@@ -40,7 +39,7 @@ abstract class DriveInterface extends Service {
     if (state.instruction == DriveDirection.stop) {
       return stop();
     } else if (state.instruction == DriveDirection.forward) {
-      return driveForward(state);
+      return driveForward(state.position);
     } else {
       return turnState(state);
     }

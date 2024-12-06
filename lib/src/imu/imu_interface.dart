@@ -1,5 +1,4 @@
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/burt_network.dart";
 
 abstract class ImuInterface extends Service with Receiver {
   final AutonomyInterface collection;

@@ -24,11 +24,11 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   Future<void> dispose() async { }
 
   @override
-  Future<void> driveForward(AutonomyAStarState state) async {
+  Future<void> driveForward(GpsCoordinates position) async {
     collection.logger.info("Driving forward one meter");
     setThrottle(config.forwardThrottle);
     moveForward();
-    await waitFor(() => collection.gps.isNear(state.position));
+    await waitFor(() => collection.gps.isNear(position));
     await stop();
   }
 

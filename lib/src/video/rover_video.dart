@@ -1,7 +1,6 @@
 import "dart:async";
 
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/burt_network.dart";
 
 class RoverVideo extends VideoInterface {
   RoverVideo({required super.collection});

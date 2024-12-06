@@ -1,4 +1,3 @@
-import "package:burt_network/protobuf.dart";
 import "package:autonomy/interfaces.dart";
 
 abstract class GpsInterface extends Service with Receiver {

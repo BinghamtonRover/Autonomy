@@ -1,7 +1,6 @@
 import "dart:io";
 
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/burt_network.dart";
 import "package:meta/meta.dart";
 
 abstract class OrchestratorInterface extends Service {

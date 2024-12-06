@@ -2,7 +2,6 @@ import "dart:math";
 
 import "package:a_star/a_star.dart";
 
-import "package:burt_network/protobuf.dart";
 import "package:autonomy/interfaces.dart";
 
 class AutonomyAStarState extends AStarState<AutonomyAStarState> {

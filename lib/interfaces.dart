@@ -9,3 +9,4 @@ export "src/video/video_interface.dart";
 export "src/orchestrator/orchestrator_interface.dart";
 
 export "utils.dart";
+export "package:burt_network/protobuf.dart";

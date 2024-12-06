@@ -1,4 +1,3 @@
-import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 
 class RoverGps extends GpsInterface {

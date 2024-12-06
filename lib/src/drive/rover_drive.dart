@@ -77,12 +77,12 @@ class RoverDrive extends DriveInterface {
   }
 
   @override
-  Future<void> driveForward(AutonomyAStarState state) async {
+  Future<void> driveForward(GpsCoordinates position) async {
     if (useGps) {
-      await sensorDrive.driveForward(state);
+      await sensorDrive.driveForward(position);
     } else {
-      await timedDrive.driveForward(state);
-      await simDrive.driveForward(state);
+      await timedDrive.driveForward(position);
+      await simDrive.driveForward(position);
     }
   }
 }
