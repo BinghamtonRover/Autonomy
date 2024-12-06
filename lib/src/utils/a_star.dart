@@ -8,11 +8,11 @@ import "package:autonomy/interfaces.dart";
 class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   final DriveDirection direction;
   final GpsCoordinates endPosition;
-  final DriveOrientation endOrientation;
+  final CardinalDirection endOrientation;
   final GpsCoordinates pathGoal;
   final AutonomyInterface collection;
 
-  DriveOrientation get startOrientation => switch (direction) {
+  CardinalDirection get startOrientation => switch (direction) {
       DriveDirection.forward => endOrientation,
       DriveDirection.left => endOrientation.turnRight(),
       DriveDirection.right => endOrientation.turnLeft(),
@@ -61,7 +61,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   @override
   bool isGoal() => endPosition.isNear(pathGoal, min(GpsUtils.moveLengthMeters, GpsUtils.maxErrorMeters));
 
-  AutonomyAStarState copyWith({required DriveDirection direction, required DriveOrientation orientation, required GpsCoordinates position}) => AutonomyAStarState(
+  AutonomyAStarState copyWith({required DriveDirection direction, required CardinalDirection orientation, required GpsCoordinates position}) => AutonomyAStarState(
     collection: collection,
     endPosition: position,
     endOrientation: orientation,
@@ -151,8 +151,8 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
       return false;
     }
 
-    DriveOrientation orientation1;
-    DriveOrientation orientation2;
+    CardinalDirection orientation1;
+    CardinalDirection orientation2;
 
     // Case 1, trying to drive while facing a 45 degree angle
     if (!isTurn) {

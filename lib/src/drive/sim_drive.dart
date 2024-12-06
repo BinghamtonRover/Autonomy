@@ -19,7 +19,7 @@ class DriveSimulator extends DriveInterface {
   }
 
   @override
-  Future<void> faceDirection(DriveOrientation orientation) async {
+  Future<void> faceDirection(CardinalDirection orientation) async {
     if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
     collection.imu.update(orientation.orientation);
   }

@@ -51,7 +51,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   }
 
   @override
-  Future<void> faceDirection(DriveOrientation orientation) async {
+  Future<void> faceDirection(CardinalDirection orientation) async {
     collection.logger.info("Turning to face $orientation...");
     setThrottle(turnThrottle);
     await runFeedback(

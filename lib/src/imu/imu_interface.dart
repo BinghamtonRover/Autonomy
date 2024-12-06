@@ -8,11 +8,11 @@ abstract class ImuInterface extends Service with Receiver {
   double get heading => raw.z;
   Orientation get raw;
 
-  DriveOrientation? get orientation {
+  CardinalDirection? get orientation {
     collection.logger.trace("Trying to find orientation at $heading");
-    return DriveOrientation.fromRaw(raw);
+    return CardinalDirection.fromRaw(raw);
   }
-  DriveOrientation get nearest => DriveOrientation.nearest(raw);
+  CardinalDirection get nearest => CardinalDirection.nearest(raw);
 
   void update(Orientation newValue);
   bool isNear(double angle) => raw.isNear(angle);

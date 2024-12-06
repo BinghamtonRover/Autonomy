@@ -14,91 +14,6 @@ enum DriveDirection {
   bool get isTurn => this != forward && this != stop;
 }
 
-enum DriveOrientation {
-  north(0),
-  west(90),
-  south(180),
-  east(270),
-  northEast(360 - 45),
-  northWest(45),
-  southEast(180 + 45),
-  southWest(180 - 45);
-
-  final int angle;
-  const DriveOrientation(this.angle);
-
-  Orientation get orientation => Orientation(z: angle.toDouble());
-
-  static DriveOrientation? fromRaw(Orientation orientation) {
-    // TODO: Make this more precise.
-    for (final value in values) {
-      if (orientation.isNear(value.angle.toDouble(), OrientationUtils.orientationEpsilon)) return value;
-    }
-    return null;
-  }
-
-  static DriveOrientation nearest(Orientation orientation) {
-    var smallestDiff = double.infinity;
-    var closestOrientation = DriveOrientation.north;
-
-    for (final value in values) {
-      final diff = (value.angle - orientation.z).clampAngle();
-      if (diff < smallestDiff) {
-        smallestDiff = diff;
-        closestOrientation = value;
-      }
-    }
-
-    return closestOrientation;
-  }
-
-  bool get isPerpendicular => angle.abs() % 90 == 0;
-
-  DriveOrientation turnLeft() => switch (this) {
-    north => west,
-    west => south,
-    south => east,
-    east => north,
-    northEast => northWest,
-    northWest => southWest,
-    southWest => southEast,
-    southEast => northEast,
-  };
-
-  DriveOrientation turnRight() => switch (this) {
-    north => east,
-    west => north,
-    south => west,
-    east => south,
-    northEast => southEast,
-    southEast => southWest,
-    southWest => northWest,
-    northWest => northEast,
-  };
-
-  DriveOrientation turnQuarterLeft() => switch (this) {
-    north => northWest,
-    northWest => west,
-    west => southWest,
-    southWest => south,
-    south => southEast,
-    southEast => east,
-    east => northEast,
-    northEast => north,
-  };
-
-  DriveOrientation turnQuarterRight() => switch (this) {
-    north => northEast,
-    northEast => east,
-    east => southEast,
-    southEast => south,
-    south => southWest,
-    southWest => west,
-    west => northWest,
-    northWest => north,
-  };
-}
-
 abstract class DriveInterface extends Service {
   AutonomyInterface collection;
   DriveInterface({required this.collection});
@@ -109,9 +24,9 @@ abstract class DriveInterface extends Service {
 
   Future<void> turn(AutonomyAStarState state) => faceDirection(state.endOrientation);
 
-  Future<void> faceNorth() => faceDirection(DriveOrientation.north);
+  Future<void> faceNorth() => faceDirection(CardinalDirection.north);
 
-  Future<void> faceDirection(DriveOrientation orientation);
+  Future<void> faceDirection(CardinalDirection orientation);
 
   Future<void> resolveOrientation() => faceDirection(collection.imu.nearest);
 

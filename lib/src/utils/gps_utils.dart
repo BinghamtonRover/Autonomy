@@ -61,14 +61,14 @@ extension GpsUtils on GpsCoordinates {
 
   String prettyPrint() => toProto3Json().toString();
 
-  GpsCoordinates goForward(DriveOrientation orientation) => this + switch(orientation) {
-    DriveOrientation.north => GpsUtils.north,
-    DriveOrientation.south => GpsUtils.south,
-    DriveOrientation.west => GpsUtils.west,
-    DriveOrientation.east => GpsUtils.east,
-    DriveOrientation.northEast => GpsUtils.northEast,
-    DriveOrientation.northWest => GpsUtils.northWest,
-    DriveOrientation.southEast => GpsUtils.southEast,
-    DriveOrientation.southWest => GpsUtils.southWest,
+  GpsCoordinates goForward(CardinalDirection orientation) => this + switch(orientation) {
+    CardinalDirection.north => GpsUtils.north,
+    CardinalDirection.south => GpsUtils.south,
+    CardinalDirection.west => GpsUtils.west,
+    CardinalDirection.east => GpsUtils.east,
+    CardinalDirection.northEast => GpsUtils.northEast,
+    CardinalDirection.northWest => GpsUtils.northWest,
+    CardinalDirection.southEast => GpsUtils.southEast,
+    CardinalDirection.southWest => GpsUtils.southWest,
   };
 }

@@ -97,7 +97,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   @override
-  Future<void> faceDirection(DriveOrientation orientation) =>
+  Future<void> faceDirection(CardinalDirection orientation) =>
     // TODO: Implement this
     throw UnimplementedError("Cannot face any arbitrary direction using TimedDrive");
 }
