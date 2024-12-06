@@ -3,8 +3,6 @@
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
 import "package:autonomy/simulator.dart";
-import "package:autonomy/src/imu/rover_imu.dart";
-import "package:autonomy/src/detector/network_detector.dart";
 import "package:burt_network/burt_network.dart";
 
 void main() async {
@@ -20,6 +18,5 @@ void main() async {
   tank.drive = RoverDrive(collection: tank, useGps: false);
   await tank.init();
   await tank.imu.waitForValue();
-
   await tank.server.waitForConnection();
 }

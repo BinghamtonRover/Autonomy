@@ -1,5 +1,5 @@
 // import "package:burt_network/logging.dart";
-// import "package:burt_network/generated.dart";
+// import "package:burt_network/protobuf.dart";
 
 // import "package:autonomy/simulator.dart";
 // import "package:autonomy/rover.dart";

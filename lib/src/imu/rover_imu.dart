@@ -1,8 +1,6 @@
 import "package:burt_network/burt_network.dart";
 import "package:autonomy/interfaces.dart";
 
-import "../math/corrector.dart";
-
 class RoverImu extends ImuInterface {
   final _zCorrector = ErrorCorrector(maxSamples: 10, maxDeviation: 15);
   RoverImu({required super.collection});

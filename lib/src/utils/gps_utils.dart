@@ -2,15 +2,15 @@
 import "dart:math";
 
 import "package:autonomy/interfaces.dart";
-import "package:burt_network/generated.dart";
+import "package:burt_network/protobuf.dart";
 
 extension GpsUtils on GpsCoordinates {
   static double maxErrorMeters = 0.5;
   static double moveLengthMeters = 1;
-  static double get epsilonLatitude => maxErrorMeters * latitudePerMeter; 
+  static double get epsilonLatitude => maxErrorMeters * latitudePerMeter;
   static double get epsilonLongitude => maxErrorMeters * longitudePerMeter;
 
-  static double get movementLatitude => moveLengthMeters * latitudePerMeter; 
+  static double get movementLatitude => moveLengthMeters * latitudePerMeter;
   static double get movementLongitude => moveLengthMeters * longitudePerMeter;
 
   static GpsCoordinates get east => GpsCoordinates(longitude: -movementLongitude);
@@ -27,17 +27,17 @@ extension GpsUtils on GpsCoordinates {
   // static const metersPerLatitude = 1;
   static const radiansPerDegree = pi / 180;
   static double get metersPerLongitude => 40075 * cos(GpsInterface.currentLatitude * radiansPerDegree) / 360 * 1000.0;
-  
+
   static double get latitudePerMeter => 1 / metersPerLatitude;
   static double get longitudePerMeter => 1 / metersPerLongitude;
-  
+
   double distanceTo(GpsCoordinates other) => sqrt(
     pow(latitude - other.latitude, 2) +
     pow(longitude - other.longitude, 2),
   );
 
-  double manhattanDistance(GpsCoordinates other) => 
-    (latitude - other.latitude).abs() * metersPerLatitude + 
+  double manhattanDistance(GpsCoordinates other) =>
+    (latitude - other.latitude).abs() * metersPerLatitude +
     (longitude - other.longitude).abs() * metersPerLongitude;
 
   bool isNear(GpsCoordinates other, [double? tolerance]) {

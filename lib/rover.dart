@@ -2,6 +2,8 @@ export "src/drive/rover_drive.dart";
 export "src/pathfinding/rover_pathfinding.dart";
 export "src/orchestrator/rover_orchestrator.dart";
 export "src/drive/sensorless_drive.dart";
+export "src/imu/rover_imu.dart";
+export "src/detector/network_detector.dart";
 
 import "package:autonomy/interfaces.dart";
 import "package:burt_network/burt_network.dart";
