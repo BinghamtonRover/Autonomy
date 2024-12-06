@@ -21,7 +21,6 @@ void main() async {
   simulator.drive = DriveSimulator(collection: simulator, shouldDelay: true);
   await simulator.init();
   await simulator.imu.waitForValue();
-//  await simulator.drive.faceNorth();
   await simulator.server.waitForConnection();
 
 }

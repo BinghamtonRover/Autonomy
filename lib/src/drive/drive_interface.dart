@@ -24,8 +24,6 @@ abstract class DriveInterface extends Service {
 
   Future<void> turn(AutonomyAStarState state) => faceDirection(state.endOrientation);
 
-  Future<void> faceNorth() => faceDirection(CardinalDirection.north);
-
   Future<void> faceDirection(CardinalDirection orientation);
 
   Future<void> resolveOrientation() => faceDirection(collection.imu.nearest);
