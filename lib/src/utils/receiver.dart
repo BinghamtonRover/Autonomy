@@ -1,15 +1,21 @@
 import "dart:async";
 
 mixin Receiver {
-  final Completer<bool> _value = Completer();
+  Completer<void>? _completer;
+
+  bool _hasValue = false;
 
   set hasValue(bool value) {
-    if (!_value.isCompleted) {
-      _value.complete(value);
-    }
+    _hasValue = value;
+    if (!value) return;
+    _completer?.complete();
+    _completer = null;
   }
 
-  bool get hasValue => _value.isCompleted;
-  
-  Future<bool> waitForValue() => _value.future;
+  bool get hasValue => _hasValue;
+
+  Future<void> waitForValue() {
+    _completer = Completer<bool>();
+    return _completer!.future;
+  }
 }

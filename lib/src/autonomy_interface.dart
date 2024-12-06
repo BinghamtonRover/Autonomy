@@ -24,7 +24,6 @@ abstract class AutonomyInterface extends Service with Receiver {
     result &= await detector.init();
     result &= await video.init();
     logger.info("Init orchestrator");
-    print("Orchestrator init 1");
     await orchestrator.init();
     logger.info("Init orchestrator done");
     if (result) {
@@ -53,17 +52,17 @@ abstract class AutonomyInterface extends Service with Receiver {
     await init();
   }
 
+  List<Receiver> get _receivers => [gps, imu, video];
+
   @override
-  Future<bool> waitForValue() async {
+  Future<void> waitForValue() async {
     logger.info("Waiting for readings...");
-    var result = true;
-    result &= await gps.waitForValue();
-    result &= await imu.waitForValue();
-    result &= await video.waitForValue();
-    logger.info("Received GPS and IMU values");
-    return result;
+    for (final receiver in _receivers) {
+      await receiver.waitForValue();
+    }
+    logger.info("Received all necessary values");
   }
 
   @override
-  bool get hasValue => gps.hasValue && imu.hasValue && video.hasValue;
+  bool get hasValue => _receivers.every((r) => r.hasValue);
 }

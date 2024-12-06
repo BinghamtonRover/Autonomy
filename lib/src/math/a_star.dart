@@ -31,8 +31,8 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
     };
 
   AutonomyAStarState({
-    required this.endPosition, 
-    required this.pathGoal, 
+    required this.endPosition,
+    required this.pathGoal,
     required this.collection,
     required this.direction,
     required this.endOrientation,
@@ -43,11 +43,11 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
     required AutonomyInterface collection,
     required GpsCoordinates goal,
   }) => AutonomyAStarState(
-    endPosition: collection.gps.coordinates, 
-    pathGoal: goal, 
-    collection: collection, 
+    endPosition: collection.gps.coordinates,
+    pathGoal: goal,
+    collection: collection,
     direction: DriveDirection.stop,
-    endOrientation: collection.imu.orientation ?? collection.imu.nearest, 
+    endOrientation: collection.imu.orientation ?? collection.imu.nearest,
     depth: 0,
   );
 
@@ -73,9 +73,9 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   AutonomyAStarState copyWith({required DriveDirection direction, required DriveOrientation orientation, required GpsCoordinates position}) => AutonomyAStarState(
     collection: collection,
     endPosition: position,
-    endOrientation: orientation, 
+    endOrientation: orientation,
     direction: direction,
-    pathGoal: pathGoal, 
+    pathGoal: pathGoal,
     depth: (direction == DriveDirection.forward)
         ? depth + 1
         : (direction == DriveDirection.forwardLeft || direction == DriveDirection.forwardRight)
@@ -191,10 +191,12 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
         );
   }
 
+  bool isValidState(AutonomyAStarState state) =>
+    !collection.pathfinder.isObstacle(state.endPosition)
+    && !drivingThroughObstacle(state);
+
   @override
-  Iterable<AutonomyAStarState> expand() => [
-        ...DriveDirection.values.map(moveDirection),
-      ].where((state) =>
-          !collection.pathfinder.isObstacle(state.endPosition) &&
-          !drivingThroughObstacle(state));
+  Iterable<AutonomyAStarState> expand() => DriveDirection.values
+    .map(moveDirection)
+    .where(isValidState);
 }

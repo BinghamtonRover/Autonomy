@@ -29,9 +29,10 @@ class NetworkDetector extends DetectorInterface {
   @override
   Future<bool> init() async {
     collection.server.messages.onMessage(
-        name: AutonomyData().messageName,
-        constructor: AutonomyData.fromBuffer,
-        callback: _onDataReceived);
+      name: AutonomyData().messageName,
+      constructor: AutonomyData.fromBuffer,
+      callback: _onDataReceived,
+    );
     return true;
   }
 

@@ -24,6 +24,5 @@ void main() async {
   await simulator.imu.waitForValue();
 //	await simulator.drive.faceNorth();
   await simulator.server.waitForConnection();
-	print("Ready");
 
 }
