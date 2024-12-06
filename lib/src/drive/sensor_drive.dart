@@ -10,28 +10,17 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
 
   static double get turnThrottle => isRover ? turnThrottleRover : turnThrottleTank;
 
-  static const predicateDelay = Duration(milliseconds: 100);
-  static const defaultFeedbackPeriod = Duration(milliseconds: 10);
+  static const predicateDelay = Duration(milliseconds: 10);
   static const turnDelay = Duration(milliseconds: 1500);
 
   SensorDrive({required super.collection});
 
   @override
-  Future<void> stop() async {
-    setThrottle(0);
-    setSpeeds(left: 0, right: 0);
-  }
+  Future<void> stop() async => stopMotors();
 
-  Future<void> waitFor(bool Function() predicate, [Duration period = predicateDelay]) async {
+  Future<void> waitFor(bool Function() predicate) async {
     while (!predicate()) {
-      await Future<void>.delayed(period);
-      await collection.imu.waitForValue();
-    }
-  }
-
-  Future<void> runFeedback(bool Function() completed, [Duration period = defaultFeedbackPeriod]) async {
-    while (!completed()) {
-      await Future<void>.delayed(period);
+      await Future<void>.delayed(predicateDelay);
     }
   }
 
@@ -45,7 +34,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   Future<void> driveForward(AutonomyAStarState state) async {
     collection.logger.info("Driving forward one meter");
     setThrottle(maxThrottle);
-    setSpeeds(left: 1, right: 1);
+    moveForward();
     await waitFor(() => collection.gps.coordinates.isNear(state.position));
     await stop();
   }
@@ -54,32 +43,35 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   Future<void> faceDirection(CardinalDirection orientation) async {
     collection.logger.info("Turning to face $orientation...");
     setThrottle(turnThrottle);
-    await runFeedback(
-      () {
-        var delta = orientation.angle.toDouble() - collection.imu.raw.z;
-        if (delta < -180) {
-          delta += 360;
-        } else if (delta > 180) {
-          delta -= 360;
-        }
-
-        if (delta < 0) {
-          setSpeeds(left: 1, right: -1);
-        } else {
-          setSpeeds(left: -1, right: 1);
-        }
-        collection.logger.trace("Current heading: ${collection.imu.heading}");
-        return collection.imu.raw.isNear(orientation.angle.toDouble());
-      },
-    );
+    await waitFor(() => _tryToFace(orientation));
     await stop();
+  }
+
+  bool _tryToFace(CardinalDirection orientation) {
+    final current = collection.imu.heading;
+    final target = orientation.angle;
+    if ((current - target).abs() < 180) {
+      if (current < target) {
+        spinRight();
+      } else {
+        spinLeft();
+      }
+    } else {
+      if (current < target) {
+        spinLeft();
+      } else {
+        spinRight();
+      }
+    }
+    collection.logger.trace("Current heading: $current");
+    return collection.imu.isNear(orientation);
   }
 
   @override
   Future<bool> spinForAruco() async {
     for (var i = 0; i < 16; i++) {
       setThrottle(turnThrottle);
-      setSpeeds(left: -1, right: 1);
+      spinLeft();
       await Future<void>.delayed(turnDelay);
       await stop();
 
@@ -107,7 +99,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   @override
   Future<void> approachAruco() async {
     setThrottle(maxThrottle);
-    setSpeeds(left: 1, right: 1);
+    moveForward();
     // const threshold = 0.2;
     //  await waitFor(() {
       //  final pos = collection.video.arucoSize;

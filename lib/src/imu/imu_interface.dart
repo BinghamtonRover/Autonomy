@@ -8,14 +8,10 @@ abstract class ImuInterface extends Service with Receiver {
   double get heading => raw.z;
   Orientation get raw;
 
-  CardinalDirection? get orientation {
-    collection.logger.trace("Trying to find orientation at $heading");
-    return CardinalDirection.fromRaw(raw);
-  }
   CardinalDirection get nearest => CardinalDirection.nearest(raw);
 
   void update(Orientation newValue);
-  bool isNear(double angle) => raw.isNear(angle);
+  bool isNear(CardinalDirection direction) => raw.isNear(direction.angle);
 
   @override
   Future<bool> init() async => true;

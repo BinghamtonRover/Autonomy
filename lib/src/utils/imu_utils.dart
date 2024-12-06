@@ -21,13 +21,5 @@ extension OrientationUtils on Orientation {
 }
 
 extension AngleUtils on double {
-  double clampAngle() {
-    if (this >= 360) {
-      return this - 360;
-    } else if (this < 0) {
-      return this + 360;
-    } else {
-      return this;
-    }
-  }
+  double clampAngle() => ((this % 360) + 360) % 360;
 }

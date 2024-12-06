@@ -12,15 +12,15 @@ enum CardinalDirection {
   southEast(180 + 45),
   southWest(180 - 45);
 
-  final int angle;
+  final double angle;
   const CardinalDirection(this.angle);
 
-  Orientation get orientation => Orientation(z: angle.toDouble());
+  Orientation get orientation => Orientation(z: angle);
 
   static CardinalDirection? fromRaw(Orientation orientation) {
     // TODO: Make this more precise.
     for (final value in values) {
-      if (orientation.isNear(value.angle.toDouble(), OrientationUtils.orientationEpsilon)) return value;
+      if (orientation.isNear(value.angle, OrientationUtils.orientationEpsilon)) return value;
     }
     return null;
   }

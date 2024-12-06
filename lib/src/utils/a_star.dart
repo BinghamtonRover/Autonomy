@@ -39,7 +39,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
     goal: goal,
     collection: collection,
     instruction: DriveDirection.stop,
-    orientation: collection.imu.orientation ?? collection.imu.nearest,
+    orientation: collection.imu.nearest,
     depth: 0,
   );
 

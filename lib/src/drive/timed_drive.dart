@@ -53,43 +53,40 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   @override
-  Future<void> stop() async {
-    setThrottle(0);
-    setSpeeds(left: 0, right: 0);
-  }
+  Future<void> stop() async => stopMotors();
 
   Future<void> goForward([double distance = 1]) async {
     collection.logger.info("Driving forward $distance meters");
     setThrottle(maxThrottle);
-    setSpeeds(left: 1, right: 1);
+    moveForward();
     await Future<void>.delayed(oneMeterDelay * distance);
     await stop();
   }
 
   Future<void> turnLeft() async {
     setThrottle(turnThrottle);
-    setSpeeds(left: -1, right: 1);
+    spinLeft();
     await Future<void>.delayed(turnDelay);
     await stop();
   }
 
   Future<void> turnRight() async {
     setThrottle(turnThrottle);
-    setSpeeds(left: 1, right: -1);
+    spinRight();
     await Future<void>.delayed(turnDelay);
     await stop();
   }
 
   Future<void> turnQuarterLeft() async {
     setThrottle(turnThrottle);
-    setSpeeds(left: -1, right: 1);
+    spinLeft();
     await Future<void>.delayed(turnDelay * 0.5);
     await stop();
   }
 
   Future<void> turnQuarterRight() async {
     setThrottle(turnThrottle);
-    setSpeeds(left: 1, right: -1);
+    spinRight();
     await Future<void>.delayed(turnDelay * 0.5);
     await stop();
   }
