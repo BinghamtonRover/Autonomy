@@ -1,7 +1,6 @@
-import "package:autonomy/interfaces.dart";
 import "package:autonomy/simulator.dart";
 import "package:autonomy/rover.dart";
-import "package:burt_network/logging.dart";
+import "package:burt_network/burt_network.dart";
 
 final chair = (lat: 2, long: 0).toGps();
 final obstacles = <SimulatedObstacle>[
@@ -22,8 +21,6 @@ void main() async {
   simulator.drive = DriveSimulator(collection: simulator, shouldDelay: true);
   await simulator.init();
   await simulator.imu.waitForValue();
-//	await simulator.drive.faceNorth();
   await simulator.server.waitForConnection();
-	print("Ready");
 
 }

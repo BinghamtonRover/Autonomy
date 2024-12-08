@@ -106,9 +106,6 @@ void main() => group("[Network]", tags: ["network"], () {
     simulator.drive = SensorlessDrive(collection: simulator, useGps: false, useImu: false);
     await simulator.init();
 
-    await simulator.drive.faceNorth();
-    expect(simulator.imu.orientation, DriveOrientation.north);
-
     final origin = GpsCoordinates(latitude: 0, longitude: 0);
     final oneMeter = (lat: 1, long: 0).toGps();
     expect(subsystems.throttle, 0);

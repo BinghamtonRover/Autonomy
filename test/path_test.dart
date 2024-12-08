@@ -77,7 +77,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     expect(path, isNotEmpty);
     for (final step in path) {
       simulator.logger.trace(step.toString());
-      expect(simulator.pathfinder.isObstacle(step.position), isFalse);
+      expect(simulator.pathfinder.isObstacle(step.endPosition), isFalse);
     }
     expect(path.length, 10, reason: "1 turn + 1 forward + 1 turn + 4 forward + 1 45 degree turn + 1 forward + 1 stop = 10 steps total");
     await simulator.drive.followPath(path);
