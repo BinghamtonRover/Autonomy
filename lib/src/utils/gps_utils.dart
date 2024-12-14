@@ -12,14 +12,14 @@ extension GpsUtils on GpsCoordinates {
   static double get movementLatitude => moveLengthMeters * latitudePerMeter;
   static double get movementLongitude => moveLengthMeters * longitudePerMeter;
 
-  static GpsCoordinates get east => GpsCoordinates(longitude: -movementLongitude);
-  static GpsCoordinates get west => GpsCoordinates(longitude: movementLongitude);
+  static GpsCoordinates get east => GpsCoordinates(longitude: movementLongitude);
+  static GpsCoordinates get west => GpsCoordinates(longitude: -movementLongitude);
   static GpsCoordinates get north => GpsCoordinates(latitude: movementLatitude);
   static GpsCoordinates get south => GpsCoordinates(latitude: -movementLatitude);
-  static GpsCoordinates get northEast => GpsCoordinates(latitude: movementLatitude, longitude: -movementLongitude);
-  static GpsCoordinates get northWest => GpsCoordinates(latitude: movementLatitude, longitude: movementLongitude);
-  static GpsCoordinates get southEast => GpsCoordinates(latitude: -movementLatitude, longitude: -movementLongitude);
-  static GpsCoordinates get southWest => GpsCoordinates(latitude: -movementLatitude, longitude: movementLongitude);
+  static GpsCoordinates get northEast => GpsCoordinates(latitude: movementLatitude, longitude: movementLongitude);
+  static GpsCoordinates get northWest => GpsCoordinates(latitude: movementLatitude, longitude: -movementLongitude);
+  static GpsCoordinates get southEast => GpsCoordinates(latitude: -movementLatitude, longitude: movementLongitude);
+  static GpsCoordinates get southWest => GpsCoordinates(latitude: -movementLatitude, longitude: -movementLongitude);
 
   // Taken from https://stackoverflow.com/a/39540339/9392211
   static const metersPerLatitude = 111.32 * 1000;  // 111.32 km

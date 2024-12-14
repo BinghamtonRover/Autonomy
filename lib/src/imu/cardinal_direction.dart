@@ -6,10 +6,10 @@ enum CardinalDirection {
   west(90),
   south(180),
   east(270),
-  northEast(000 + 45),
-  northWest(360 - 45),
-  southWest(180 + 45),
-  southEast(180 - 45);
+  northEast(0 - 45),
+  northWest(0 + 45),
+  southWest(180 - 45),
+  southEast(180 + 45);
 
   final double angle;
   const CardinalDirection(this.angle);
