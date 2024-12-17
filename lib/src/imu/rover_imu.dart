@@ -26,6 +26,10 @@ class RoverImu extends ImuInterface {
     // Do nothing, since this should only be internally updated
   }
 
+  @override
+  void forceUpdate(Orientation newValue) =>
+      _internalUpdate(RoverPosition(orientation: newValue));
+
   void _internalUpdate(RoverPosition newValue) {
     if (!newValue.hasOrientation()) return;
     _xCorrector.addValue(newValue.orientation.x);

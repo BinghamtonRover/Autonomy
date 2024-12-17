@@ -36,5 +36,5 @@ const tankConfig = DriveConfig(
   turnThrottle: 0.35,
   turnDelay: Duration(milliseconds: 1000),
   oneMeterDelay: Duration(milliseconds: 2000),
-  subsystemsAddress: "localhost",
+  subsystemsAddress: "127.0.0.1",
 );

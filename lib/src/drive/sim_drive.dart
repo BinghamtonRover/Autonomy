@@ -4,7 +4,7 @@ class DriveSimulator extends DriveInterface {
   static const delay = Duration(milliseconds: 500);
 
   final bool shouldDelay;
-  DriveSimulator({required super.collection, this.shouldDelay = false});
+  DriveSimulator({required super.collection, this.shouldDelay = false, super.config});
 
   @override
   Future<bool> init() async => true;

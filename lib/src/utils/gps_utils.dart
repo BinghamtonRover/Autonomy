@@ -34,6 +34,26 @@ extension GpsUtils on GpsCoordinates {
     pow(longitude - other.longitude, 2),
   );
 
+  double heuristicDistance(GpsCoordinates other) {
+    var steps = 0.0;
+    final delta = (this - other).inMeters;
+    final deltaLat = delta.lat.abs();
+    final deltaLong = delta.long.abs();
+
+    final minimumDistance = min(deltaLat, deltaLong);
+    if (minimumDistance >= moveLengthMeters) {
+      steps += minimumDistance;
+    }
+
+    if (deltaLat < deltaLong) {
+      steps += deltaLong - deltaLat;
+    } else if (deltaLong < deltaLat) {
+      steps += deltaLat - deltaLong;
+    }
+
+    return steps;
+  }
+
   double manhattanDistance(GpsCoordinates other) =>
     (latitude - other.latitude).abs() * metersPerLatitude +
     (longitude - other.longitude).abs() * metersPerLongitude;
@@ -56,6 +76,11 @@ extension GpsUtils on GpsCoordinates {
   GpsCoordinates operator +(GpsCoordinates other) => GpsCoordinates(
     latitude: latitude + other.latitude,
     longitude: longitude + other.longitude,
+  );
+
+  GpsCoordinates operator -(GpsCoordinates other) => GpsCoordinates(
+    latitude: latitude - other.latitude,
+    longitude: longitude - other.longitude,
   );
 
   String prettyPrint() => toProto3Json().toString();

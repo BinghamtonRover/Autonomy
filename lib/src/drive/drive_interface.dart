@@ -15,9 +15,8 @@ enum DriveDirection {
 
 abstract class DriveInterface extends Service {
   AutonomyInterface collection;
-  DriveInterface({required this.collection});
-
-  DriveConfig get config => roverConfig;
+  DriveConfig config;
+  DriveInterface({required this.collection, this.config = roverConfig});
 
   Future<void> stop();
 

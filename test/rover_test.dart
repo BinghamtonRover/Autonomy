@@ -37,13 +37,13 @@ void main() => group("[Rover]", tags: ["rover"], () {
 
     expect(rover.hasValue, isFalse);
     expect(rover.gps.hasValue, isFalse);
-    rover.gps.update(position);
+    rover.gps.forceUpdate(position);
     expect(rover.gps.hasValue, isTrue);
     expect(rover.hasValue, isFalse);
 
     expect(rover.hasValue, isFalse);
     expect(rover.imu.hasValue, isFalse);
-    rover.imu.update(orientation);
+    rover.imu.forceUpdate(orientation);
     expect(rover.imu.hasValue, isTrue);
     expect(rover.hasValue, isFalse);
 
@@ -68,11 +68,11 @@ Future<void> testPath(AutonomyInterface simulator) async {
   for (final transition in result) {
     simulator.logger.trace("  From: ${simulator.gps.coordinates.prettyPrint()} facing ${simulator.imu.heading}");
     simulator.logger.debug("  $transition");
-    await simulator.drive.goDirection(transition.direction);
-    expect(simulator.gps.isNear(transition.endPosition), isTrue);
+    await simulator.drive.driveState(transition);
+    expect(simulator.gps.isNear(transition.position), isTrue);
     simulator.logger.trace("New orientation: ${simulator.imu.heading}");
-    simulator.logger.trace("Expected orientation: ${transition.endOrientation}");
-    expect(simulator.imu.orientation, transition.endOrientation);
+    simulator.logger.trace("Expected orientation: ${transition.orientation}");
+    expect(simulator.imu.nearest, transition.orientation);
   }
 }
 
@@ -91,10 +91,10 @@ Future<void> testPath2(AutonomyInterface simulator) async {
   for (final transition in result) {
     simulator.logger.debug(transition.toString());
     simulator.logger.trace("  From: ${simulator.gps.coordinates.prettyPrint()}");
-    await simulator.drive.goDirection(transition.direction);
-    expect(simulator.gps.isNear(transition.endPosition), isTrue);
+    await simulator.drive.driveState(transition);
+    expect(simulator.gps.isNear(transition.position), isTrue);
     expect(simulator.pathfinder.isObstacle(simulator.gps.coordinates), isFalse);
-    expect(simulator.imu.orientation, transition.endOrientation);
+    expect(simulator.imu.nearest, transition.orientation);
     simulator.logger.trace("  To: ${simulator.gps.coordinates.prettyPrint()}");
   }
 }

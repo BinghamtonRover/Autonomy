@@ -10,14 +10,15 @@ class RoverDrive extends DriveInterface {
   final bool useGps;
   final bool useImu;
 
-  late final sensorDrive = SensorDrive(collection: collection);
-  late final timedDrive = TimedDrive(collection: collection);
-  late final simDrive = DriveSimulator(collection: collection);
+  late final sensorDrive = SensorDrive(collection: collection, config: config);
+  late final timedDrive = TimedDrive(collection: collection, config: config);
+  late final simDrive = DriveSimulator(collection: collection, config: config);
 
   RoverDrive({
     required super.collection,
     this.useGps = true,
     this.useImu = true,
+    super.config,
   });
 
   /// Initializes the rover's drive subsystems.
@@ -71,7 +72,6 @@ class RoverDrive extends DriveInterface {
     if (useImu) {
       await sensorDrive.faceDirection(orientation);
     } else {
-      await timedDrive.faceDirection(orientation);
       await simDrive.faceDirection(orientation);
     }
   }

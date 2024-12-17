@@ -26,6 +26,10 @@ class RoverGps extends GpsInterface {
     // Do nothing, since this should only be internally updated
   }
 
+  @override
+  void forceUpdate(GpsCoordinates newValue) =>
+      _internalUpdate(RoverPosition(gps: newValue));
+
   void _internalUpdate(RoverPosition newValue) {
     if (!newValue.hasGps()) return;
     final position = newValue.gps;

@@ -5,7 +5,7 @@ import "package:autonomy/interfaces.dart";
 import "drive_commands.dart";
 
 class TimedDrive extends DriveInterface with RoverDriveCommands {
-  TimedDrive({required super.collection});
+  TimedDrive({required super.collection, super.config});
 
   @override
   Future<bool> init() async => true;

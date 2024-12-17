@@ -6,7 +6,7 @@ import "drive_commands.dart";
 class SensorDrive extends DriveInterface with RoverDriveCommands {
   static const predicateDelay = Duration(milliseconds: 10);
 
-  SensorDrive({required super.collection});
+  SensorDrive({required super.collection, super.config});
 
   @override
   Future<void> stop() async => stopMotors();

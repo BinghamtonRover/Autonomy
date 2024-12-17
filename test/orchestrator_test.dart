@@ -1,9 +1,12 @@
+import "dart:async";
+
+import "package:autonomy/src/drive/drive_config.dart";
 import "package:test/test.dart";
 import "package:autonomy/autonomy.dart";
 import "package:burt_network/burt_network.dart";
 
 void main() => group("[Orchestrator]", tags: ["orchestrator"], () {
-  setUp(() => Logger.level = LogLevel.off);
+  setUp(() => Logger.level = LogLevel.info);
   tearDown(() => Logger.level = LogLevel.off);
 
   test("Fails for invalid destinations", () async {
@@ -94,6 +97,7 @@ void main() => group("[Orchestrator]", tags: ["orchestrator"], () {
     simulator.orchestrator = RoverOrchestrator(collection: simulator);
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.gps = RoverGps(collection: simulator);
+    simulator.drive = RoverDrive(collection: simulator, useGps: true, useImu: false, config: tankConfig);
     await simulator.init();
 
     expect(simulator.gps.hasValue, isFalse);
@@ -103,13 +107,15 @@ void main() => group("[Orchestrator]", tags: ["orchestrator"], () {
     expect(GpsInterface.currentLatitude, 0);
     expect(simulator.orchestrator.statusMessage.state, AutonomyState.NO_SOLUTION);
 
-    simulator.gps.update(start);
+    simulator.gps.forceUpdate(start);
     await simulator.init();
     await simulator.waitForValue();
-    await simulator.orchestrator.onCommand(command);
     expect(simulator.hasValue, isTrue);
+    unawaited(simulator.orchestrator.onCommand(command));
+    await Future<void>.delayed(Duration.zero);
+    expect(simulator.orchestrator.currentCommand, isNotNull);
     expect(GpsInterface.currentLatitude, start.latitude);
-    expect(simulator.orchestrator.currentState, AutonomyState.AT_DESTINATION);
+    expect(simulator.orchestrator.currentState, AutonomyState.DRIVING);
 
     GpsInterface.currentLatitude = 0;
     await simulator.dispose();

@@ -6,6 +6,9 @@ import "package:autonomy/interfaces.dart";
 
 class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   static double getCost(DriveDirection direction) {
+    if (direction == DriveDirection.stop) {
+      return 0;
+    }
     if (direction == DriveDirection.forward) {
       return 1;
     } else if (direction == DriveDirection.quarterLeft || direction == DriveDirection.quarterRight) {
@@ -66,7 +69,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   };
 
   @override
-  double heuristic() => position.distanceTo(goal);
+  double heuristic() => position.heuristicDistance(goal);
 
   @override
   String hash() => "${position.prettyPrint()} ($orientation)";

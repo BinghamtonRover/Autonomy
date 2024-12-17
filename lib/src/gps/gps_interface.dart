@@ -1,4 +1,5 @@
 import "package:autonomy/interfaces.dart";
+import "package:meta/meta.dart";
 
 abstract class GpsInterface extends Service with Receiver {
   static const gpsError = 0.00003;
@@ -11,6 +12,9 @@ abstract class GpsInterface extends Service with Receiver {
   double get latitude => coordinates.latitude;
 
   void update(GpsCoordinates newValue);
+  @visibleForTesting
+  void forceUpdate(GpsCoordinates newValue) {}
+
   GpsCoordinates get coordinates;
 
   bool isNear(GpsCoordinates other) => coordinates.isNear(other);

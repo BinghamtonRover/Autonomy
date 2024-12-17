@@ -5,6 +5,14 @@ import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
 import "package:autonomy/simulator.dart";
 
+extension DriveFollowPath on DriveInterface {
+  Future<void> followPath(List<AutonomyAStarState> path) async {
+    for (final step in path) {
+      await driveState(step);
+    }
+  }
+}
+
 void main() => group("[Pathfinding]", tags: ["path"], () {
   setUp(() => Logger.level = LogLevel.off);
   tearDown(() => Logger.level = LogLevel.off);
@@ -33,7 +41,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
 
     var turnCount = 0;
     for (final step in path) {
-      if (step.direction.isTurn) {
+      if (step.instruction.isTurn) {
         turnCount++;
       }
       simulator.logger.trace(step.toString());
@@ -77,7 +85,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     expect(path, isNotEmpty);
     for (final step in path) {
       simulator.logger.trace(step.toString());
-      expect(simulator.pathfinder.isObstacle(step.endPosition), isFalse);
+      expect(simulator.pathfinder.isObstacle(step.position), isFalse);
     }
     expect(path.length, 10, reason: "1 turn + 1 forward + 1 turn + 4 forward + 1 45 degree turn + 1 forward + 1 stop = 10 steps total");
     await simulator.drive.followPath(path);
@@ -87,7 +95,9 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
 
   test("Stress test", () async {
     final oldError = GpsUtils.maxErrorMeters;
+    final oldMoveLength = GpsUtils.moveLengthMeters;
     GpsUtils.maxErrorMeters = 1;
+    // GpsUtils.moveLengthMeters = 5;
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.logger.trace("Starting from ${simulator.gps.coordinates.prettyPrint()}");
@@ -98,6 +108,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     expect(path, isNotNull);
     await simulator.dispose();
     GpsUtils.maxErrorMeters = oldError;
+    GpsUtils.moveLengthMeters = oldMoveLength;
   });
 
   test("Impossible paths are reported", () async {
