@@ -42,13 +42,13 @@ extension GpsUtils on GpsCoordinates {
 
     final minimumDistance = min(deltaLat, deltaLong);
     if (minimumDistance >= moveLengthMeters) {
-      steps += minimumDistance;
+      steps += minimumDistance / moveLengthMeters;
     }
 
     if (deltaLat < deltaLong) {
-      steps += deltaLong - deltaLat;
+      steps += (deltaLong - deltaLat) / moveLengthMeters;
     } else if (deltaLong < deltaLat) {
-      steps += deltaLat - deltaLong;
+      steps += (deltaLat - deltaLong) / moveLengthMeters;
     }
 
     return steps;
