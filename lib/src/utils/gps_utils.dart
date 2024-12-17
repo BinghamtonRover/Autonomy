@@ -45,10 +45,10 @@ extension GpsUtils on GpsCoordinates {
       steps += minimumDistance / moveLengthMeters;
     }
 
-    if (deltaLat < deltaLong) {
-      steps += (deltaLong - deltaLat) / moveLengthMeters;
-    } else if (deltaLong < deltaLat) {
-      steps += (deltaLat - deltaLong) / moveLengthMeters;
+    final translationDelta = (deltaLat - deltaLong).abs();
+
+    if (translationDelta >= moveLengthMeters) {
+      steps += translationDelta / moveLengthMeters;
     }
 
     return steps;
