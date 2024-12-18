@@ -66,6 +66,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       for (final state in path) {
         collection.logger.debug(state.toString());
         await collection.drive.driveState(state);
+        if (currentCommand == null || currentPath == null) {
+          collection.logger.debug("Aborting path, command was canceled");
+          return;
+        }
         traversed.add(state.position);
         // if (state.direction != DriveDirection.forward) continue;
         if (count++ == 5) break;
