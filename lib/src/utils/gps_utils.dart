@@ -35,23 +35,23 @@ extension GpsUtils on GpsCoordinates {
   );
 
   double heuristicDistance(GpsCoordinates other) {
-    var steps = 0.0;
+    var distance = 0.0;
     final delta = (this - other).inMeters;
     final deltaLat = delta.lat.abs();
     final deltaLong = delta.long.abs();
 
     final minimumDistance = min(deltaLat, deltaLong);
     if (minimumDistance >= moveLengthMeters) {
-      steps += minimumDistance / moveLengthMeters;
+      distance += (minimumDistance / moveLengthMeters) * sqrt2;
     }
 
     final translationDelta = (deltaLat - deltaLong).abs();
 
     if (translationDelta >= moveLengthMeters) {
-      steps += translationDelta / moveLengthMeters;
+      distance += translationDelta / moveLengthMeters;
     }
 
-    return steps;
+    return distance;
   }
 
   double manhattanDistance(GpsCoordinates other) =>
