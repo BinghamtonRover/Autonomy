@@ -97,7 +97,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     final oldError = GpsUtils.maxErrorMeters;
     final oldMoveLength = GpsUtils.moveLengthMeters;
     GpsUtils.maxErrorMeters = 1;
-    // GpsUtils.moveLengthMeters = 5;
+    GpsUtils.moveLengthMeters = 1;
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.logger.trace("Starting from ${simulator.gps.coordinates.prettyPrint()}");
@@ -126,5 +126,52 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNull);
     await simulator.dispose();
+  });
+
+  group("diagonal turns", () {
+    test("path chooses to move diagonally", () async {
+      final simulator = AutonomySimulator();
+      simulator.pathfinder = RoverPathfinder(collection: simulator);
+      final destination = (lat: 5, long: 5).toGps();
+      final path = simulator.pathfinder.getPath(destination);
+      expect(path, isNotNull);
+      expect(path!.where((state) => state.instruction == DriveDirection.forward).length, 5);
+      expect(path[1].instruction, DriveDirection.quarterRight);
+      await simulator.dispose();
+    });
+
+    test("doesn't drive through an obstacle", () async {
+      final simulator = AutonomySimulator();
+      simulator.pathfinder = RoverPathfinder(collection: simulator);
+      final destination = (lat: 5, long: 5).toGps();
+      final obstacles = {
+        (lat: 1, long: 0).toGps(), /* Destination */
+              /* Rover */           (lat: 0, long: 1).toGps(),
+      };
+      for (final obstacle in obstacles) {
+        simulator.pathfinder.recordObstacle(obstacle);
+      }
+      final path = simulator.pathfinder.getPath(destination);
+      expect(path, isNotNull);
+      expect(path!.where((state) => state.instruction == DriveDirection.forward).length, greaterThan(2));
+      await simulator.dispose();
+    });
+
+    test("doesn't drive through an obstacle", () async {
+      final simulator = AutonomySimulator();
+      simulator.pathfinder = RoverPathfinder(collection: simulator);
+      final destination = (lat: 5, long: 5).toGps();
+      final obstacles = {
+        (lat: 1, long: 0).toGps(), /* Destination */
+              /* Rover */
+      };
+      for (final obstacle in obstacles) {
+        simulator.pathfinder.recordObstacle(obstacle);
+      }
+      final path = simulator.pathfinder.getPath(destination);
+      expect(path, isNotNull);
+      expect(path!.where((state) => state.instruction == DriveDirection.forward).length, greaterThan(1));
+      await simulator.dispose();
+    });
   });
 });
