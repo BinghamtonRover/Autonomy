@@ -42,7 +42,7 @@ extension GpsUtils on GpsCoordinates {
 
     final minimumDistance = min(deltaLat, deltaLong);
     if (minimumDistance >= moveLengthMeters) {
-      distance += (minimumDistance / moveLengthMeters) * sqrt2;
+      distance += (minimumDistance ~/ moveLengthMeters) * sqrt2;
     }
 
     final translationDelta = (deltaLat - deltaLong).abs();
