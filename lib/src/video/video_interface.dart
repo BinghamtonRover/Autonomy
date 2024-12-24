@@ -11,6 +11,6 @@ abstract class VideoInterface extends Service with Receiver {
 
   void updateFrame(VideoData newData);
 
-  // double get arucoSize => data.arucoSize;
-  // double get arucoPosition => data.arucoPosition;
+  double get arucoSize => 0; // data.arucoSize;
+  double get arucoPosition => 0; // data.arucoPosition;
 }
