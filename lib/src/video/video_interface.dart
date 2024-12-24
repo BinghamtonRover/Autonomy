@@ -2,7 +2,7 @@ import "package:autonomy/interfaces.dart";
 
 /// Handles obstacle detection data and ArUco data from video
 abstract class VideoInterface extends Service with Receiver {
-bool flag = false;
+  bool flag = false;
 
   final AutonomyInterface collection;
   VideoInterface({required this.collection});
@@ -11,6 +11,6 @@ bool flag = false;
 
   void updateFrame(VideoData newData);
 
-  double get arucoSize => 0; //data.arucoSize;
-  double get arucoPosition => 0; //data.arucoPosition;
+  // double get arucoSize => data.arucoSize;
+  // double get arucoPosition => data.arucoPosition;
 }
