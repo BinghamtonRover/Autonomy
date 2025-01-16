@@ -72,7 +72,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   double heuristic() => position.heuristicDistance(goal);
 
   @override
-  String hash() => "${position.prettyPrint()} ($orientation)";
+  String hash() => "${position.prettyPrint()} ($orientation) ($instruction)";
 
   @override
   bool isGoal() => position.isNear(goal, min(GpsUtils.moveLengthMeters, GpsUtils.maxErrorMeters));

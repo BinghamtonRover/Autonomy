@@ -48,7 +48,7 @@ extension GpsUtils on GpsCoordinates {
     final translationDelta = (deltaLat - deltaLong).abs();
 
     if (translationDelta >= moveLengthMeters) {
-      distance += translationDelta / moveLengthMeters;
+      distance += translationDelta ~/ moveLengthMeters;
     }
 
     return distance;
