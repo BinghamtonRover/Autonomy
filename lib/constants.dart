@@ -23,5 +23,5 @@ class Constants {
   ///
   /// Only applies to individual "drive forward" steps, to prevent indefinite driving
   /// if it never reaches within [maxErrorMeters] of its desired position.
-  static const Duration driveGPSTimeout = Duration(seconds: 6, milliseconds: 500);
+  static const Duration driveGPSTimeout = Duration(seconds: 3, milliseconds: 53);
 }

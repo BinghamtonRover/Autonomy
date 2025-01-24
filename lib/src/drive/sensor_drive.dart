@@ -45,7 +45,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
     var timedOut = false;
     await waitFor(() {
       moveForward();
-      return collection.gps.isNear(position, Constants.intermediateStepTolerance);
+      return collection.gps.isNear(position, Constants.intermediateStepTolerance) || timedOut;
     }).timeout(
       Constants.driveGPSTimeout,
       onTimeout: () {

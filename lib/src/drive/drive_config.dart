@@ -40,8 +40,8 @@ class DriveConfig {
 
 /// The [DriveConfig] for the rover
 const roverConfig = DriveConfig(
-  forwardThrottle: 0.1,
-  turnThrottle: 0.05,
+  forwardThrottle: 0.2,
+  turnThrottle: 0.075,
   oneMeterDelay: Duration(milliseconds: 5500),
   turnDelay: Duration(milliseconds: 4500),
   subsystemsAddress: "192.168.1.20",
