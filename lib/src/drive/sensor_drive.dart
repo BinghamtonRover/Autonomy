@@ -43,19 +43,30 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   bool _tryToFace(CardinalDirection orientation) {
     final current = collection.imu.heading;
     final target = orientation.angle;
-    if ((current - target).abs() < 180) {
-      if (current < target) {
-        spinRight();
-      } else {
-        spinLeft();
-      }
-    } else {
-      if (current < target) {
-        spinLeft();
-      } else {
-        spinRight();
-      }
+    var error = target - current;
+    if (error < -180) {
+      error += 360;
+    } else if (error > 180) {
+      error -= 360;
     }
+    if (error < 0) {
+      spinLeft();
+    } else {
+      spinRight();
+    }
+    // if (error.abs() < 180) {
+    //   if (current < target) {
+    //     spinRight();
+    //   } else {
+    //     spinLeft();
+    //   }
+    // } else {
+    //   if (current < target) {
+    //     spinLeft();
+    //   } else {
+    //     spinRight();
+    //   }
+    // }
     collection.logger.trace("Current heading: $current");
     return collection.imu.isNear(orientation);
   }

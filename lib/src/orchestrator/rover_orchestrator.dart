@@ -62,6 +62,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         collection.logger.debug(step.toString());
       }
       currentState = AutonomyState.DRIVING;
+      await collection.drive.faceDirection(path.first.orientation);
       var count = 0;
       for (final state in path) {
         collection.logger.debug(state.toString());

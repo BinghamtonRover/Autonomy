@@ -25,7 +25,7 @@ class DriveConfig {
 
 const roverConfig = DriveConfig(
   forwardThrottle: 0.1,
-  turnThrottle: 0.1,
+  turnThrottle: 0.05,
   oneMeterDelay: Duration(milliseconds: 5500),
   turnDelay: Duration(milliseconds: 4500),
   subsystemsAddress: "192.168.1.20",

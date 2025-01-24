@@ -6,7 +6,7 @@ enum CardinalDirection {
   west(90),
   south(180),
   east(270),
-  northEast(0 - 45),
+  northEast(360 - 45),
   northWest(0 + 45),
   southWest(180 - 45),
   southEast(180 + 45);
@@ -22,8 +22,8 @@ enum CardinalDirection {
 
     for (final value in values) {
       final diff = (value.angle - orientation.z).clampAngle();
-      if (diff < smallestDiff) {
-        smallestDiff = diff;
+      if (diff.abs() < smallestDiff) {
+        smallestDiff = diff.abs();
         closestOrientation = value;
       }
     }
