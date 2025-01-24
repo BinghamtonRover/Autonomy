@@ -2,10 +2,10 @@ import "package:autonomy/autonomy.dart";
 
 extension OrientationUtils on Orientation {
   /// The IMU angle tolerance for a turn during autonomy
-  static const double turnEpsilon = 5;
+  static const double turnEpsilon = 3;
   /// The IMU angle tolerance when turning to re-correct to the
   /// proper orientation before driving forward
-  static const double driveRealignmentEpsilon = 8;
+  static const double driveRealignmentEpsilon = 5;
 
   /// North orientation
   static final north = Orientation(z: CardinalDirection.north.angle);

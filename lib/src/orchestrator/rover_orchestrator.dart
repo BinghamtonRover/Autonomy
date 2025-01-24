@@ -76,7 +76,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
         traversed.add(state.position);
         // if (state.direction != DriveDirection.forward) continue;
-        if (++count == 5) break;
+        if (++count >= 5) break;
         final foundObstacle = collection.detector.findObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path...");
