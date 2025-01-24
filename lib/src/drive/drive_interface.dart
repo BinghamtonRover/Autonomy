@@ -11,6 +11,8 @@ enum DriveDirection {
   stop;
 
   bool get isTurn => this != forward && this != stop;
+
+  bool get isQuarterTurn => this == quarterLeft || this == quarterRight;
 }
 
 abstract class DriveInterface extends Service {

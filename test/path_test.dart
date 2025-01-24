@@ -1,3 +1,5 @@
+import "dart:math";
+
 import "package:burt_network/burt_network.dart";
 import "package:test/test.dart";
 
@@ -171,6 +173,68 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       final path = simulator.pathfinder.getPath(destination);
       expect(path, isNotNull);
       expect(path!.where((state) => state.instruction == DriveDirection.forward).length, greaterThan(1));
+      await simulator.dispose();
+    });
+  });
+
+  group("optimizer", () {
+    test("replaces equal and duplicate quarter turns", () async {
+      final simulator = AutonomySimulator();
+      final pathfinder = RoverPathfinder(collection: simulator);
+      simulator.pathfinder = pathfinder;
+
+      final originalPath = [
+        AutonomyAStarState(
+          position: (lat: 0, long: 0).toGps(),
+          goal: (lat: 0, long: 0).toGps(),
+          collection: simulator,
+          instruction: DriveDirection.quarterLeft,
+          orientation: CardinalDirection.northEast,
+          depth: sqrt2,
+        ),
+        AutonomyAStarState(
+          position: (lat: 0, long: 0).toGps(),
+          goal: (lat: 0, long: 0).toGps(),
+          collection: simulator,
+          instruction: DriveDirection.quarterLeft,
+          orientation: CardinalDirection.east,
+          depth: sqrt2,
+        ),
+      ];
+      final optimizedPath = pathfinder.optimizePath(originalPath);
+      expect(optimizedPath.length, 1);
+      expect(optimizedPath.first.instruction, DriveDirection.left);
+      expect(optimizedPath.first.orientation, CardinalDirection.east);
+      await simulator.dispose();
+    });
+
+    test("does not replace non-equal turns", () async {
+      final simulator = AutonomySimulator();
+      final pathfinder = RoverPathfinder(collection: simulator);
+      simulator.pathfinder = pathfinder;
+
+      final originalPath = [
+        AutonomyAStarState(
+          position: (lat: 0, long: 0).toGps(),
+          goal: (lat: 0, long: 0).toGps(),
+          collection: simulator,
+          instruction: DriveDirection.quarterLeft,
+          orientation: CardinalDirection.northEast,
+          depth: sqrt2,
+        ),
+        AutonomyAStarState(
+          position: (lat: 0, long: 0).toGps(),
+          goal: (lat: 0, long: 0).toGps(),
+          collection: simulator,
+          instruction: DriveDirection.quarterRight,
+          orientation: CardinalDirection.north,
+          depth: sqrt2,
+        ),
+      ];
+      final optimizedPath = pathfinder.optimizePath(originalPath);
+      expect(optimizedPath.length, 2);
+      expect(optimizedPath.first.instruction, DriveDirection.quarterLeft);
+      expect(optimizedPath.first.orientation, CardinalDirection.northEast);
       await simulator.dispose();
     });
   });
