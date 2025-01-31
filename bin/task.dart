@@ -17,6 +17,7 @@ void main() async {
   simulator.orchestrator = RoverOrchestrator(collection: simulator);
   simulator.drive = RoverDrive(collection: simulator, useGps: false, useImu: false);
   simulator.gps = GpsSimulator(collection: simulator);
+  simulator.imu = ImuSimulator(collection: simulator);
   simulator.video = VideoSimulator(collection: simulator);
 
   await simulator.init();
