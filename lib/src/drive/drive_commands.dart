@@ -1,5 +1,6 @@
 import "package:autonomy/interfaces.dart";
 
+/// Utility methods for a [DriveInterface] to send motor commands directly to the Subsystems program
 mixin RoverDriveCommands on DriveInterface {
   /// Sets the max speed of the rover.
   ///
@@ -21,13 +22,17 @@ mixin RoverDriveCommands on DriveInterface {
     sendCommand(DriveCommand(right: right, setRight: true));
   }
 
+  /// Stops the motors, setting the throttle and speeds to 0
   void stopMotors() {
     setThrottle(0);
     _setSpeeds(left: 0, right: 0);
   }
 
+  /// Sets the speeds of the wheels to spin the rover left
   void spinLeft() => _setSpeeds(left: -1, right: 1);
+  /// Sets the speeds of the wheels to spin the rover right
   void spinRight() => _setSpeeds(left: 1, right: -1);
+  /// Sets the speeds of the wheels to move the rover in a straight line
   void moveForward() => _setSpeeds(left: 1, right: 1);
 
   /// Sets the angle of the front camera.

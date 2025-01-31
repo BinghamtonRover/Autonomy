@@ -3,14 +3,25 @@ import "package:autonomy/interfaces.dart";
 
 import "drive_commands.dart";
 
+/// An implementation of [DriveInterface] that uses the rover's sensors to
+/// determine its direction to move in and whether or not it has moved in its
+/// desired direction/orientation
+/// 
+/// When this is driving, it assumes that the rover is constantly getting new sensor
+/// readings, if not, this will continue moving indefinitely
 class SensorDrive extends DriveInterface with RoverDriveCommands {
+  /// The default period to check for a condition to become true
   static const predicateDelay = Duration(milliseconds: 10);
 
+  /// Default constructor for SensorDrive
   SensorDrive({required super.collection, super.config});
 
   @override
   Future<void> stop() async => stopMotors();
 
+  /// Will periodically check for a condition to become true. This can be
+  /// thought of as a "wait until", where the rover will periodically check
+  /// if it has reached its desired position or orientation
   Future<void> waitFor(bool Function() predicate) async {
     while (!predicate()) {
       await Future<void>.delayed(predicateDelay);

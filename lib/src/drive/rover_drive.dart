@@ -7,13 +7,26 @@ import "sim_drive.dart";
 
 /// A helper class to send drive commands to the rover with a simpler API.
 class RoverDrive extends DriveInterface {
+  /// Whether or not it should use the GPS while driving forward
   final bool useGps;
+
+  /// Whether or not it should use the IMU while turning
   final bool useImu;
 
+  /// A [SensorDrive] used during movements that rely on sensors
   late final sensorDrive = SensorDrive(collection: collection, config: config);
+
+  /// A [TimedDrive] used during movements that do not use sensors
   late final timedDrive = TimedDrive(collection: collection, config: config);
+
+  /// A simulator used in conjunction with [timedDrive] to simulate the sensor
+  /// readings of the drive when driving without sensors
   late final simDrive = DriveSimulator(collection: collection, config: config);
 
+  /// Constructor for RoverDrive
+  /// 
+  /// Takes in parameters for whether or not to use the GPS and imu
+  /// These will determine when to use [sensorDrive] or [timedDrive]
   RoverDrive({
     required super.collection,
     this.useGps = true,
