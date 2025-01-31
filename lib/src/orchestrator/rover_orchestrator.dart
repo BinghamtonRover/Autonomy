@@ -62,10 +62,13 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         collection.logger.debug(step.toString());
       }
       currentState = AutonomyState.DRIVING;
-      await collection.drive.faceDirection(path.first.orientation);
       var count = 0;
       for (final state in path) {
         collection.logger.debug(state.toString());
+        if (state.instruction == DriveDirection.forward &&
+            !collection.imu.raw.isNear(state.orientation.angle, OrientationUtils.driveRealignmentEpsilon)) {
+          await collection.drive.faceDirection(state.orientation);
+        }
         await collection.drive.driveState(state);
         if (currentCommand == null || currentPath == null) {
           collection.logger.debug("Aborting path, command was canceled");
@@ -73,7 +76,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
         traversed.add(state.position);
         // if (state.direction != DriveDirection.forward) continue;
-        if (count++ == 5) break;
+        if (++count == 5) break;
         final foundObstacle = collection.detector.findObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path...");

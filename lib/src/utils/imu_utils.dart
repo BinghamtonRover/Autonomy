@@ -1,27 +1,30 @@
-import "package:burt_network/protobuf.dart";
+import "package:autonomy/autonomy.dart";
 
 extension OrientationUtils on Orientation {
-  static const double epsilon = 5;
-  static const double orientationEpsilon = 10;
- 
-  static final north = Orientation(z: 0);
-  static final west = Orientation(z: 90);
-  static final south = Orientation(z: 180);
-  static final east = Orientation(z: 270);
+  /// The IMU angle tolerance for a turn during autonomy
+  static const double turnEpsilon = 5;
+  /// The IMU angle tolerance when turning to re-correct to the
+  /// proper orientation before driving forward
+  static const double driveRealignmentEpsilon = 8;
 
+  /// North orientation
+  static final north = Orientation(z: CardinalDirection.north.angle);
+  /// East orientation
+  static final west = Orientation(z: CardinalDirection.west.angle);
+  /// South Orientation
+  static final south = Orientation(z: CardinalDirection.south.angle);
+  /// East orientation
+  static final east = Orientation(z: CardinalDirection.east.angle);
+
+  /// The heading of the orientation, or the compass direction we are facing
   double get heading => z;
 
-  bool get isEmpty => x == 0 && y == 0 && z == 0;
+  /// Whether or not this orientation is within [epsilon] degrees of [value]
+  bool isNear(double value, [double? epsilon]) {
+    epsilon ??= OrientationUtils.turnEpsilon;
+    final error = (value - z).clampHalfAngle();
 
-  bool isNear(double value) {
-    var error = value - z;
-    if (error > 180) {
-      error -= 360;
-    } else if (error < -180) {
-      error += 360;
-    }
-
-    return error.abs() < epsilon;
+    return error.abs() <= epsilon;
     // if (value > 270 && z < 90) {
     //   return (z + 360 - value).abs() < epsilon;
     // } else if (value < 90 && z > 270) {
@@ -32,6 +35,10 @@ extension OrientationUtils on Orientation {
   }
 }
 
+/// Utility methods for an angle
 extension AngleUtils on double {
+  /// The angle clamped between (-180, 180)
+  double clampHalfAngle() => ((this + 180) % 360) - 180;
+  /// The angle clamped between (0, 360)
   double clampAngle() => ((this % 360) + 360) % 360;
 }

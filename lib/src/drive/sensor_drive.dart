@@ -27,8 +27,10 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   Future<void> driveForward(GpsCoordinates position) async {
     collection.logger.info("Driving forward one meter");
     setThrottle(config.forwardThrottle);
-    moveForward();
-    await waitFor(() => collection.gps.isNear(position));
+    await waitFor(() {
+      moveForward();
+      return collection.gps.isNear(position);
+    });
     await stop();
   }
 
@@ -43,16 +45,11 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   bool _tryToFace(CardinalDirection orientation) {
     final current = collection.imu.heading;
     final target = orientation.angle;
-    var error = target - current;
-    if (error < -180) {
-      error += 360;
-    } else if (error > 180) {
-      error -= 360;
-    }
+    final error = (target - current).clampHalfAngle();
     if (error < 0) {
-      spinLeft();
-    } else {
       spinRight();
+    } else {
+      spinLeft();
     }
     // if (error.abs() < 180) {
     //   if (current < target) {

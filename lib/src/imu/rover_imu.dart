@@ -40,8 +40,8 @@ class RoverImu extends ImuInterface {
 
   @override
   Orientation get raw => Orientation(
-    x: _xCorrector.calibratedValue.clampAngle(),
-    y: _yCorrector.calibratedValue.clampAngle(),
-    z: _zCorrector.calibratedValue.clampAngle(),
+    x: _xCorrector.calibratedValue.clampHalfAngle(),
+    y: _yCorrector.calibratedValue.clampHalfAngle(),
+    z: _zCorrector.calibratedValue.clampHalfAngle(),
   );
 }

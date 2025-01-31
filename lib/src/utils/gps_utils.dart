@@ -16,10 +16,10 @@ extension GpsUtils on GpsCoordinates {
   static GpsCoordinates get west => GpsCoordinates(longitude: -movementLongitude);
   static GpsCoordinates get north => GpsCoordinates(latitude: movementLatitude);
   static GpsCoordinates get south => GpsCoordinates(latitude: -movementLatitude);
-  static GpsCoordinates get northEast => GpsCoordinates(latitude: movementLatitude, longitude: movementLongitude);
-  static GpsCoordinates get northWest => GpsCoordinates(latitude: movementLatitude, longitude: -movementLongitude);
-  static GpsCoordinates get southEast => GpsCoordinates(latitude: -movementLatitude, longitude: movementLongitude);
-  static GpsCoordinates get southWest => GpsCoordinates(latitude: -movementLatitude, longitude: -movementLongitude);
+  static GpsCoordinates get northEast => north + east;
+  static GpsCoordinates get northWest => north + west;
+  static GpsCoordinates get southEast => south + east;
+  static GpsCoordinates get southWest => south + west;
 
   // Taken from https://stackoverflow.com/a/39540339/9392211
   static const metersPerLatitude = 111.32 * 1000;  // 111.32 km
