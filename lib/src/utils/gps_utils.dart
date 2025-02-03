@@ -56,10 +56,11 @@ extension GpsUtils on GpsCoordinates {
   static double get latitudePerMeter => 1 / metersPerLatitude;
   static double get longitudePerMeter => 1 / metersPerLongitude;
 
-  double distanceTo(GpsCoordinates other) => sqrt(
-    pow(latitude - other.latitude, 2) +
-    pow(longitude - other.longitude, 2),
-  );
+  double distanceTo(GpsCoordinates other) {
+    final deltaMeters = inMeters - other.inMeters;
+
+    return sqrt(pow(deltaMeters.long, 2) + pow(deltaMeters.lat, 2));
+  }
 
   double heuristicDistance(GpsCoordinates other) {
     var distance = 0.0;
