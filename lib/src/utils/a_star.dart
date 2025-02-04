@@ -25,6 +25,14 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   final GpsCoordinates goal;
   final AutonomyInterface collection;
 
+  GpsCoordinates get startPostition {
+    if (instruction != DriveDirection.forward) {
+      return position;
+    }
+
+    return position.goForward(orientation.turnRight().turnRight());
+  }
+
   AutonomyAStarState({
     required this.position,
     required this.goal,

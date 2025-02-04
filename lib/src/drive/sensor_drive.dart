@@ -1,4 +1,5 @@
 import "package:autonomy/autonomy.dart";
+import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
 
 import "drive_commands.dart";
@@ -41,7 +42,15 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
     await waitFor(() {
       moveForward();
       return collection.gps.isNear(position);
-    });
+    }).timeout(
+      Constants.driveGPSTimeout,
+      onTimeout: () {
+        collection.logger.warning(
+          "GPS Drive timed out",
+          body: "Failed to reach ${position.prettyPrint()} after ${Constants.driveGPSTimeout}",
+        );
+      },
+    );
     await stop();
   }
 

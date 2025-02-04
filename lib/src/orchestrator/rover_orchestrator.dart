@@ -36,7 +36,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   @override
   Future<void> handleGpsTask(AutonomyCommand command) async {
     final destination = command.destination;
-    collection.logger.info("Got GPS Task", body: "Go to ${destination.prettyPrint()}");
+    collection.logger.info("Received GPS Task", body: "Go to ${destination.prettyPrint()}");
     collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
     traversed.clear();
     collection.drive.setLedStrip(ProtoColor.RED);
@@ -66,13 +66,21 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       var count = 0;
       for (final state in path) {
         collection.logger.debug(state.toString());
+        // Replan if too far from start point
+        final distanceError = collection.gps.coordinates.distanceTo(state.startPostition);
+        if (distanceError >= Constants.replanErrorMeters) {
+          collection.logger.info("Replanning Path", body: "Rover is $distanceError meters off the path");
+          break;
+        }
+        // Re-align to desired start orientation if angle is too far
         if (state.instruction == DriveDirection.forward &&
             !collection.imu.raw.isNear(state.orientation.angle, Constants.driveRealignmentEpsilon)) {
+          collection.logger.info("Re-aligning IMU to start orientation");
           await collection.drive.faceDirection(state.orientation);
         }
         await collection.drive.driveState(state);
         if (currentCommand == null || currentPath == null) {
-          collection.logger.debug("Aborting path, command was canceled");
+          collection.logger.info("Aborting path, command was canceled");
           return;
         }
         traversed.add(state.position);

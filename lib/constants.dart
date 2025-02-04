@@ -4,10 +4,19 @@ class Constants {
   /// The amount of meters to move per path step
   static const double moveLengthMeters = 1;
 
+  /// Replan the path if the rover's position is this far away from the path
+  static const double replanErrorMeters = 3;
+
   /// The IMU angle tolerance for a turn during autonomy
   static const double turnEpsilon = 3;
 
   /// The IMU angle tolerance when turning to re-correct to the
   /// proper orientation before driving forward
   static const double driveRealignmentEpsilon = 5;
+
+  /// The maximum time to spend waiting for the drive to reach a desired GPS coordinate.
+  /// 
+  /// Only applies to individual "drive forward" steps, to prevent indefinite driving
+  /// if it never reaches within [maxErrorMeters] of its goal position
+  static const Duration driveGPSTimeout = Duration(seconds: 6, milliseconds: 500);
 }
