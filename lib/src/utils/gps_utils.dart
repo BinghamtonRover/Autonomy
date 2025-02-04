@@ -1,6 +1,7 @@
 
 import "dart:math";
 
+import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
 
 /// An alias for gps coordinates measured in meters
@@ -22,39 +23,14 @@ extension GpsMetersUtil on GpsMeters {
 }
 
 extension GpsUtils on GpsCoordinates {
-  static double maxErrorMeters = 1;
-  static double moveLengthMeters = 1;
-  static double get epsilonLatitude => maxErrorMeters * latitudePerMeter;
-  static double get epsilonLongitude => maxErrorMeters * longitudePerMeter;
-
-  static double get movementLatitude => moveLengthMeters * latitudePerMeter;
-  static double get movementLongitude => moveLengthMeters * longitudePerMeter;
-
-  static GpsCoordinates get east => GpsCoordinates(longitude: movementLongitude);
-  static GpsCoordinates get west => GpsCoordinates(longitude: -movementLongitude);
-  static GpsCoordinates get north => GpsCoordinates(latitude: movementLatitude);
-  static GpsCoordinates get south => GpsCoordinates(latitude: -movementLatitude);
-  static GpsCoordinates get northEast => north + east;
-  static GpsCoordinates get northWest => north + west;
-  static GpsCoordinates get southEast => south + east;
-  static GpsCoordinates get southWest => south + west;
-
-  static GpsMeters get eastMeters => (lat: 0, long: moveLengthMeters);
-  static GpsMeters get westMeters => (lat: 0, long: -moveLengthMeters);
-  static GpsMeters get northMeters => (lat: moveLengthMeters, long: 0);
-  static GpsMeters get southMeters => (lat: -moveLengthMeters, long: 0);
+  static GpsMeters get eastMeters => (lat: 0, long: Constants.moveLengthMeters);
+  static GpsMeters get westMeters => (lat: 0, long: -Constants.moveLengthMeters);
+  static GpsMeters get northMeters => (lat: Constants.moveLengthMeters, long: 0);
+  static GpsMeters get southMeters => (lat: -Constants.moveLengthMeters, long: 0);
   static GpsMeters get northEastMeters => northMeters + eastMeters;
   static GpsMeters get northWestMeters => northMeters + westMeters;
   static GpsMeters get southEastMeters => southMeters + eastMeters;
   static GpsMeters get southWestMeters => southMeters + westMeters;
-
-  // Taken from https://stackoverflow.com/a/39540339/9392211
-  static const metersPerLatitude = 111.32 * 1000;  // 111.32 km
-  static const radiansPerDegree = pi / 180;
-  static double get metersPerLongitude => 40075 * cos(GpsInterface.currentLatitude * radiansPerDegree) / 360 * 1000.0;
-
-  static double get latitudePerMeter => 1 / metersPerLatitude;
-  static double get longitudePerMeter => 1 / metersPerLongitude;
 
   double distanceTo(GpsCoordinates other) {
     final deltaMeters = inMeters - other.inMeters;
@@ -69,14 +45,14 @@ extension GpsUtils on GpsCoordinates {
     final deltaLong = delta.long.abs();
 
     final minimumDistance = min(deltaLat, deltaLong);
-    if (minimumDistance >= moveLengthMeters) {
-      distance += (minimumDistance ~/ moveLengthMeters) * sqrt2;
+    if (minimumDistance >= Constants.moveLengthMeters) {
+      distance += (minimumDistance ~/ Constants.moveLengthMeters) * sqrt2;
     }
 
     final translationDelta = (deltaLat - deltaLong).abs();
 
-    if (translationDelta >= moveLengthMeters) {
-      distance += translationDelta ~/ moveLengthMeters;
+    if (translationDelta >= Constants.moveLengthMeters) {
+      distance += translationDelta ~/ Constants.moveLengthMeters;
     }
 
     return distance;
@@ -88,7 +64,7 @@ extension GpsUtils on GpsCoordinates {
   }
 
   bool isNear(GpsCoordinates other, [double? tolerance]) {
-    tolerance ??= maxErrorMeters;
+    tolerance ??= Constants.maxErrorMeters;
     final currentMeters = inMeters;
     final otherMeters = other.inMeters;
 

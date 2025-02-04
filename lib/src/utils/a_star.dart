@@ -1,6 +1,7 @@
 import "dart:math";
 
 import "package:a_star/a_star.dart";
+import "package:autonomy/constants.dart";
 
 import "package:autonomy/interfaces.dart";
 
@@ -75,7 +76,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   String hash() => "${position.prettyPrint()} ($orientation) ($instruction)";
 
   @override
-  bool isGoal() => position.isNear(goal, min(GpsUtils.moveLengthMeters, GpsUtils.maxErrorMeters));
+  bool isGoal() => position.isNear(goal, min(Constants.moveLengthMeters, Constants.maxErrorMeters));
 
   /// Returns whether or not the rover will drive between or right next to an obstacle diagonally<br/>
   /// <br/>

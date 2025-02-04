@@ -1,5 +1,6 @@
 import "dart:math";
 
+import "package:autonomy/constants.dart";
 import "package:burt_network/burt_network.dart";
 import "package:test/test.dart";
 
@@ -22,7 +23,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
   test("Simple path from (0, 0) to (5, 5) exists", () {
     final simulator = AutonomySimulator();
     final destination = (lat: 5, long: 5).toGps();
-    simulator.logger.info("Each step is ${GpsUtils.north.latitude.toStringAsFixed(5)}");
+    simulator.logger.info("Each step is ${GpsUtils.northMeters.toGps().latitude.toStringAsFixed(5)}");
     simulator.logger.info("Going to ${destination.prettyPrint()}");
     simulator.pathfinder = RoverPathfinder(collection: simulator);  
     final path = simulator.pathfinder.getPath(destination);
@@ -30,7 +31,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
   });
 
   test("Small paths are efficient", () {
-    final oldError = GpsUtils.maxErrorMeters;
+    const oldError = Constants.maxErrorMeters;
     GpsUtils.maxErrorMeters = 1;
     final simulator = AutonomySimulator();
 

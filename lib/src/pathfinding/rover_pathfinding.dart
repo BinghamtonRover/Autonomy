@@ -42,7 +42,7 @@ class RoverPathfinder extends PathfindingInterface {
     final result = aStar(state, verbose: verbose, limit: 50000);
     if (result == null) return null;
     final transitions = result.reconstructPath();
-    // final optimized = optimizePath(transitions);
-    return transitions.toList();
+    final optimized = optimizePath(transitions);
+    return optimized;
   }
 }

@@ -1,12 +1,7 @@
 import "package:autonomy/autonomy.dart";
+import "package:autonomy/constants.dart";
 
 extension OrientationUtils on Orientation {
-  /// The IMU angle tolerance for a turn during autonomy
-  static const double turnEpsilon = 3;
-  /// The IMU angle tolerance when turning to re-correct to the
-  /// proper orientation before driving forward
-  static const double driveRealignmentEpsilon = 5;
-
   /// North orientation
   static final north = Orientation(z: CardinalDirection.north.angle);
   /// East orientation
@@ -21,7 +16,7 @@ extension OrientationUtils on Orientation {
 
   /// Whether or not this orientation is within [epsilon] degrees of [value]
   bool isNear(double value, [double? epsilon]) {
-    epsilon ??= OrientationUtils.turnEpsilon;
+    epsilon ??= Constants.turnEpsilon;
     final error = (value - z).clampHalfAngle();
 
     return error.abs() <= epsilon;

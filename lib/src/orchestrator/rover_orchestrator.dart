@@ -1,3 +1,4 @@
+import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
 import "dart:async";
 
@@ -66,7 +67,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       for (final state in path) {
         collection.logger.debug(state.toString());
         if (state.instruction == DriveDirection.forward &&
-            !collection.imu.raw.isNear(state.orientation.angle, OrientationUtils.driveRealignmentEpsilon)) {
+            !collection.imu.raw.isNear(state.orientation.angle, Constants.driveRealignmentEpsilon)) {
           await collection.drive.faceDirection(state.orientation);
         }
         await collection.drive.driveState(state);
