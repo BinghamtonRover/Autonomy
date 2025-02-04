@@ -23,14 +23,14 @@ extension GpsMetersUtil on GpsMeters {
 }
 
 extension GpsUtils on GpsCoordinates {
-  static GpsMeters get eastMeters => (lat: 0, long: Constants.moveLengthMeters);
-  static GpsMeters get westMeters => (lat: 0, long: -Constants.moveLengthMeters);
-  static GpsMeters get northMeters => (lat: Constants.moveLengthMeters, long: 0);
-  static GpsMeters get southMeters => (lat: -Constants.moveLengthMeters, long: 0);
-  static GpsMeters get northEastMeters => northMeters + eastMeters;
-  static GpsMeters get northWestMeters => northMeters + westMeters;
-  static GpsMeters get southEastMeters => southMeters + eastMeters;
-  static GpsMeters get southWestMeters => southMeters + westMeters;
+  static const GpsMeters eastMeters = (lat: 0, long: Constants.moveLengthMeters);
+  static const GpsMeters westMeters = (lat: 0, long: -Constants.moveLengthMeters);
+  static const GpsMeters northMeters = (lat: Constants.moveLengthMeters, long: 0);
+  static const GpsMeters southMeters = (lat: -Constants.moveLengthMeters, long: 0);
+  static final GpsMeters northEastMeters = northMeters + eastMeters;
+  static final GpsMeters northWestMeters = northMeters + westMeters;
+  static final GpsMeters southEastMeters = southMeters + eastMeters;
+  static final GpsMeters southWestMeters = southMeters + westMeters;
 
   double distanceTo(GpsCoordinates other) {
     final deltaMeters = inMeters - other.inMeters;
@@ -86,18 +86,6 @@ extension GpsUtils on GpsCoordinates {
   );
 
   String prettyPrint() => toProto3Json().toString();
-
-  // GpsCoordinates goForward(CardinalDirection orientation) => this +
-  //     switch (orientation) {
-  //       CardinalDirection.north => GpsUtils.north,
-  //       CardinalDirection.south => GpsUtils.south,
-  //       CardinalDirection.west => GpsUtils.west,
-  //       CardinalDirection.east => GpsUtils.east,
-  //       CardinalDirection.northEast => GpsUtils.northEast,
-  //       CardinalDirection.northWest => GpsUtils.northWest,
-  //       CardinalDirection.southEast => GpsUtils.southEast,
-  //       CardinalDirection.southWest => GpsUtils.southWest,
-  //     };
 
   GpsCoordinates goForward(CardinalDirection orientation) => (inMeters +
     switch (orientation) {
