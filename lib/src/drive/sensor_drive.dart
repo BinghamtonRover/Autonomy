@@ -18,7 +18,10 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   SensorDrive({required super.collection, super.config});
 
   @override
-  Future<void> stop() async => stopMotors();
+  Future<bool> stop() async {
+    stopMotors();
+    return true;
+  }
 
   /// Will periodically check for a condition to become true. This can be
   /// thought of as a "wait until", where the rover will periodically check
@@ -36,9 +39,10 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   Future<void> dispose() async { }
 
   @override
-  Future<void> driveForward(GpsCoordinates position) async {
+  Future<bool> driveForward(GpsCoordinates position) async {
     collection.logger.info("Driving forward one meter");
     setThrottle(config.forwardThrottle);
+    var timedOut = false;
     await waitFor(() {
       moveForward();
       return collection.gps.isNear(position);
@@ -49,17 +53,20 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
           "GPS Drive timed out",
           body: "Failed to reach ${position.prettyPrint()} after ${Constants.driveGPSTimeout}",
         );
+        timedOut = true;
       },
     );
     await stop();
+    return !timedOut;
   }
 
   @override
-  Future<void> faceDirection(CardinalDirection orientation) async {
+  Future<bool> faceDirection(CardinalDirection orientation) async {
     collection.logger.info("Turning to face $orientation...");
     setThrottle(config.turnThrottle);
     await waitFor(() => _tryToFace(orientation));
     await stop();
+    return true;
   }
 
   bool _tryToFace(CardinalDirection orientation) {

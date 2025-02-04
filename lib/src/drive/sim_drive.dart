@@ -23,17 +23,22 @@ class DriveSimulator extends DriveInterface {
   Future<void> dispose() async { }
 
   @override
-  Future<void> driveForward(GpsCoordinates position) async {
+  Future<bool> driveForward(GpsCoordinates position) async {
     if (shouldDelay) await Future<void>.delayed(delay);
     collection.gps.update(position);
+    return true;
   }
 
   @override
-  Future<void> faceDirection(CardinalDirection orientation) async {
+  Future<bool> faceDirection(CardinalDirection orientation) async {
     if (shouldDelay) await Future<void>.delayed(const Duration(milliseconds: 500));
     collection.imu.update(orientation.orientation);
+    return true;
   }
 
   @override
-  Future<void> stop() async => collection.logger.debug("Stopping");
+  Future<bool> stop() async {
+    collection.logger.debug("Stopping");
+    return true;
+  }
 }

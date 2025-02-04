@@ -1,6 +1,7 @@
 class Constants {
   /// The maximum error or "tolerance" for reaching the end goal
   static const double maxErrorMeters = 1;
+
   /// The amount of meters to move per path step
   static const double moveLengthMeters = 1;
 
@@ -15,8 +16,8 @@ class Constants {
   static const double driveRealignmentEpsilon = 5;
 
   /// The maximum time to spend waiting for the drive to reach a desired GPS coordinate.
-  /// 
+  ///
   /// Only applies to individual "drive forward" steps, to prevent indefinite driving
-  /// if it never reaches within [maxErrorMeters] of its goal position
+  /// if it never reaches within [maxErrorMeters] of its desired position.
   static const Duration driveGPSTimeout = Duration(seconds: 6, milliseconds: 500);
 }

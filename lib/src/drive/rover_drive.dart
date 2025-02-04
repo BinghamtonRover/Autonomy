@@ -68,10 +68,12 @@ class RoverDrive extends DriveInterface {
   }
 
   @override
-  Future<void> stop() async {
-    await sensorDrive.stop();
-    await timedDrive.stop();
-    await simDrive.stop();
+  Future<bool> stop() async {
+    var result = true;
+    result &= await sensorDrive.stop();
+    result &= await timedDrive.stop();
+    result &= await simDrive.stop();
+    return result;
   }
 
   @override
@@ -81,21 +83,23 @@ class RoverDrive extends DriveInterface {
   Future<void> approachAruco() => sensorDrive.approachAruco();
 
   @override
-  Future<void> faceDirection(CardinalDirection orientation) async {
+  Future<bool> faceDirection(CardinalDirection orientation) async {
     if (useImu) {
-      await sensorDrive.faceDirection(orientation);
+      return sensorDrive.faceDirection(orientation);
     } else {
-      await simDrive.faceDirection(orientation);
+      return simDrive.faceDirection(orientation);
     }
   }
 
   @override
-  Future<void> driveForward(GpsCoordinates position) async {
+  Future<bool> driveForward(GpsCoordinates position) async {
     if (useGps) {
-      await sensorDrive.driveForward(position);
+      return sensorDrive.driveForward(position);
     } else {
-      await timedDrive.driveForward(position);
-      await simDrive.driveForward(position);
+      var result = true;
+      result &= await timedDrive.driveForward(position);
+      result &= await simDrive.driveForward(position);
+      return result;
     }
   }
 }

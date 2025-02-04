@@ -38,13 +38,13 @@ abstract class DriveInterface extends Service {
   DriveInterface({required this.collection, this.config = roverConfig});
 
   /// Stop the rover
-  Future<void> stop();
+  Future<bool> stop();
 
-  /// Drive forward to [position]
-  Future<void> driveForward(GpsCoordinates position);
+  /// Drive forward to [position], returns whether or not it successfully drove to the position
+  Future<bool> driveForward(GpsCoordinates position);
 
-  /// Turn to face [orientation]
-  Future<void> faceDirection(CardinalDirection orientation);
+  /// Turn to face [orientation], returns whether or not it was able to turn
+  Future<bool> faceDirection(CardinalDirection orientation);
 
   /// Utility method to send a command to subsystems
   void sendCommand(Message message) => collection.server.sendMessage(message, destination: config.subsystems);
@@ -53,17 +53,21 @@ abstract class DriveInterface extends Service {
   /// 
   /// This exists so the rover can generate a path based on a known
   /// orientation that aligns to the possible orientations defined by [CardinalDirection]
-  Future<void> resolveOrientation() => faceDirection(collection.imu.nearest);
+  Future<bool> resolveOrientation() => faceDirection(collection.imu.nearest);
 
   /// Turns to face the state's [AutonomyAStarState.orientation].
   ///
   /// Exists so that the TimedDrive can implement this in terms of [AutonomyAStarState.instruction].
-  Future<void> turnState(AutonomyAStarState state) => faceDirection(state.orientation);
+  /// 
+  /// Returns whether or not the turn was successful
+  Future<bool> turnState(AutonomyAStarState state) => faceDirection(state.orientation);
 
   /// Drives the rover based on the instruction and desired positions in [state]
   /// 
   /// This determines based on the [state] whether it should move forward, turn, or stop
-  Future<void> driveState(AutonomyAStarState state) {
+  /// 
+  /// Returns whether or not the drive was successful
+  Future<bool> driveState(AutonomyAStarState state) {
     if (state.instruction == DriveDirection.stop) {
       return stop();
     } else if (state.instruction == DriveDirection.forward) {

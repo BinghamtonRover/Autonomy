@@ -78,7 +78,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           collection.logger.info("Re-aligning IMU to start orientation");
           await collection.drive.faceDirection(state.orientation);
         }
-        await collection.drive.driveState(state);
+        // If there was an error (usually a timeout) while driving, replan path
+        if (!await collection.drive.driveState(state)) {
+          break;
+        }
         if (currentCommand == null || currentPath == null) {
           collection.logger.info("Aborting path, command was canceled");
           return;
