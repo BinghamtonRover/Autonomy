@@ -63,6 +63,14 @@ extension GpsUtils on GpsCoordinates {
     return delta.lat.toDouble().abs() + delta.long.abs();
   }
 
+  double octileDistance(GpsCoordinates other) {
+    final delta = inMeters - other.inMeters;
+    final dx = delta.long.abs() ~/ Constants.moveLengthMeters;
+    final dy = delta.lat.abs() ~/ Constants.moveLengthMeters;
+
+    return max(dx, dy) + (sqrt2 - 1) * min(dx, dy);
+  }
+
   bool isNear(GpsCoordinates other, [double? tolerance]) {
     tolerance ??= Constants.maxErrorMeters;
     final currentMeters = inMeters;

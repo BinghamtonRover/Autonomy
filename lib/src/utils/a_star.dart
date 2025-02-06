@@ -78,7 +78,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   };
 
   @override
-  double heuristic() => position.heuristicDistance(goal);
+  double heuristic() => position.octileDistance(goal);
 
   @override
   String hash() => "${position.prettyPrint()} ($orientation) ($instruction)";

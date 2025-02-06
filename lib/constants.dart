@@ -2,6 +2,10 @@ class Constants {
   /// The maximum error or "tolerance" for reaching the end goal
   static const double maxErrorMeters = 1;
 
+  /// How close the rover should get to a drive coordinate before
+  /// continuing with the path
+  static const double intermediateStepTolerance = 0.25;
+
   /// The amount of meters to move per path step
   static const double moveLengthMeters = 1;
 
