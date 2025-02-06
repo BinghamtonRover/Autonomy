@@ -14,7 +14,7 @@ abstract class ImuInterface extends Service with Receiver {
   @visibleForTesting
   void forceUpdate(Orientation newValue) {}
 
-  bool isNear(CardinalDirection direction) => raw.isNear(direction.angle);
+  bool isNear(Orientation orientation, [double? tolerance]) => raw.isNear(orientation.heading, tolerance);
 
   @override
   Future<bool> init() async => true;

@@ -44,7 +44,10 @@ abstract class DriveInterface extends Service {
   Future<bool> driveForward(GpsCoordinates position);
 
   /// Turn to face [orientation], returns whether or not it was able to turn
-  Future<bool> faceDirection(CardinalDirection orientation);
+  Future<bool> faceOrientation(Orientation orientation);
+
+  /// Turn to face the orientation of [direction], returns whether or not it was able to turn
+  Future<bool> faceDirection(CardinalDirection direction) => faceOrientation(direction.orientation);
 
   /// Utility method to send a command to subsystems
   void sendCommand(Message message) => collection.server.sendMessage(message, destination: config.subsystems);

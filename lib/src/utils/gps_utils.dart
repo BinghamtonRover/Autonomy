@@ -32,6 +32,9 @@ extension GpsUtils on GpsCoordinates {
   static final GpsMeters southEastMeters = southMeters + eastMeters;
   static final GpsMeters southWestMeters = southMeters + westMeters;
 
+  /// Whether or not the coordinates is fused with the RTK algorithm
+  bool get hasRTK => rtkMode == RTKMode.RTK_FIXED || rtkMode == RTKMode.RTK_FLOAT;
+
   double distanceTo(GpsCoordinates other) {
     final deltaMeters = inMeters - other.inMeters;
 

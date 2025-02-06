@@ -1,3 +1,5 @@
+import "dart:math";
+
 import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
 import "dart:async";
@@ -75,10 +77,26 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           break;
         }
         // Re-align to desired start orientation if angle is too far
-        if (state.instruction == DriveDirection.forward &&
-            !collection.imu.raw.isNear(state.orientation.angle, Constants.driveRealignmentEpsilon)) {
-          collection.logger.info("Re-aligning IMU to start orientation");
-          await collection.drive.faceDirection(state.orientation);
+        if (state.instruction == DriveDirection.forward) {
+          Orientation targetOrientation;
+          // if it has RTK, point towards the next coordinate
+          if (collection.gps.coordinates.hasRTK) {
+            final difference = state.position.inMeters - collection.gps.coordinates.inMeters;
+
+            final angle = atan2(difference.lat, difference.long) * 180 / pi;
+
+            targetOrientation = Orientation(z: angle);
+          } else {
+            targetOrientation = state.orientation.orientation;
+          }
+
+          if (!collection.imu.isNear(
+            targetOrientation,
+            Constants.driveRealignmentEpsilon,
+          )) {
+            collection.logger.info("Re-aligning IMU to correct orientation");
+            await collection.drive.faceOrientation(targetOrientation);
+          }
         }
         // If there was an error (usually a timeout) while driving, replan path
         if (!await collection.drive.driveState(state)) {

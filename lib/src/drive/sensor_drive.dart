@@ -61,7 +61,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   }
 
   @override
-  Future<bool> faceDirection(CardinalDirection orientation) async {
+  Future<bool> faceOrientation(Orientation orientation) async {
     collection.logger.info("Turning to face $orientation...");
     setThrottle(config.turnThrottle);
     await waitFor(() => _tryToFace(orientation));
@@ -69,9 +69,9 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
     return true;
   }
 
-  bool _tryToFace(CardinalDirection orientation) {
+  bool _tryToFace(Orientation orientation) {
     final current = collection.imu.heading;
-    final target = orientation.angle;
+    final target = orientation.heading;
     final error = (target - current).clampHalfAngle();
     if (error < 0) {
       spinRight();
