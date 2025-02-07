@@ -1,6 +1,7 @@
 import "dart:typed_data";
 
 import "package:autonomy/interfaces.dart";
+import "package:burt_network/protobuf.dart";
 
 class VideoSimulator extends VideoInterface {
   VideoSimulator({required super.collection});

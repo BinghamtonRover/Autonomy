@@ -1,4 +1,5 @@
 import "package:autonomy/interfaces.dart";
+import "package:burt_network/protobuf.dart";
 
 class OrchestratorSimulator extends OrchestratorInterface {
   OrchestratorSimulator({required super.collection});

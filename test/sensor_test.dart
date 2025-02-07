@@ -2,7 +2,10 @@ import "package:autonomy/autonomy.dart";
 import "package:test/test.dart";
 
 import "package:burt_network/protobuf.dart";
-import "package:burt_network/logging.dart";
+
+import "package:autonomy/interfaces.dart";
+import "package:autonomy/simulator.dart";
+import "package:autonomy/src/rover/gps.dart";
 
 const imuError = 2.5;
 const gpsPrecision = 7;
@@ -210,25 +213,25 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     await simulator.dispose();
   });
 
-  // test("IMU can handle values on the edge", () async {
-  //   Logger.level = LogLevel.off;
-  //   final simulator = AutonomySimulator();
-  //   final simulatedImu = ImuSimulator(collection: simulator, maxError: imuError);
-  //   final realImu = RoverImu(collection: simulator);
-  //   final orientation = Orientation(z: 360);
-  //   simulatedImu.update(orientation);
+  test("IMU can handle values on the edge", () async {
+    Logger.level = LogLevel.off;
+    final simulator = AutonomySimulator();
+    final simulatedImu = ImuSimulator(collection: simulator, maxError: imuError);
+    final realImu = RoverImu(collection: simulator);
+    final orientation = Orientation(z: 360);
+    simulatedImu.update(orientation);
 
-  //   var count = 0;
-  //   for (var i = 0; i < 1000; i++) {
-  //     final newData = simulatedImu.raw;
-  //     realImu.update(newData);
-  //     simulator.logger.trace("Got new value: ${newData.heading}");
-  //     simulator.logger.trace("  New heading: ${realImu.heading}");
-  //     simulator.logger.trace("  Real position: ${orientation.heading}");
-  //     if (i < 10) continue;
-  //     simulator.logger.trace("  Values are similar: ${realImu.isNear(orientation.heading)}");
-  //     if (realImu.isNear(orientation.heading)) count++;
-  //   }
+    var count = 0;
+    for (var i = 0; i < 1000; i++) {
+      final newData = simulatedImu.raw;
+      realImu.update(newData);
+      simulator.logger.trace("Got new value: ${newData.heading}");
+      simulator.logger.trace("  New heading: ${realImu.heading}");
+      simulator.logger.trace("  Real position: ${orientation.heading}");
+      if (i < 10) continue;
+      simulator.logger.trace("  Values are similar: ${realImu.isNear(orientation.heading)}");
+      if (realImu.isNear(orientation.heading)) count++;
+    }
 
   //   final percentage = count / 1000;
   //   expect(percentage, greaterThan(0.75), reason: "IMU should be accurate >75% of the time: $percentage");
