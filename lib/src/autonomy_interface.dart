@@ -64,5 +64,5 @@ abstract class AutonomyInterface extends Service with Receiver {
   }
 
   @override
-  bool get hasValue => true || _receivers.every((r) => r.hasValue);
+  bool get hasValue => _receivers.every((r) => r.hasValue);
 }
