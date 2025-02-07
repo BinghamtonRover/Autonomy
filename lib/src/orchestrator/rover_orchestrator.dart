@@ -35,33 +35,27 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   @override
   Message getMessage() => statusMessage;
 
-  @override
-  Future<void> handleGpsTask(AutonomyCommand command) async {
-    final destination = command.destination;
-    collection.logger.info("Received GPS Task", body: "Go to ${destination.prettyPrint()}");
-    collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
-    traversed.clear();
-    collection.drive.setLedStrip(ProtoColor.RED);
-    // detect obstacles before and after resolving orientation, as a "scan"
-    collection.detector.findObstacles();
+  Future<bool> calculateAndFollowPath(GpsCoordinates goal, {bool abortOnError = true}) async {
     await collection.drive.resolveOrientation();
     collection.detector.findObstacles();
-    while (!collection.gps.coordinates.isNear(destination)) {
+    while (!collection.gps.coordinates.isNear(goal)) {
       // Calculate a path
       collection.logger.debug("Finding a path");
       currentState = AutonomyState.PATHING;
-      final path = collection.pathfinder.getPath(destination);
+      final path = collection.pathfinder.getPath(goal);
       currentPath = path;  // also use local variable path for promotion
       if (path == null) {
         final current = collection.gps.coordinates;
-        collection.logger.error("Could not find a path", body: "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}");
-        currentState = AutonomyState.NO_SOLUTION;
-        currentCommand = null;
-        return;
+        collection.logger.error("Could not find a path", body: "No path found from ${current.prettyPrint()} to ${goal.prettyPrint()}");
+        if (abortOnError) {
+          currentState = AutonomyState.NO_SOLUTION;
+          currentCommand = null;
+        }
+        return false;
       }
       // Try to take that path
       final current = collection.gps.coordinates;
-      collection.logger.debug("Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${path.length} steps");
+      collection.logger.debug("Found a path from ${current.prettyPrint()} to ${goal.prettyPrint()}: ${path.length} steps");
       collection.logger.debug("Here is a summary of the path");
       for (final step in path) {
         collection.logger.debug(step.toString());
@@ -104,7 +98,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
         if (currentCommand == null || currentPath == null) {
           collection.logger.info("Aborting path, command was canceled");
-          return;
+          return false;
         }
         traversed.add(state.position);
         // if (state.direction != DriveDirection.forward) continue;
@@ -116,6 +110,25 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
       }
     }
+    return true;
+  }
+
+  @override
+  Future<void> handleGpsTask(AutonomyCommand command) async {
+    final destination = command.destination;
+    collection.logger.info("Received GPS Task", body: "Go to ${destination.prettyPrint()}");
+    collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
+    traversed.clear();
+    collection.drive.setLedStrip(ProtoColor.RED);
+    // detect obstacles before and after resolving orientation, as a "scan"
+    collection.detector.findObstacles();
+    await collection.drive.resolveOrientation();
+    collection.detector.findObstacles();
+
+    if (!await calculateAndFollowPath(command.destination)) {
+      return;
+    }
+
     collection.logger.info("Task complete");
     collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
     currentState = AutonomyState.AT_DESTINATION;
@@ -127,18 +140,72 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     collection.drive.setLedStrip(ProtoColor.RED);
 
     // Go to GPS coordinates
-    // await handleGpsTask(command);
     collection.logger.info("Got ArUco Task");
+    if (command.destination != GpsCoordinates(latitude: 0, longitude: 0)) {
+      if (!await calculateAndFollowPath(command.destination, abortOnError: false)) {
+        collection.logger.error("Failed to follow path towards initial destination");
+        currentState = AutonomyState.NO_SOLUTION;
+        currentCommand = null;
+        return;
+      }
+    }
 
     currentState = AutonomyState.SEARCHING;
     collection.logger.info("Searching for ArUco tag");
-    final didSeeAruco = await collection.drive.spinForAruco();
-    if (didSeeAruco) {
+    final didSeeAruco = await collection.drive.spinForAruco(
+      command.arucoId,
+      desiredCamera: Constants.arucoDetectionCamera,
+    );
+    var detectedAruco = collection.video.getArucoDetection(
+      command.arucoId,
+      desiredCamera: Constants.arucoDetectionCamera,
+    );
+
+    if (didSeeAruco && detectedAruco != null) {
       collection.logger.info("Found aruco");
       currentState = AutonomyState.APPROACHING;
-      await collection.drive.approachAruco();
-      collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
-      currentState = AutonomyState.AT_DESTINATION;
+      final arucoOrientation = Orientation(z: collection.imu.heading - detectedAruco.yaw);
+      await collection.drive.faceOrientation(arucoOrientation);
+      detectedAruco = await collection.video.waitForAruco(
+        command.arucoId,
+        desiredCamera: Constants.arucoDetectionCamera,
+        timeout: const Duration(seconds: 3),
+      );
+
+      if (detectedAruco == null || !detectedAruco.hasBestPnpResult()) {
+        // TODO: handle this condition properly
+        collection.logger.error("Could not find desired Aruco tag");
+        return;
+      }
+
+      collection.logger.debug(
+        "Planning path to Aruco ID ${command.arucoId}",
+        body: "Detection: ${detectedAruco.toProto3Json()}",
+      );
+
+      final distanceToTag = detectedAruco.bestPnpResult.cameraToTarget.translation.z.abs() - 0.5; // Don't drive *into* the tag
+
+      if (distanceToTag < 1) {
+        // well that was easy
+        collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+        currentState = AutonomyState.AT_DESTINATION;
+        return;
+      }
+
+      final relativeX = distanceToTag * sin((collection.imu.heading - detectedAruco.yaw) * pi / 180);
+      final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco.yaw) * pi / 180);
+
+      final destinationCoordinates = (collection.gps.coordinates.inMeters + (lat: relativeY, long: relativeX)).toGps();
+
+      if (await calculateAndFollowPath(destinationCoordinates, abortOnError: false)) {
+        collection.logger.info("Successfully reached within ${Constants.maxErrorMeters} meters of the Aruco tag");
+        collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+        currentState = AutonomyState.AT_DESTINATION;
+      }
+      currentCommand = null;
+    } else {
+      collection.logger.error("Could not spin towards ArUco tag");
+      currentCommand = null;
     }
   }
 

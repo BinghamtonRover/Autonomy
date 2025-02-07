@@ -17,5 +17,5 @@ class VideoSimulator extends VideoInterface {
   Uint16List depthFrame = Uint16List.fromList([]);
 
   @override
-  void updateFrame(VideoData newData) { }
+  void updateFrame(VisionResult result) {}
 }

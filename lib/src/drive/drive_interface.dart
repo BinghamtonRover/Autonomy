@@ -89,7 +89,7 @@ abstract class DriveInterface extends Service {
   }
 
   /// Spin to face an Aruco tag, returns whether or not it was able to face the tag
-  Future<bool> spinForAruco() async => false;
+  Future<bool> spinForAruco(int arucoId, {CameraName? desiredCamera}) async => false;
 
   /// Drive forward to approach an Aruco tag
   Future<void> approachAruco() async { }
