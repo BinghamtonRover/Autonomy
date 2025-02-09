@@ -1,0 +1,154 @@
+import "dart:math";
+
+import "package:autonomy/constants.dart";
+import "package:autonomy/interfaces.dart";
+import "dart:async";
+
+class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
+  final List<GpsCoordinates> traversed = [];
+  List<AutonomyAStarState>? currentPath;
+  RoverOrchestrator({required super.collection});
+
+  @override
+  Future<void> dispose() async {
+    currentPath = null;
+    currentCommand = null;
+    currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
+    traversed.clear();
+    await super.dispose();
+  }
+
+  @override
+  AutonomyData get statusMessage => AutonomyData(
+    destination: currentCommand?.destination,
+    state: currentState,
+    obstacles: collection.pathfinder.obstacles,
+    path: [
+      for (final transition in currentPath ?? <AutonomyAStarState>[])
+        transition.position,
+      ...traversed,
+    ],
+    task: currentCommand?.task,
+    crash: false,  // TODO: Investigate if this is used and how to use it better
+  );
+
+  @override
+  Message getMessage() => statusMessage;
+
+  @override
+  Future<void> handleGpsTask(AutonomyCommand command) async {
+    final destination = command.destination;
+    collection.logger.info("Received GPS Task", body: "Go to ${destination.prettyPrint()}");
+    collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
+    traversed.clear();
+    collection.drive.setLedStrip(ProtoColor.RED);
+    // detect obstacles before and after resolving orientation, as a "scan"
+    collection.detector.findObstacles();
+    await collection.drive.resolveOrientation();
+    collection.detector.findObstacles();
+    while (!collection.gps.coordinates.isNear(destination)) {
+      // Calculate a path
+      collection.logger.debug("Finding a path");
+      currentState = AutonomyState.PATHING;
+      final path = collection.pathfinder.getPath(destination);
+      currentPath = path;  // also use local variable path for promotion
+      if (path == null) {
+        final current = collection.gps.coordinates;
+        collection.logger.error("Could not find a path", body: "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}");
+        currentState = AutonomyState.NO_SOLUTION;
+        currentCommand = null;
+        return;
+      }
+      // Try to take that path
+      final current = collection.gps.coordinates;
+      collection.logger.debug("Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${path.length} steps");
+      collection.logger.debug("Here is a summary of the path");
+      for (final step in path) {
+        collection.logger.debug(step.toString());
+      }
+      currentState = AutonomyState.DRIVING;
+      var count = 0;
+      for (final state in path) {
+        collection.logger.debug(state.toString());
+        // Replan if too far from start point
+        final distanceError = collection.gps.coordinates.distanceTo(state.startPostition);
+        if (distanceError >= Constants.replanErrorMeters) {
+          collection.logger.info("Replanning Path", body: "Rover is $distanceError meters off the path");
+          break;
+        }
+        // Re-align to desired start orientation if angle is too far
+        if (state.instruction == DriveDirection.forward) {
+          Orientation targetOrientation;
+          // if it has RTK, point towards the next coordinate
+          if (collection.gps.coordinates.hasRTK) {
+            final difference = state.position.inMeters - collection.gps.coordinates.inMeters;
+
+            final angle = atan2(difference.lat, difference.long) * 180 / pi;
+
+            targetOrientation = Orientation(z: angle);
+          } else {
+            targetOrientation = state.orientation.orientation;
+          }
+
+          if (!collection.imu.isNear(
+            targetOrientation,
+            Constants.driveRealignmentEpsilon,
+          )) {
+            collection.logger.info("Re-aligning IMU to correct orientation");
+            await collection.drive.faceOrientation(targetOrientation);
+          }
+        }
+        // If there was an error (usually a timeout) while driving, replan path
+        if (!await collection.drive.driveState(state)) {
+          break;
+        }
+        if (currentCommand == null || currentPath == null) {
+          collection.logger.info("Aborting path, command was canceled");
+          return;
+        }
+        traversed.add(state.position);
+        // if (state.direction != DriveDirection.forward) continue;
+        if (++count >= 5) break;
+        final foundObstacle = collection.detector.findObstacles();
+        if (foundObstacle) {
+          collection.logger.debug("Found an obstacle. Recalculating path...");
+          break;  // calculate a new path
+        }
+      }
+    }
+    collection.logger.info("Task complete");
+    collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+    currentState = AutonomyState.AT_DESTINATION;
+    currentCommand = null;
+  }
+
+  @override
+  Future<void> handleArucoTask(AutonomyCommand command) async {
+    collection.drive.setLedStrip(ProtoColor.RED);
+
+    // Go to GPS coordinates
+    // await handleGpsTask(command);
+    collection.logger.info("Got ArUco Task");
+
+    currentState = AutonomyState.SEARCHING;
+    collection.logger.info("Searching for ArUco tag");
+    final didSeeAruco = await collection.drive.spinForAruco();
+    if (didSeeAruco) {
+      collection.logger.info("Found aruco");
+      currentState = AutonomyState.APPROACHING;
+      await collection.drive.approachAruco();
+      collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+      currentState = AutonomyState.AT_DESTINATION;
+    }
+  }
+
+  @override
+  Future<void> handleHammerTask(AutonomyCommand command) async {
+
+  }
+
+  @override
+  Future<void> handleBottleTask(AutonomyCommand command) async {
+
+  }
+}

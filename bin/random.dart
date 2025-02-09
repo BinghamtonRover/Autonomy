@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print
 
 import "package:autonomy/interfaces.dart";
-import "package:autonomy/src/rover/corrector.dart";
 
 const maxError = GpsInterface.gpsError;
 const maxSamples = 10;
@@ -17,7 +16,7 @@ bool test() {
     corrector.addValue(value);
     if (verbose) {
       final calibrated = corrector.calibratedValue;
-      print("Current value: $value, Corrected value: $calibrated");    
+      print("Current value: $value, Corrected value: $calibrated");
       print("  Difference: ${calibrated.toStringAsFixed(7)} < ${epsilon.toStringAsFixed(7)}");
     }
   }

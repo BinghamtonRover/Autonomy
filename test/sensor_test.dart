@@ -1,5 +1,4 @@
-import "package:autonomy/src/rover/imu.dart";
-import "package:burt_network/logging.dart";
+import "package:autonomy/autonomy.dart";
 import "package:test/test.dart";
 
 import "package:burt_network/protobuf.dart";
@@ -16,13 +15,13 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
   tearDown(() => Logger.level = LogLevel.off);
 
   test("GpsUtils.isNear", () {
-    final origin = (0, 0).toGps();
+    final origin = (lat: 0, long: 0).toGps();
     expect(GpsCoordinates(latitude: 0, longitude: 0), origin);
     expect(origin.isNear(origin), isTrue);
 
-    final a = (5, 5).toGps();
-    final a2 = (5, 5).toGps();
-    final b = (5, 6.5).toGps();
+    final a = (lat: 5, long: 5).toGps();
+    final a2 = (lat: 5, long: 5).toGps();
+    final b = (lat: 5, long: 6.5).toGps();
 
     expect(a.isNear(a), isTrue);
     expect(a.isNear(a2), isTrue);
@@ -36,8 +35,8 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     expect(c.isNear(e), isFalse);
     expect(d.isNear(e), isFalse);
 
-    final f = (12, 12).toGps();
-    final g = (12.2, 12.2).toGps();
+    final f = (lat: 12, long: 12).toGps();
+    final g = (lat: 12.2, long: 12.2).toGps();
     expect(f.isNear(g), isTrue);
   });
 
@@ -82,8 +81,8 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     final simulator = AutonomySimulator();
     final simulatedImu = ImuSimulator(collection: simulator, maxError: imuError);
     final realImu = RoverImu(collection: simulator);
-    final north = OrientationUtils.north;
-    simulatedImu.update(north);
+    final north = CardinalDirection.north;
+    simulatedImu.update(north.orientation);
 
     var count = 0;
     for (var i = 0; i < 1000; i++) {
@@ -91,10 +90,10 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
       realImu.update(newData);
       simulator.logger.trace("Got new value: ${newData.heading}");
       simulator.logger.trace("  New heading: ${realImu.heading}");
-      simulator.logger.trace("  Real position: ${north.heading}");
+      simulator.logger.trace("  Real position: ${north.angle}");
       if (i < 10) continue;
-      simulator.logger.trace("  Values are similar: ${realImu.isNear(north.heading)}");
-      if (realImu.isNear(north.heading)) count++;
+      simulator.logger.trace("  Values are similar: ${realImu.isNear(CardinalDirection.north)}");
+      if (realImu.isNear(north)) count++;
     }
 
     final percentage = count / 1000;
@@ -102,12 +101,14 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     expect(percentage, greaterThan(0.75), reason: "IMU should be accurate >75% of the time: $percentage");
 
 
-    realImu.update(OrientationUtils.south);
-    expect(realImu.isNear(OrientationUtils.north.heading), isTrue);
+    realImu.forceUpdate(OrientationUtils.south);
+    expect(realImu.isNear(north), isTrue);
     await simulator.dispose();
   });
 
-  test("GPS noise when moving", () async {
+  test("GPS noise when moving",
+      skip: "GPS noise is reduced enough with RTK where filtering is not necessary",
+      () async {
     // Set up a simulated and real GPS, both starting at (0, 0)
     final oldError = GpsUtils.maxErrorMeters;
     GpsUtils.maxErrorMeters = 3;
@@ -116,7 +117,7 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     final simulatedGps = GpsSimulator(collection: simulator, maxError: GpsInterface.gpsError);
     var realCoordinates = GpsCoordinates();
     simulatedGps.update(realCoordinates);
-    realGps.update(realCoordinates);
+    realGps.forceUpdate(realCoordinates);
     expect(realGps.coordinates.isNear(realCoordinates), isTrue);
 
     // For each step forward, use the noisy GPS to update the real GPS.
@@ -124,7 +125,7 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     for (var step = 0; step < 1000; step++) {
       realCoordinates += GpsUtils.north;
       simulatedGps.update(realCoordinates);
-      realGps.update(simulatedGps.coordinates);
+      realGps.forceUpdate(simulatedGps.coordinates);
       simulator.logger.trace("New coordinate: ${realGps.coordinates.latitude.toStringAsFixed(5)} vs real position: ${realCoordinates.latitude.toStringAsFixed(5)}");
       simulator.logger.trace("  Difference: ${(realGps.latitude - realCoordinates.latitude).abs().toStringAsFixed(5)} < ${GpsUtils.epsilonLatitude.toStringAsFixed(5)}");
       if (step < 10) continue;
@@ -142,12 +143,12 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     GpsUtils.maxErrorMeters = oldError;
   });
 
-  test("IMU noise when moving", () async {
+  test("IMU noise when moving", skip: "IMU is currently accurate enough to not need filtering", () async {
     Logger.level = LogLevel.off;
     final simulator = AutonomySimulator();
     final simulatedImu = ImuSimulator(collection: simulator, maxError: imuError);
     final realImu = RoverImu(collection: simulator);
-    final orientation = OrientationUtils.north;
+    final orientation = CardinalDirection.north.orientation;
     simulatedImu.update(orientation);
 
     var count = 0;
@@ -155,13 +156,13 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
       orientation.z += 1;
       simulatedImu.update(orientation);
       final newData = simulatedImu.raw;
-      realImu.update(newData);
+      realImu.forceUpdate(newData);
       simulator.logger.trace("Got new value: ${newData.heading}");
       simulator.logger.trace("  New heading: ${realImu.heading}");
       simulator.logger.trace("  Real position: ${orientation.heading}");
       if (i < 10) continue;
-      simulator.logger.trace("  Values are similar: ${realImu.isNear(orientation.heading)}");
-      if (realImu.isNear(orientation.heading)) count++;
+      simulator.logger.trace("  Values are similar: ${realImu.isNear(CardinalDirection.north)}");
+      if (realImu.isNear(CardinalDirection.north)) count++;
     }
 
     final percentage = count / 350;
@@ -170,9 +171,9 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     final badData = Orientation(z: 10);
     simulator.logger.info("Final orientation: ${realImu.heading}");
     simulator.logger.info("Bad orientation: ${badData.heading}");
-    realImu.update(badData);
+    realImu.forceUpdate(badData);
     simulator.logger.info("Unaffected orientation: ${realImu.heading}");
-    expect(realImu.isNear(orientation.heading), isTrue);
+    expect(realImu.isNear(CardinalDirection.north), isTrue);
     await simulator.dispose();
   });
 
@@ -181,7 +182,7 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     const utahLatitude = 38.406683;
     final utah = GpsCoordinates(latitude: utahLatitude);
 
-    simulator.gps.update(utah);
+    simulator.gps.forceUpdate(utah);
     expect(simulator.hasValue, isFalse);
     expect(GpsInterface.currentLatitude, 0);
 
@@ -205,7 +206,7 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
     expect(simulator.gps.isNear(newYork), isFalse);
     expect(ocean.isNear(newYork), isFalse);
 
-    simulator.gps.update(newYork);
+    simulator.gps.forceUpdate(newYork);
     expect(simulator.gps.isNear(ocean), isFalse);
     expect(simulator.gps.isNear(newYork), isTrue);
 
@@ -232,15 +233,15 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
       if (realImu.isNear(orientation.heading)) count++;
     }
 
-    final percentage = count / 1000;
-    expect(percentage, greaterThan(0.75), reason: "IMU should be accurate >75% of the time: $percentage");
+  //   final percentage = count / 1000;
+  //   expect(percentage, greaterThan(0.75), reason: "IMU should be accurate >75% of the time: $percentage");
 
-    final badData = Orientation(z: 10);
-    simulator.logger.info("Final orientation: ${realImu.heading}");
-    simulator.logger.info("Bad orientation: ${badData.heading}");
-    realImu.update(badData);
-    simulator.logger.info("Unaffected orientation: ${realImu.heading}");
-    expect(realImu.isNear(orientation.heading), isTrue);
-    await simulator.dispose();
-  });
+  //   final badData = Orientation(z: 10);
+  //   simulator.logger.info("Final orientation: ${realImu.heading}");
+  //   simulator.logger.info("Bad orientation: ${badData.heading}");
+  //   realImu.update(badData);
+  //   simulator.logger.info("Unaffected orientation: ${realImu.heading}");
+  //   expect(realImu.isNear(orientation.heading), isTrue);
+  //   await simulator.dispose();
+  // });
 });

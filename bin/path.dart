@@ -4,7 +4,7 @@ import "package:autonomy/simulator.dart";
 
 void main() {
   GpsUtils.maxErrorMeters = 1;
-  final destination = (1000, 1000).toGps();
+  final destination = (lat: 1000, long: 1000).toGps();
   final simulator = AutonomySimulator();
   simulator.pathfinder = RoverPathfinder(collection: simulator);
   final path = simulator.pathfinder.getPath(destination);
@@ -18,7 +18,7 @@ void main() {
   }
   var turnCount = 0;
   for (final step in path) {
-    if (step.direction == DriveDirection.left || step.direction == DriveDirection.right) {
+    if (step.instruction == DriveDirection.left || step.instruction == DriveDirection.right) {
       turnCount++;
     }
   }

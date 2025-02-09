@@ -9,14 +9,14 @@ void printInfo(String name, double latitude) {
   GpsInterface.currentLatitude = latitude;
   print("At $name:");
   print("  There are ${GpsUtils.metersPerLongitude.toStringAsFixed(2)} meters per 1 degree of longitude");
-  print("  Our max error in longitude would be ${GpsUtils.epsilonLongitude} degrees");
+  print("  Our max error in longitude would be ${GpsUtils.epsilonLongitude.toStringAsFixed(20)} degrees");
   final isWithinRange = GpsInterface.gpsError <= GpsUtils.epsilonLongitude;
   print("  Our GPS has ${GpsInterface.gpsError} degrees of error, so this would ${isWithinRange ? 'work' : 'not work'}");
 }
 
 void main() {
   print("There are always ${GpsUtils.metersPerLatitude} meters in 1 degree of latitude");
-  print("  So our max error in latitude is always ${GpsUtils.epsilonLatitude} degrees");
+  print("  So our max error in latitude is always ${GpsUtils.epsilonLatitude.toStringAsFixed(20)} degrees");
   printInfo("the equator", 0);
   printInfo("Binghamton", binghamtonLatitude);
   printInfo("Utah", utahLatitude);
