@@ -155,7 +155,8 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   }
 
   bool isValidState(AutonomyAStarState state) =>
-    !collection.pathfinder.isObstacle(state.position)
+      !(state.instruction == DriveDirection.forward &&
+          collection.pathfinder.isObstacle(state.position))
     && !willDriveThroughObstacle(state);
 
   Iterable<AutonomyAStarState> _allNeighbors() => [
