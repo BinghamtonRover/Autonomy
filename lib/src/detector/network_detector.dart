@@ -7,9 +7,6 @@ class NetworkDetector extends DetectorInterface {
   NetworkDetector({required super.collection});
 
   @override
-  bool canSeeAruco() => false;
-
-  @override
   Future<void> dispose() async {}
 
   @override

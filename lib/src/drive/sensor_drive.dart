@@ -109,15 +109,15 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
 
   @override
   Future<void> approachAruco() async {
-    const sizeThreshold = 0.2;
-    const epsilon = 0.00001;
-    setThrottle(config.forwardThrottle);
-    moveForward();
-    await waitFor(() {
-      final size = collection.video.arucoSize;
-      collection.logger.trace("The Aruco tag is at $size percent");
-      return (size.abs() < epsilon && !collection.detector.canSeeAruco()) || size >= sizeThreshold;
-    }).timeout(config.oneMeterDelay * 5);
+    // const sizeThreshold = 0.2;
+    // const epsilon = 0.00001;
+    // setThrottle(config.forwardThrottle);
+    // moveForward();
+    // await waitFor(() {
+    //   final size = collection.video.arucoSize;
+    //   collection.logger.trace("The Aruco tag is at $size percent");
+    //   return (size.abs() < epsilon && !collection.detector.canSeeAruco()) || size >= sizeThreshold;
+    // }).timeout(config.oneMeterDelay * 5);
     await stop();
   }
 }
