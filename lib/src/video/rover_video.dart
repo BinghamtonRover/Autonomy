@@ -5,37 +5,27 @@ import "package:autonomy/interfaces.dart";
 import "package:collection/collection.dart";
 
 class RoverVideo extends VideoInterface {
-  final List<VisionResult> _cachedResults = [];
+  final List<VideoData> _cachedResults = [];
 
   RoverVideo({required super.collection});
 
   @override
-  Future<bool> init() async {
-    collection.server.messages.onMessage(
-      name: VisionResult().messageName,
-      constructor: VisionResult.fromBuffer,
-      callback: updateFrame,
-    );
-    return true;
-  }
-
-  @override
-  Future<void> dispose() async {}
-
-  @override
-  void updateFrame(VisionResult result) {
+  void updateFrame(VideoData result) {
     hasValue = true;
-    if (result.objects.isEmpty) return;
+    if (result.hasFrame()) return;
 
-    _cachedResults.removeWhere((e) => e.name == result.name);
+    _cachedResults.removeWhere((e) => e.details.name == result.details.name);
+    if (result.detectedObjects.isEmpty) return;
 
     _cachedResults.add(result);
   }
 
   @override
   DetectedObject? getArucoDetection(int id, {CameraName? desiredCamera}) {
-    for (final result in _cachedResults.where((e) => e.name == (desiredCamera ?? e.name))) {
-      for (final object in result.objects) {
+    for (final result in _cachedResults.where(
+      (e) => e.details.name == (desiredCamera ?? e.details.name),
+    )) {
+      for (final object in result.detectedObjects) {
         if (object.arucoTagId == id) {
           return object;
         }
@@ -52,14 +42,15 @@ class RoverVideo extends VideoInterface {
   }) async {
     final completer = Completer<DetectedObject>();
 
-    late final StreamSubscription<VisionResult> resultSubscription;
+    late final StreamSubscription<VideoData> resultSubscription;
 
     resultSubscription = collection.server.messages.onMessage(
-      name: VisionResult().messageName,
-      constructor: VisionResult.fromBuffer,
+      name: VideoData().messageName,
+      constructor: VideoData.fromBuffer,
       callback: (result) async {
-        if (result.name != (desiredCamera ?? result.name)) return;
-        final object = result.objects.firstWhereOrNull((e) => e.arucoTagId == id);
+        if (result.hasFrame()) return;
+        if (result.details.name != (desiredCamera ?? result.details.name)) return;
+        final object = result.detectedObjects.firstWhereOrNull((e) => e.arucoTagId == id);
         if (object != null) {
           await resultSubscription.cancel();
           completer.complete(object);
