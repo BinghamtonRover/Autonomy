@@ -9,6 +9,7 @@ class RoverDetector extends DetectorInterface {
   LidarPointCloud cloudCache = LidarPointCloud();
 
   List<GpsCoordinates> queuedObstacles = [];
+  List<GpsCoordinates> previousObstacles = [];
 
   RoverDetector({required super.collection});
 
@@ -37,6 +38,10 @@ class RoverDetector extends DetectorInterface {
       final angle = atan2(point.y, point.x) * 180 / pi;
       final magnitude = sqrt(pow(point.x, 2) + pow(point.y, 2));
 
+      if (magnitude <= 0.1) {
+        continue;
+      }
+
       final matchingPolar = polar.where((e) =>
             (e.angle - angle.roundToDouble()).abs() <= 1 &&
             (e.angle - angle.roundToDouble()).abs() != 0,
@@ -46,16 +51,17 @@ class RoverDetector extends DetectorInterface {
       if (matchingPolar.isEmpty) {
         continue;
       }
+
       // nearby polar coordinates do not match the cartesian distance, likely a false speck
-      if (!matchingPolar.any((e) => (e.distance - magnitude).abs() < 0.05)) {
+      if (!matchingPolar.any((e) => (e.distance - magnitude).abs() < 0.1)) {
         continue;
       }
 
-      final imuAngleRad = collection.imu.heading * pi / 180;
+      final imuAngleRad = collection.imu.heading * pi / 180 + pi / 2;
 
       final roverToPoint = (
-        long: point.x * cos(imuAngleRad) - (-point.y) * sin(imuAngleRad),
-        lat: (-point.y) * cos(imuAngleRad) + point.x * sin(imuAngleRad)
+        long: point.x * cos(imuAngleRad) - point.y * sin(imuAngleRad),
+        lat: point.y * cos(imuAngleRad) + point.x * sin(imuAngleRad)
       );
 
       queuedObstacles.add(
@@ -74,9 +80,14 @@ class RoverDetector extends DetectorInterface {
   bool findObstacles() {
     if (queuedObstacles.isEmpty) return false;
 
+    collection.pathfinder.obstacles.removeAll(previousObstacles);
+    previousObstacles.clear();
+
     for (final obstacle in queuedObstacles) {
       collection.pathfinder.recordObstacle(obstacle);
     }
+
+    previousObstacles.addAll(queuedObstacles);
 
     queuedObstacles.clear();
 
