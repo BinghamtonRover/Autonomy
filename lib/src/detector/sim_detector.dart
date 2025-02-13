@@ -38,8 +38,5 @@ class DetectorSimulator extends DetectorInterface {
   }
 
   @override
-  bool canSeeAruco() => false;  // if can see [arucoPosition]
-
-  @override
   bool isOnSlope() => false;  // if on [slopedLatitude]
 }

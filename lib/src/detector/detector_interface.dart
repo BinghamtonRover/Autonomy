@@ -5,6 +5,5 @@ abstract class DetectorInterface extends Service {
   DetectorInterface({required this.collection});
 
   bool findObstacles();
-  bool canSeeAruco();
   bool isOnSlope();
 }
