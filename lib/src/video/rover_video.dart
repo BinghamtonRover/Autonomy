@@ -26,7 +26,8 @@ class RoverVideo extends VideoInterface {
       (e) => e.details.name == (desiredCamera ?? e.details.name),
     )) {
       for (final object in result.detectedObjects) {
-        if (object.arucoTagId == id) {
+        if (object.objectType == DetectedObjectType.ARUCO &&
+            object.arucoTagId == id) {
           return object;
         }
       }
@@ -48,9 +49,11 @@ class RoverVideo extends VideoInterface {
       name: VideoData().messageName,
       constructor: VideoData.fromBuffer,
       callback: (result) async {
-        if (result.hasFrame()) return;
+        if (result.hasFrame() && result.frame.isNotEmpty) return;
         if (result.details.name != (desiredCamera ?? result.details.name)) return;
-        final object = result.detectedObjects.firstWhereOrNull((e) => e.arucoTagId == id);
+        final object = result.detectedObjects.firstWhereOrNull(
+          (e) => e.objectType == DetectedObjectType.ARUCO && e.arucoTagId == id,
+        );
         if (object != null) {
           await resultSubscription.cancel();
           completer.complete(object);

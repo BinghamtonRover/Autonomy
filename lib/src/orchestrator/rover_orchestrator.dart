@@ -183,7 +183,15 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         body: "Detection: ${detectedAruco.toProto3Json()}",
       );
 
-      final distanceToTag = detectedAruco.bestPnpResult.cameraToTarget.translation.z.abs() - 1; // Don't drive *into* the tag
+      // In theory we could just find the relative position with the translation x and z,
+      // however if the tag's rotation relative to itself is off (which can be common
+      // when facing it head on), then it will be extremely innacurate. Since the SolvePnP's
+      // distance is always extremely accurate, it is more reliable to use the distance
+      // hypotenuse to the camera combined with trig of the tag's angle relative to the camera.
+      final cameraToTag = detectedAruco.bestPnpResult.cameraToTarget;
+      final distanceToTag = sqrt(
+        pow(cameraToTag.translation.z, 2) + pow(cameraToTag.translation.x, 2),
+      ) - 1; // don't drive *into* the tag
 
       if (distanceToTag < 1) {
         // well that was easy
@@ -192,8 +200,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         return;
       }
 
-      final relativeX = distanceToTag * sin((collection.imu.heading - detectedAruco.yaw - 90) * pi / 180);
-      final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco.yaw - 90) * pi / 180);
+      final relativeX = -distanceToTag * sin((collection.imu.heading - detectedAruco.yaw) * pi / 180);
+      final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco.yaw) * pi / 180);
 
       final destinationCoordinates = (collection.gps.coordinates.inMeters + (lat: relativeY, long: relativeX)).toGps();
 
