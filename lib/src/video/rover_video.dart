@@ -12,7 +12,7 @@ class RoverVideo extends VideoInterface {
   @override
   void updateFrame(VideoData result) {
     hasValue = true;
-    if (result.hasFrame()) return;
+    if (result.hasFrame() && result.frame.isNotEmpty) return;
 
     _cachedResults.removeWhere((e) => e.details.name == result.details.name);
     if (result.detectedObjects.isEmpty) return;

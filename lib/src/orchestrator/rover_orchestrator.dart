@@ -183,7 +183,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         body: "Detection: ${detectedAruco.toProto3Json()}",
       );
 
-      final distanceToTag = detectedAruco.bestPnpResult.cameraToTarget.translation.z.abs() - 0.5; // Don't drive *into* the tag
+      final distanceToTag = detectedAruco.bestPnpResult.cameraToTarget.translation.z.abs() - 1; // Don't drive *into* the tag
 
       if (distanceToTag < 1) {
         // well that was easy
@@ -192,8 +192,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         return;
       }
 
-      final relativeX = distanceToTag * sin((collection.imu.heading - detectedAruco.yaw) * pi / 180);
-      final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco.yaw) * pi / 180);
+      final relativeX = distanceToTag * sin((collection.imu.heading - detectedAruco.yaw - 90) * pi / 180);
+      final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco.yaw - 90) * pi / 180);
 
       final destinationCoordinates = (collection.gps.coordinates.inMeters + (lat: relativeY, long: relativeX)).toGps();
 
