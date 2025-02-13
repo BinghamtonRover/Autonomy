@@ -34,15 +34,22 @@ class RoverDetector extends DetectorInterface {
       return;
     }
 
+    queuedObstacles.clear();
+
     for (final point in cartesian) {
       final angle = atan2(point.y, point.x) * 180 / pi;
       final magnitude = sqrt(pow(point.x, 2) + pow(point.y, 2));
+
+      if (angle >= pi / 2) {
+        continue;
+      }
 
       if (magnitude <= 0.1) {
         continue;
       }
 
-      final matchingPolar = polar.where((e) =>
+      final matchingPolar = polar.where(
+        (e) =>
             (e.angle - angle.roundToDouble()).abs() <= 1 &&
             (e.angle - angle.roundToDouble()).abs() != 0,
       );
@@ -61,7 +68,7 @@ class RoverDetector extends DetectorInterface {
 
       final roverToPoint = (
         long: point.x * cos(imuAngleRad) - point.y * sin(imuAngleRad),
-        lat: point.y * cos(imuAngleRad) + point.x * sin(imuAngleRad)
+        lat: point.y * cos(imuAngleRad) + point.x * sin(imuAngleRad),
       );
 
       queuedObstacles.add(
