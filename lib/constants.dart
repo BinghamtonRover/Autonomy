@@ -28,7 +28,7 @@ class Constants {
   static const Duration driveGPSTimeout = Duration(seconds: 4, milliseconds: 500);
 
   /// The maximum time to spend searching for an aruco tag
-  static const Duration arucoSearchTimeout = Duration(seconds: 25);
+  static const Duration arucoSearchTimeout = Duration(seconds: 20);
 
   /// The camera that should be used to detect Aruco tags
   static const CameraName arucoDetectionCamera = CameraName.ROVER_FRONT;

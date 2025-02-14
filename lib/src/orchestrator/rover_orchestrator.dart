@@ -35,10 +35,14 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   @override
   Message getMessage() => statusMessage;
 
-  Future<bool> calculateAndFollowPath(GpsCoordinates goal, {bool abortOnError = true}) async {
+  Future<bool> calculateAndFollowPath(
+    GpsCoordinates goal, {
+    bool abortOnError = true,
+    bool Function()? alternateEndCondition,
+  }) async {
     await collection.drive.resolveOrientation();
     collection.detector.findObstacles();
-    while (!collection.gps.coordinates.isNear(goal)) {
+    while (!collection.gps.coordinates.isNear(goal) && !(alternateEndCondition?.call() ?? false)) {
       // Calculate a path
       collection.logger.debug("Finding a path");
       currentState = AutonomyState.PATHING;
@@ -64,6 +68,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       var count = 0;
       for (final state in path) {
         collection.logger.debug(state.toString());
+        // Alternate end condition may have hit between steps
+        if (alternateEndCondition?.call() ?? false) {
+          break;
+        }
         // Replan if too far from start point
         final distanceError = collection.gps.coordinates.distanceTo(state.startPostition);
         if (distanceError >= Constants.replanErrorMeters) {
@@ -205,7 +213,49 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
       final destinationCoordinates = (collection.gps.coordinates.inMeters + (lat: relativeY, long: relativeX)).toGps();
 
-      if (await calculateAndFollowPath(destinationCoordinates, abortOnError: false)) {
+      if (await calculateAndFollowPath(
+        destinationCoordinates,
+        abortOnError: false,
+        alternateEndCondition: () {
+          detectedAruco = collection.video.getArucoDetection(
+            command.arucoId,
+            desiredCamera: Constants.arucoDetectionCamera,
+          );
+          if (detectedAruco == null) {
+            return false;
+          }
+          final cameraToTag = detectedAruco!.bestPnpResult.cameraToTarget;
+          final distanceToTag = sqrt(
+            pow(cameraToTag.translation.z, 2) +
+                pow(cameraToTag.translation.x, 2),
+          );
+          return distanceToTag < 0.75;
+        },
+      )) {
+        detectedAruco = collection.video.getArucoDetection(
+          command.arucoId,
+          desiredCamera: Constants.arucoDetectionCamera,
+        );
+        if (detectedAruco == null) {
+          await collection.drive.spinForAruco(
+            command.arucoId,
+            desiredCamera: Constants.arucoDetectionCamera,
+          );
+        }
+
+        detectedAruco = collection.video.getArucoDetection(
+          command.arucoId,
+          desiredCamera: Constants.arucoDetectionCamera,
+        );
+
+        if (detectedAruco != null) {
+          await collection.drive.faceOrientation(
+            Orientation(
+              z: collection.imu.heading - detectedAruco!.yaw,
+            ),
+          );
+        }
+
         collection.logger.info("Successfully reached within ${Constants.maxErrorMeters} meters of the Aruco tag");
         collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
         currentState = AutonomyState.AT_DESTINATION;
