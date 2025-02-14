@@ -213,7 +213,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
       final destinationCoordinates = (collection.gps.coordinates.inMeters + (lat: relativeY, long: relativeX)).toGps();
 
-      if (await calculateAndFollowPath(
+      if (!await calculateAndFollowPath(
         destinationCoordinates,
         abortOnError: false,
         alternateEndCondition: () {
@@ -229,42 +229,46 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
             pow(cameraToTag.translation.z, 2) +
                 pow(cameraToTag.translation.x, 2),
           );
-          return distanceToTag < 0.75;
+          return distanceToTag < 1;
         },
       )) {
-        detectedAruco = collection.video.getArucoDetection(
-          command.arucoId,
-          desiredCamera: Constants.arucoDetectionCamera,
-        );
-        if (detectedAruco == null) {
-          await collection.drive.spinForAruco(
-            command.arucoId,
-            desiredCamera: Constants.arucoDetectionCamera,
-          );
-        }
-
-        detectedAruco = collection.video.getArucoDetection(
-          command.arucoId,
-          desiredCamera: Constants.arucoDetectionCamera,
-        );
-
-        if (detectedAruco != null) {
-          await collection.drive.faceOrientation(
-            Orientation(
-              z: collection.imu.heading - detectedAruco!.yaw,
-            ),
-          );
-        }
-
-        collection.logger.info("Successfully reached within ${Constants.maxErrorMeters} meters of the Aruco tag");
-        collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
-        currentState = AutonomyState.AT_DESTINATION;
+        collection.logger.error("Could not spin towards ArUco tag");
+        currentCommand = null;
+        return;
       }
-      currentCommand = null;
-    } else {
-      collection.logger.error("Could not spin towards ArUco tag");
-      currentCommand = null;
+      collection.logger.info("Arrived at estimated Aruco position");
+      detectedAruco = collection.video.getArucoDetection(
+        command.arucoId,
+        desiredCamera: Constants.arucoDetectionCamera,
+      );
+      if (detectedAruco == null) {
+        collection.logger.info("Re-spinning to find Aruco");
+        await collection.drive.spinForAruco(
+          command.arucoId,
+          desiredCamera: Constants.arucoDetectionCamera,
+        );
+      }
+
+      detectedAruco = collection.video.getArucoDetection(
+        command.arucoId,
+        desiredCamera: Constants.arucoDetectionCamera,
+      );
+      if (detectedAruco != null) {
+        collection.logger.info("Rotating towards Aruco");
+        await collection.drive.faceOrientation(
+          Orientation(
+            z: collection.imu.heading - detectedAruco!.yaw,
+          ),
+        );
+      } else {
+        collection.logger.warning("Could not find Aruco after following path");
+      }
+
+      collection.logger.info("Successfully reached within ${Constants.maxErrorMeters} meters of the Aruco tag");
+      collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+      currentState = AutonomyState.AT_DESTINATION;
     }
+    currentCommand = null;
   }
 
   @override
