@@ -37,6 +37,9 @@ class DriveSimulator extends DriveInterface {
   }
 
   @override
+  Future<bool> spinForAruco(int arucoId, {CameraName? desiredCamera}) async => true;
+
+  @override
   Future<bool> stop() async {
     collection.logger.debug("Stopping");
     return true;

@@ -97,27 +97,38 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   }
 
   @override
-  Future<bool> spinForAruco() async {
+  Future<bool> spinForAruco(
+    int arucoId, {
+    CameraName? desiredCamera,
+  }) async {
     setThrottle(config.turnThrottle);
-    spinLeft();
-    final result = await waitFor(() => collection.detector.canSeeAruco())
-      .then((_) => true)
-      .timeout(config.turnDelay * 4, onTimeout: () => false);
+    var foundAruco = true;
+    await waitFor(() {
+      if (!foundAruco) {
+        return true;
+      }
+      spinLeft();
+      return collection.video.getArucoDetection(arucoId, desiredCamera: desiredCamera) != null;
+    }).timeout(
+      Constants.arucoSearchTimeout,
+      onTimeout: () => foundAruco = false,
+    );
     await stop();
-    return result;
+    return foundAruco;
   }
 
   @override
   Future<void> approachAruco() async {
-    const sizeThreshold = 0.2;
-    const epsilon = 0.00001;
-    setThrottle(config.forwardThrottle);
-    moveForward();
-    await waitFor(() {
-      final size = collection.video.arucoSize;
-      collection.logger.trace("The Aruco tag is at $size percent");
-      return (size.abs() < epsilon && !collection.detector.canSeeAruco()) || size >= sizeThreshold;
-    }).timeout(config.oneMeterDelay * 5);
+    // const sizeThreshold = 0.2;
+    // const epsilon = 0.00001;
+    // setThrottle(config.forwardThrottle);
+    // moveForward();
+    // await waitFor(() {
+    //   final size = collection.video.arucoSize;
+    //   collection.logger.trace("The Aruco tag is at $size percent");
+    //   return true;
+    //   return (size.abs() < epsilon && !collection.detector.canSeeAruco()) || size >= sizeThreshold;
+    // }).timeout(config.oneMeterDelay * 5);
     await stop();
   }
 }

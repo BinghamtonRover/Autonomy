@@ -1,5 +1,3 @@
-import "dart:typed_data";
-
 import "package:autonomy/interfaces.dart";
 
 class VideoSimulator extends VideoInterface {
@@ -8,14 +6,9 @@ class VideoSimulator extends VideoInterface {
   @override
   Future<bool> init() async {
     hasValue = true;
-    return true;
+    return super.init();
   }
 
   @override
-  Future<void> dispose() async => depthFrame = Uint16List.fromList([]);
-
-  Uint16List depthFrame = Uint16List.fromList([]);
-
-  @override
-  void updateFrame(VideoData newData) { }
+  void updateFrame(VideoData result) {}
 }

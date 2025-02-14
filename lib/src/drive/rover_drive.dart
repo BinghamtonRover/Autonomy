@@ -77,7 +77,10 @@ class RoverDrive extends DriveInterface {
   }
 
   @override
-  Future<bool> spinForAruco() => sensorDrive.spinForAruco();
+  Future<bool> spinForAruco(
+    int arucoId, {
+    CameraName? desiredCamera,
+  }) => sensorDrive.spinForAruco(arucoId, desiredCamera: desiredCamera);
 
   @override
   Future<void> approachAruco() => sensorDrive.approachAruco();
