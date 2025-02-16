@@ -7,7 +7,7 @@ import "drive_commands.dart";
 /// An implementation of [DriveInterface] that uses the rover's sensors to
 /// determine its direction to move in and whether or not it has moved in its
 /// desired direction/orientation
-/// 
+///
 /// When this is driving, it assumes that the rover is constantly getting new sensor
 /// readings, if not, this will continue moving indefinitely
 class SensorDrive extends DriveInterface with RoverDriveCommands {
@@ -94,5 +94,41 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
     // }
     collection.logger.trace("Current heading: $current");
     return collection.imu.isNear(orientation);
+  }
+
+  @override
+  Future<bool> spinForAruco(
+    int arucoId, {
+    CameraName? desiredCamera,
+  }) async {
+    setThrottle(config.turnThrottle);
+    var foundAruco = true;
+    await waitFor(() {
+      if (!foundAruco) {
+        return true;
+      }
+      spinLeft();
+      return collection.video.getArucoDetection(arucoId, desiredCamera: desiredCamera) != null;
+    }).timeout(
+      Constants.arucoSearchTimeout,
+      onTimeout: () => foundAruco = false,
+    );
+    await stop();
+    return foundAruco;
+  }
+
+  @override
+  Future<void> approachAruco() async {
+    // const sizeThreshold = 0.2;
+    // const epsilon = 0.00001;
+    // setThrottle(config.forwardThrottle);
+    // moveForward();
+    // await waitFor(() {
+    //   final size = collection.video.arucoSize;
+    //   collection.logger.trace("The Aruco tag is at $size percent");
+    //   return true;
+    //   return (size.abs() < epsilon && !collection.detector.canSeeAruco()) || size >= sizeThreshold;
+    // }).timeout(config.oneMeterDelay * 5);
+    await stop();
   }
 }

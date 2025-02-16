@@ -3,12 +3,12 @@ import "dart:io";
 import "package:burt_network/burt_network.dart";
 
 /// Configuration for the Rover's drive behavior
-/// 
+///
 /// Each rover or device that is tested will have different behaviors
 /// depending on the mechanical and electrical setup, ranging from subsystems
 /// program address, to drive speeds, or the time it takes to move forward
 /// and turn.
-/// 
+///
 /// This class is to make testing on different devices easier
 class DriveConfig {
   /// The throttle to set the drive to when moving forward
@@ -42,7 +42,7 @@ class DriveConfig {
 const roverConfig = DriveConfig(
   forwardThrottle: 0.2,
   turnThrottle: 0.075,
-  oneMeterDelay: Duration(milliseconds: 2250),
+  oneMeterDelay: Duration(milliseconds: 2250 ~/ 2),
   turnDelay: Duration(milliseconds: 4500),
   subsystemsAddress: "192.168.1.20",
 );

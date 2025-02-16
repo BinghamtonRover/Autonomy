@@ -1,3 +1,5 @@
+import "package:autonomy/autonomy.dart";
+
 class Constants {
   /// The maximum error or "tolerance" for reaching the end goal
   static const double maxErrorMeters = 1;
@@ -23,5 +25,11 @@ class Constants {
   ///
   /// Only applies to individual "drive forward" steps, to prevent indefinite driving
   /// if it never reaches within [maxErrorMeters] of its desired position.
-  static const Duration driveGPSTimeout = Duration(seconds: 3, milliseconds: 53);
+  static const Duration driveGPSTimeout = Duration(seconds: 4, milliseconds: 500);
+
+  /// The maximum time to spend searching for an aruco tag
+  static const Duration arucoSearchTimeout = Duration(seconds: 20);
+
+  /// The camera that should be used to detect Aruco tags
+  static const CameraName arucoDetectionCamera = CameraName.ROVER_FRONT;
 }
