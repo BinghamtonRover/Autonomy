@@ -78,6 +78,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         final distanceError = collection.gps.coordinates.distanceTo(state.startPostition);
         if (distanceError >= Constants.replanErrorMeters) {
           collection.logger.info("Replanning Path", body: "Rover is $distanceError meters off the path");
+          collection.detector.findObstacles();
           break;
         }
         // Re-align to desired start orientation if angle is too far
@@ -104,6 +105,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
         // If there was an error (usually a timeout) while driving, replan path
         if (!await collection.drive.driveState(state)) {
+          collection.detector.findObstacles();
           break;
         }
         if (currentCommand == null || currentPath == null) {
@@ -112,7 +114,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
         traversed.add(state.position);
         // if (state.direction != DriveDirection.forward) continue;
-        if (++count >= 5) break;
+        if (++count >= 5) {
+          collection.detector.findObstacles();
+          break;
+        }
         final foundObstacle = collection.detector.findObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path...");
