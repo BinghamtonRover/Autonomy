@@ -3,6 +3,7 @@ import "dart:math";
 
 import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
+import "package:coordinate_converter/coordinate_converter.dart";
 
 /// An alias for gps coordinates measured in meters
 typedef GpsMeters = ({num lat, num long});
@@ -23,29 +24,41 @@ extension GpsMetersUtil on GpsMeters {
 }
 
 extension GpsUtils on GpsCoordinates {
-  static const GpsMeters eastMeters = (lat: 0, long: Constants.moveLengthMeters);
-  static const GpsMeters westMeters = (lat: 0, long: -Constants.moveLengthMeters);
-  static const GpsMeters northMeters = (lat: Constants.moveLengthMeters, long: 0);
-  static const GpsMeters southMeters = (lat: -Constants.moveLengthMeters, long: 0);
-  static final GpsMeters northEastMeters = northMeters + eastMeters;
-  static final GpsMeters northWestMeters = northMeters + westMeters;
-  static final GpsMeters southEastMeters = southMeters + eastMeters;
-  static final GpsMeters southWestMeters = southMeters + westMeters;
+  static UTMCoordinates eastMeters = UTMCoordinates(y: 0, x: Constants.moveLengthMeters, zoneNumber: 1);
+  static UTMCoordinates westMeters = UTMCoordinates(y: 0, x: -Constants.moveLengthMeters, zoneNumber: 1);
+  static UTMCoordinates northMeters = UTMCoordinates(y: Constants.moveLengthMeters, x: 0, zoneNumber: 1);
+  static UTMCoordinates southMeters = UTMCoordinates(y: -Constants.moveLengthMeters, x: 0, zoneNumber: 1);
+  static final UTMCoordinates northEastMeters = northMeters + eastMeters;
+  static final UTMCoordinates northWestMeters = northMeters + westMeters;
+  static final UTMCoordinates southEastMeters = southMeters + eastMeters;
+  static final UTMCoordinates southWestMeters = southMeters + westMeters;
 
   /// Whether or not the coordinates is fused with the RTK algorithm
   bool get hasRTK => rtkMode == RTKMode.RTK_FIXED || rtkMode == RTKMode.RTK_FLOAT;
 
+  /// The distance to [other] using the haversine formula
   double distanceTo(GpsCoordinates other) {
-    final deltaMeters = inMeters - other.inMeters;
+    // Radius of the earth in meters
+    const double earthRadius = 6371000;
+    // Calculate the differences between the coordinates
+    final deltaLat = (latitude - other.latitude) * pi / 180;
+    final deltaLong = (longitude - other.longitude) * pi / 180;
 
-    return sqrt(pow(deltaMeters.long, 2) + pow(deltaMeters.lat, 2));
+    // Apply the Haversine formula
+    final a = pow(sin(deltaLat / 2), 2) +
+        cos(other.latitude * pi / 180) *
+            cos(latitude * pi / 180) *
+            pow(sin(deltaLong / 2), 2);
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return earthRadius * c;
   }
 
   double heuristicDistance(GpsCoordinates other) {
     var distance = 0.0;
-    final delta = inMeters - other.inMeters;
-    final deltaLat = delta.lat.abs();
-    final deltaLong = delta.long.abs();
+    final delta = asUtmCoordinates - other.asUtmCoordinates;
+    final deltaLat = delta.y.abs();
+    final deltaLong = delta.x.abs();
 
     final minimumDistance = min(deltaLat, deltaLong);
     if (minimumDistance >= Constants.moveLengthMeters) {
@@ -62,28 +75,22 @@ extension GpsUtils on GpsCoordinates {
   }
 
   double manhattanDistance(GpsCoordinates other) {
-    final delta = inMeters - other.inMeters;
-    return delta.lat.toDouble().abs() + delta.long.abs();
+    final delta = asUtmCoordinates - other.asUtmCoordinates;
+    return delta.x.abs() + delta.y.abs();
   }
 
   double octileDistance(GpsCoordinates other) {
-    final delta = inMeters - other.inMeters;
-    final dx = delta.long.abs() ~/ Constants.moveLengthMeters;
-    final dy = delta.lat.abs() ~/ Constants.moveLengthMeters;
+    final delta = asUtmCoordinates - other.asUtmCoordinates;
+    final dx = delta.x.abs() ~/ Constants.moveLengthMeters;
+    final dy = delta.y.abs() ~/ Constants.moveLengthMeters;
 
     return max(dx, dy) + (sqrt2 - 1) * min(dx, dy);
   }
 
   bool isNear(GpsCoordinates other, [double? tolerance]) {
     tolerance ??= Constants.maxErrorMeters;
-    final currentMeters = inMeters;
-    final otherMeters = other.inMeters;
 
-    final delta = currentMeters - otherMeters;
-
-    final distance = sqrt(pow(delta.long, 2) + pow(delta.lat, 2));
-
-    return distance < tolerance;
+    return distanceTo(other) < tolerance;
   }
 
   GpsCoordinates operator +(GpsCoordinates other) => GpsCoordinates(
@@ -98,7 +105,7 @@ extension GpsUtils on GpsCoordinates {
 
   String prettyPrint() => toProto3Json().toString();
 
-  GpsCoordinates goForward(CardinalDirection orientation) => (inMeters +
+  GpsCoordinates goForward(CardinalDirection orientation) => (asUtmCoordinates +
     switch (orientation) {
       CardinalDirection.north => GpsUtils.northMeters,
       CardinalDirection.south => GpsUtils.southMeters,
@@ -108,5 +115,5 @@ extension GpsUtils on GpsCoordinates {
       CardinalDirection.northWest => GpsUtils.northWestMeters,
       CardinalDirection.southEast => GpsUtils.southEastMeters,
       CardinalDirection.southWest => GpsUtils.southWestMeters,
-    }).toGps();
+    }).asGpsCoordinates;
 }

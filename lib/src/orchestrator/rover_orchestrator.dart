@@ -4,6 +4,8 @@ import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
 import "dart:async";
 
+import "package:coordinate_converter/coordinate_converter.dart";
+
 class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   final List<GpsCoordinates> traversed = [];
   List<AutonomyAStarState>? currentPath;
@@ -83,9 +85,9 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           Orientation targetOrientation;
           // if it has RTK, point towards the next coordinate
           if (collection.gps.coordinates.hasRTK) {
-            final difference = state.position.inMeters - collection.gps.coordinates.inMeters;
+            final difference = state.position.asUtmCoordinates - collection.gps.coordinates.asUtmCoordinates;
 
-            final angle = atan2(difference.lat, difference.long) * 180 / pi;
+            final angle = atan2(difference.y, difference.x) * 180 / pi;
 
             targetOrientation = Orientation(z: angle);
           } else {
@@ -211,7 +213,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       final relativeX = -distanceToTag * sin((collection.imu.heading - detectedAruco.yaw) * pi / 180);
       final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco.yaw) * pi / 180);
 
-      final destinationCoordinates = (collection.gps.coordinates.inMeters + (lat: relativeY, long: relativeX)).toGps();
+      final destinationCoordinates =
+          (collection.gps.coordinates.asUtmCoordinates +
+                  UTMCoordinates(y: relativeY, x: relativeX, zoneNumber: 1))
+              .asGpsCoordinates;
 
       if (!await calculateAndFollowPath(
         destinationCoordinates,

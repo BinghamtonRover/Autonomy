@@ -2,6 +2,7 @@ import "dart:async";
 import "dart:math";
 
 import "package:autonomy/interfaces.dart";
+import "package:coordinate_converter/coordinate_converter.dart";
 
 class RoverDetector extends DetectorInterface {
   StreamSubscription<LidarPointCloud>? _subscription;
@@ -66,13 +67,15 @@ class RoverDetector extends DetectorInterface {
 
       final imuAngleRad = collection.imu.heading * pi / 180 + pi / 2;
 
-      final roverToPoint = (
-        long: point.x * cos(imuAngleRad) - point.y * sin(imuAngleRad),
-        lat: point.y * cos(imuAngleRad) + point.x * sin(imuAngleRad),
+      final roverToPoint = UTMCoordinates(
+        x: point.x * cos(imuAngleRad) - point.y * sin(imuAngleRad),
+        y: point.y * cos(imuAngleRad) + point.x * sin(imuAngleRad),
+        zoneNumber: 1,
       );
 
       queuedObstacles.add(
-        (collection.gps.coordinates.inMeters + roverToPoint).toGps(),
+        (collection.gps.coordinates.asUtmCoordinates + roverToPoint)
+            .asGpsCoordinates,
       );
     }
 
