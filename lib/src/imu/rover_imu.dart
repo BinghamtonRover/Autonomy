@@ -32,6 +32,12 @@ class RoverImu extends ImuInterface {
 
   void _internalUpdate(RoverPosition newValue) {
     if (!newValue.hasOrientation()) return;
+    // Angles are always between -180 and +180
+    if (newValue.orientation.x.abs() > 180 ||
+        newValue.orientation.y.abs() > 180 ||
+        newValue.orientation.z.abs() > 180) {
+      return;
+    }
     _xCorrector.addValue(newValue.orientation.x);
     _yCorrector.addValue(newValue.orientation.y);
     _zCorrector.addValue(newValue.orientation.z);
