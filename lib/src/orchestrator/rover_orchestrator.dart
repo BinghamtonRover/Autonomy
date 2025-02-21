@@ -37,6 +37,21 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   @override
   Message getMessage() => statusMessage;
 
+  bool findAndLockObstacles() {
+    if (!collection.detector.findObstacles()) {
+      return false;
+    }
+
+    if (currentPath == null) return true;
+
+    currentPath!
+        .map((state) => state.position)
+        .where((position) => collection.pathfinder.isObstacle(position))
+        .forEach(collection.pathfinder.lockObstacle);
+
+    return true;
+  }
+
   Future<bool> calculateAndFollowPath(
     GpsCoordinates goal, {
     bool abortOnError = true,
@@ -78,7 +93,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         final distanceError = collection.gps.coordinates.distanceTo(state.startPostition);
         if (distanceError >= Constants.replanErrorMeters) {
           collection.logger.info("Replanning Path", body: "Rover is $distanceError meters off the path");
-          collection.detector.findObstacles();
+          findAndLockObstacles();
           break;
         }
         // Re-align to desired start orientation if angle is too far
@@ -105,7 +120,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         }
         // If there was an error (usually a timeout) while driving, replan path
         if (!await collection.drive.driveState(state)) {
-          collection.detector.findObstacles();
+          findAndLockObstacles();
           break;
         }
         if (currentCommand == null || currentPath == null) {
@@ -115,10 +130,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         traversed.add(state.position);
         // if (state.direction != DriveDirection.forward) continue;
         if (++count >= 5) {
-          collection.detector.findObstacles();
+          findAndLockObstacles();
           break;
         }
-        final foundObstacle = collection.detector.findObstacles();
+        final foundObstacle = findAndLockObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path...");
           break;  // calculate a new path

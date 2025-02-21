@@ -7,8 +7,18 @@ abstract class PathfindingInterface extends Service {
   List<AutonomyAStarState>? getPath(GpsCoordinates destination, {bool verbose = false});
 
   Set<GpsCoordinates> obstacles = {};
+  final Set<GpsCoordinates> _lockedObstacles = {};
+
   void recordObstacle(GpsCoordinates coordinates) => obstacles.add(coordinates);
-  bool isObstacle(GpsCoordinates coordinates) => obstacles.any((obstacle) => obstacle.isNear(coordinates));
+
+  void lockObstacle(GpsCoordinates coordinates) {
+    _lockedObstacles.add(coordinates);
+    obstacles.remove(coordinates);
+  }
+
+  bool isObstacle(GpsCoordinates coordinates) =>
+      obstacles.any((obstacle) => obstacle.isNear(coordinates)) ||
+      _lockedObstacles.any((obstacle) => obstacle.isNear(coordinates));
 
   @override
   Future<void> dispose() async {
