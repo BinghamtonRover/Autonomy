@@ -13,7 +13,7 @@ dependencies:
   a_star: ^3.0.0
   meta: ^1.11.0
   collection: ^1.19.1
-  coordinate_converter: ^1.1.1
+  coordinate_converter: ^1.1.2
 
 dev_dependencies:
   test: ^1.21.0
