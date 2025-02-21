@@ -9,6 +9,8 @@ abstract class PathfindingInterface extends Service {
   Set<GpsCoordinates> obstacles = {};
   final Set<GpsCoordinates> _lockedObstacles = {};
 
+  Set<GpsCoordinates> get lockedObstacles => _lockedObstacles;
+
   void recordObstacle(GpsCoordinates coordinates) => obstacles.add(coordinates);
 
   void lockObstacle(GpsCoordinates coordinates) {

@@ -24,7 +24,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   AutonomyData get statusMessage => AutonomyData(
     destination: currentCommand?.destination,
     state: currentState,
-    obstacles: collection.pathfinder.obstacles,
+    obstacles: [
+      ...collection.pathfinder.obstacles,
+      ...collection.pathfinder.lockedObstacles,
+    ],
     path: [
       for (final transition in currentPath ?? <AutonomyAStarState>[])
         transition.position,
