@@ -56,7 +56,7 @@ extension GpsUtils on GpsCoordinates {
 
   double heuristicDistance(GpsCoordinates other) {
     var distance = 0.0;
-    final delta = asUtmCoordinates - other.asUtmCoordinates;
+    final delta = toUTM() - other.toUTM();
     final deltaLat = delta.y.abs();
     final deltaLong = delta.x.abs();
 
@@ -75,12 +75,12 @@ extension GpsUtils on GpsCoordinates {
   }
 
   double manhattanDistance(GpsCoordinates other) {
-    final delta = asUtmCoordinates - other.asUtmCoordinates;
+    final delta = toUTM() - other.toUTM();
     return delta.x.abs() + delta.y.abs();
   }
 
   double octileDistance(GpsCoordinates other) {
-    final delta = asUtmCoordinates - other.asUtmCoordinates;
+    final delta = toUTM() - other.toUTM();
     final dx = delta.x.abs() ~/ Constants.moveLengthMeters;
     final dy = delta.y.abs() ~/ Constants.moveLengthMeters;
 
@@ -105,7 +105,7 @@ extension GpsUtils on GpsCoordinates {
 
   String prettyPrint() => toProto3Json().toString();
 
-  GpsCoordinates goForward(CardinalDirection orientation) => (asUtmCoordinates +
+  GpsCoordinates goForward(CardinalDirection orientation) => (toUTM() +
     switch (orientation) {
       CardinalDirection.north => GpsUtils.northMeters,
       CardinalDirection.south => GpsUtils.southMeters,
@@ -115,5 +115,5 @@ extension GpsUtils on GpsCoordinates {
       CardinalDirection.northWest => GpsUtils.northWestMeters,
       CardinalDirection.southEast => GpsUtils.southEastMeters,
       CardinalDirection.southWest => GpsUtils.southWestMeters,
-    }).asGpsCoordinates;
+    }).toGps();
 }
