@@ -9,8 +9,8 @@ class RoverDetector extends DetectorInterface {
 
   LidarPointCloud cloudCache = LidarPointCloud();
 
-  List<GpsCoordinates> queuedObstacles = [];
-  List<GpsCoordinates> previousObstacles = [];
+  Set<GpsCoordinates> queuedObstacles = {};
+  Set<GpsCoordinates> temporaryObstacles = {};
 
   RoverDetector({required super.collection});
 
@@ -74,8 +74,8 @@ class RoverDetector extends DetectorInterface {
       );
 
       queuedObstacles.add(
-        (collection.gps.coordinates.asUtmCoordinates + roverToPoint)
-            .asGpsCoordinates,
+        (collection.gps.coordinates.toUTM() + roverToPoint)
+            .toGps(),
       );
     }
 
@@ -90,14 +90,23 @@ class RoverDetector extends DetectorInterface {
   bool findObstacles() {
     if (queuedObstacles.isEmpty) return false;
 
-    collection.pathfinder.obstacles.removeAll(previousObstacles);
-    previousObstacles.clear();
+    final roverUtm = collection.gps.coordinates.toUTM();
+
+    final toRemove = temporaryObstacles.where((coordinates) {
+      final delta = coordinates.toUTM() - roverUtm;
+      final roverToPoint = (atan2(delta.y, delta.x) - pi / 2) * 180 / pi;
+      final relativeAngle = (collection.imu.heading + roverToPoint).clampHalfAngle();
+
+      return relativeAngle > -135 && relativeAngle < 135;
+    });
+    collection.pathfinder.obstacles.removeAll(toRemove);
+    temporaryObstacles.removeAll(toRemove);
 
     for (final obstacle in queuedObstacles) {
       collection.pathfinder.recordObstacle(obstacle);
     }
 
-    previousObstacles.addAll(queuedObstacles);
+    temporaryObstacles.addAll(queuedObstacles);
 
     queuedObstacles.clear();
 
