@@ -1,6 +1,7 @@
-import "dart:io";
+import "dart:async";
 
 import "package:autonomy/interfaces.dart";
+import "package:behavior_tree/behavior_tree.dart";
 import "package:meta/meta.dart";
 
 abstract class OrchestratorInterface extends Service {
@@ -9,11 +10,18 @@ abstract class OrchestratorInterface extends Service {
 
   AutonomyCommand? currentCommand;
   AutonomyState currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
+  Timer? behaviorTreeTimer;
+
+  BaseNode behaviorRoot = Condition(() => true);
+
   Future<void> onCommand(AutonomyCommand command) async {
     collection.server.sendMessage(command);
     if (command.abort) return abort();
     if (currentCommand != null) {
-      collection.logger.error("Already executing a command", body: "Abort first if you want to switch tasks");
+      collection.logger.error(
+        "Already executing a command",
+        body: "Abort first if you want to switch tasks",
+      );
       return;
     }
 
@@ -24,13 +32,18 @@ abstract class OrchestratorInterface extends Service {
       currentState = AutonomyState.NO_SOLUTION;
       return;
     }
-    await collection.drive.resolveOrientation();
+
+    // await collection.drive.resolveOrientation();
     currentCommand = command;
     switch (command.task) {
-      case AutonomyTask.BETWEEN_GATES: break;  // TODO
-      case AutonomyTask.AUTONOMY_TASK_UNDEFINED: break;
-      case AutonomyTask.GPS_ONLY: await handleGpsTask(command);
-      case AutonomyTask.VISUAL_MARKER: await handleArucoTask(command);
+      case AutonomyTask.BETWEEN_GATES:
+        break; // TODO
+      case AutonomyTask.AUTONOMY_TASK_UNDEFINED:
+        break;
+      case AutonomyTask.GPS_ONLY:
+        handleGpsTask(command);
+      case AutonomyTask.VISUAL_MARKER:
+        handleArucoTask(command);
     }
   }
 
@@ -48,15 +61,18 @@ abstract class OrchestratorInterface extends Service {
   Future<void> abort() async {
     currentCommand = null;
     collection.logger.warning("Aborting task!");
+    behaviorTreeTimer?.cancel();
+    behaviorRoot.reset();
     currentState = AutonomyState.ABORTING;
     await collection.drive.stop();
-    await collection.dispose();
-    exit(1);
+    // await collection.dispose();
+    // await collection.init();
+    // exit(1);
   }
 
-  Future<void> handleGpsTask(AutonomyCommand command);
-  Future<void> handleArucoTask(AutonomyCommand command);
-  Future<void> handleHammerTask(AutonomyCommand command);
-  Future<void> handleBottleTask(AutonomyCommand command);
+  void handleGpsTask(AutonomyCommand command);
+  void handleArucoTask(AutonomyCommand command);
+  void handleHammerTask(AutonomyCommand command);
+  void handleBottleTask(AutonomyCommand command);
   AutonomyData get statusMessage;
 }

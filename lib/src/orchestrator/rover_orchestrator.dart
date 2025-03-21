@@ -2,6 +2,8 @@ import "dart:math";
 
 import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
+import "package:autonomy/src/utils/behavior_util.dart";
+import "package:behavior_tree/behavior_tree.dart";
 import "dart:async";
 
 import "package:coordinate_converter/coordinate_converter.dart";
@@ -9,6 +11,12 @@ import "package:coordinate_converter/coordinate_converter.dart";
 class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   final List<GpsCoordinates> traversed = [];
   List<AutonomyAStarState>? currentPath;
+
+  bool replanPath = true;
+  int waypointIndex = 0;
+  bool hasCheckedWaypointOrientation = false;
+  bool hasCheckedWaypointError = false;
+
   RoverOrchestrator({required super.collection});
 
   @override
@@ -18,6 +26,12 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
     traversed.clear();
     await super.dispose();
+  }
+
+  @override
+  Future<void> abort() async {
+    currentPath = null;
+    return super.abort();
   }
 
   @override
@@ -53,6 +67,207 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         .forEach(collection.pathfinder.lockObstacle);
 
     return true;
+  }
+
+  BaseNode replanOnCondition(bool Function() condition) => Task(() {
+    if (condition()) {
+      replanPath = true;
+      return NodeStatus.failure;
+    }
+    return NodeStatus.success;
+  });
+
+  BaseNode planPath(GpsCoordinates destination) => Sequence(
+    children: [
+      Condition(
+        () =>
+            replanPath &&
+            currentCommand != null &&
+            collection.gps.hasValue &&
+            collection.imu.hasValue,
+      ),
+      Task(() {
+        collection.logger.debug("Finding any new obstacles");
+        findAndLockObstacles();
+        return NodeStatus.success;
+      }),
+      Task(() {
+        collection.logger.debug("Finding a path");
+        currentState = AutonomyState.PATHING;
+        replanPath = false;
+        return NodeStatus.success;
+      }),
+      Condition(() {
+        if (currentCommand == null) {
+          return false;
+        }
+        final current = collection.gps.coordinates;
+        currentPath = collection.pathfinder.getPath(
+          currentCommand!.destination,
+        );
+        if (currentPath == null) {
+          collection.logger.error(
+            "Could not find a path",
+            body:
+                "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}",
+          );
+        } else {
+          waypointIndex = 0;
+          hasCheckedWaypointError = false;
+          hasCheckedWaypointOrientation = false;
+          collection.logger.debug(
+            "Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${currentPath!.length} steps",
+          );
+          collection.logger.debug("Here is a summary of the path");
+          for (final step in currentPath!) {
+            collection.logger.debug(step.toString());
+          }
+        }
+        return currentPath != null;
+      }),
+    ],
+  );
+
+  BaseNode followPath(GpsCoordinates destination) {
+    late AutonomyAStarState currentWaypoint;
+    // Orientation the rover should be facing before driving forward
+    var targetOrientation = collection.imu.nearest.orientation;
+
+    return Sequence(
+      children: [
+        Task(() {
+          if (currentPath == null) {
+            return NodeStatus.failure;
+          }
+          if (waypointIndex >= currentPath!.length) {
+            return NodeStatus.failure;
+          }
+          currentWaypoint = currentPath![waypointIndex];
+          currentState = AutonomyState.DRIVING;
+
+          if (!hasCheckedWaypointOrientation) {
+            // if it has RTK, point towards the next coordinate
+            if (collection.gps.coordinates.hasRTK) {
+              final difference =
+                  currentWaypoint.position.toUTM() -
+                  collection.gps.coordinates.toUTM();
+
+              final angle = atan2(difference.y, difference.x) * 180 / pi;
+
+              targetOrientation = Orientation(z: angle);
+            } else {
+              targetOrientation = currentWaypoint.orientation.orientation;
+            }
+          }
+
+          return NodeStatus.success;
+        }),
+        Selector(
+          children: [
+            Condition(() {
+              if (!hasCheckedWaypointOrientation) {
+                hasCheckedWaypointOrientation = true;
+                return currentWaypoint.instruction == DriveDirection.forward &&
+                    (collection.imu.heading - targetOrientation.z)
+                            .clampHalfAngle()
+                            .abs() >=
+                        Constants.driveRealignmentEpsilon;
+              }
+              return false;
+            }).inverted,
+            SuppliedNode(
+              key: () => targetOrientation,
+              () => collection.drive.faceOrientationNode(targetOrientation),
+            ),
+          ],
+        ),
+        replanOnCondition(() {
+          if (!hasCheckedWaypointError) {
+            hasCheckedWaypointError = true;
+            return collection.gps.coordinates.distanceTo(
+                  currentWaypoint.startPostition,
+                ) >=
+                Constants.replanErrorMeters;
+          }
+          return false;
+        }),
+        // ConditionalNode(
+        //   condition: () {
+        //     if (currentWaypoint.instruction != DriveDirection.forward) {
+        //       return false;
+        //     }
+        //     return (collection.imu.heading - targetOrientation.z)
+        //             .clampHalfAngle() >
+        //         Constants.driveRealignmentEpsilon;
+        //   },
+        //   onTrue: SuppliedNode(
+        //     key: () => targetOrientation,
+        //     () => collection.drive.faceOrientationNode(targetOrientation),
+        //   ),
+        // ),
+        SuppliedNode(
+          key: () => waypointIndex,
+          () => collection.drive.driveStateNode(currentWaypoint),
+        ),
+        Task(() {
+          traversed.add(currentWaypoint.position);
+          waypointIndex++;
+          hasCheckedWaypointOrientation = false;
+          hasCheckedWaypointError = false;
+          return NodeStatus.success;
+        }),
+        replanOnCondition(() => findAndLockObstacles() || waypointIndex >= 5),
+        Condition(() => collection.gps.isNear(destination, Constants.maxErrorMeters)),
+      ],
+    );
+  }
+
+  BaseNode pathToDestination(GpsCoordinates destination) {
+    var resolvedOrientation = false;
+    return Sequence(
+      children: [
+        Selector(
+          children: [
+            Condition(() {
+              if (!resolvedOrientation) {
+                resolvedOrientation = true;
+                return true;
+              }
+              return false;
+            }).inverted,
+            SuppliedNode(() => collection.drive.resolveOrientationNode()),
+          ],
+        ),
+        Selector(
+          children: [
+            Condition(
+              () =>
+                  collection.gps.isNear(destination, Constants.maxErrorMeters),
+            ),
+            planPath(destination),
+            followPath(destination),
+            // Only runs if plan path failed, and follow path failed, indicating 2 scenarios:
+            // 1. Couldn't find a path at all
+            // 2. Couldn't follow a specific step of the path
+            Task(() {
+              // Failed to find a path (Scenario 1)
+              if (!replanPath && currentPath == null) {
+                return NodeStatus.failure;
+              } else {
+                // Either a timeout or new obstacle was found, replan path and continue (Scenario 2)
+                return NodeStatus.running;
+              }
+            }),
+          ],
+        ),
+        Task(() {
+          if (collection.gps.isNear(destination, Constants.maxErrorMeters)) {
+            return NodeStatus.success;
+          }
+          return NodeStatus.running;
+        }),
+      ],
+    );
   }
 
   Future<bool> calculateAndFollowPath(
@@ -147,33 +362,128 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   }
 
   @override
-  Future<void> handleGpsTask(AutonomyCommand command) async {
+  void handleGpsTask(AutonomyCommand command) {
     final destination = command.destination;
     collection.logger.info("Received GPS Task", body: "Go to ${destination.prettyPrint()}");
     collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
     traversed.clear();
     collection.drive.setLedStrip(ProtoColor.RED);
+    waypointIndex = 0;
+    hasCheckedWaypointError = false;
+    hasCheckedWaypointOrientation = false;
+    replanPath = true;
+    behaviorRoot = pathToDestination(destination);
+    behaviorTreeTimer = Timer.periodic(const Duration(milliseconds: 10), (
+      timer,
+    ) {
+      if (currentCommand == null) {
+        return;
+      }
+      behaviorRoot.tick();
+      if (behaviorRoot.status == NodeStatus.failure) {
+        behaviorRoot.reset();
+        currentState = AutonomyState.NO_SOLUTION;
+        currentCommand = null;
+        timer.cancel();
+      } else if (behaviorRoot.status == NodeStatus.success) {
+        behaviorRoot.reset();
+        timer.cancel();
+        collection.logger.info("Task complete");
+        currentState = AutonomyState.AT_DESTINATION;
+        collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+        currentCommand = null;
+      }
+    });
     // detect obstacles before and after resolving orientation, as a "scan"
-    collection.detector.findObstacles();
-    await collection.drive.resolveOrientation();
-    collection.detector.findObstacles();
+    // collection.detector.findObstacles();
+    // await collection.drive.resolveOrientation();
+    // collection.detector.findObstacles();
 
-    if (!await calculateAndFollowPath(command.destination)) {
-      return;
-    }
-
-    collection.logger.info("Task complete");
-    collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
-    currentState = AutonomyState.AT_DESTINATION;
-    currentCommand = null;
+    // if (!await calculateAndFollowPath(command.destination)) {
+    //   return;
+    // }
   }
 
   @override
-  Future<void> handleArucoTask(AutonomyCommand command) async {
+  void handleArucoTask(AutonomyCommand command) async {
     collection.drive.setLedStrip(ProtoColor.RED);
 
     // Go to GPS coordinates
     collection.logger.info("Got ArUco Task");
+
+    DetectedObject? detectedAruco;
+
+    behaviorRoot = Sequence(
+      children: [
+        // Go to initial coordinates given
+        Selector(
+          children: [
+            Condition(
+              () =>
+                  command.destination !=
+                  GpsCoordinates(latitude: 0, longitude: 0),
+            ).inverted,
+            pathToDestination(command.destination),
+            // If failed to reach
+            Task(() {
+              collection.logger.error(
+                "Failed to follow path towards initial destination",
+              );
+              currentState = AutonomyState.NO_SOLUTION;
+              currentCommand = null;
+              return NodeStatus.failure;
+            }),
+          ],
+        ),
+        Task(() {
+          currentState = AutonomyState.SEARCHING;
+          collection.logger.info("Searching for ArUco tag");
+          return NodeStatus.success;
+        }),
+        // Try to spin and find a tag
+        Selector(
+          children: [
+            collection.drive.spinForArucoNode(
+              command.arucoId,
+              desiredCamera: Constants.arucoDetectionCamera,
+            ),
+            Task(() {
+              collection.logger.error("Could not find desired Aruco tag");
+              currentState = AutonomyState.NO_SOLUTION;
+              currentCommand = null;
+              return NodeStatus.failure;
+            }),
+          ],
+        ),
+        Condition(() {
+          detectedAruco = collection.video.getArucoDetection(
+            command.arucoId,
+            desiredCamera: Constants.arucoDetectionCamera,
+          );
+          return detectedAruco != null;
+        }),
+        // Face towards aruco tag
+        SuppliedNode(
+          () => collection.drive.faceOrientationNode(
+            Orientation(z: collection.imu.heading - detectedAruco!.yaw),
+          ),
+        ),
+        Selector(
+          children: [
+            Condition(
+              () =>
+                  collection.video.getArucoDetection(
+                    command.arucoId,
+                    desiredCamera: Constants.arucoDetectionCamera,
+                  ) !=
+                  null,
+            ),
+            Task(() => NodeStatus.running),
+          ],
+        ).withTimeout(const Duration(seconds: 3)),
+      ],
+    );
+
     if (command.destination != GpsCoordinates(latitude: 0, longitude: 0)) {
       if (!await calculateAndFollowPath(command.destination, abortOnError: false)) {
         collection.logger.error("Failed to follow path towards initial destination");
@@ -189,7 +499,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       command.arucoId,
       desiredCamera: Constants.arucoDetectionCamera,
     );
-    var detectedAruco = collection.video.getArucoDetection(
+    detectedAruco = collection.video.getArucoDetection(
       command.arucoId,
       desiredCamera: Constants.arucoDetectionCamera,
     );
@@ -204,7 +514,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     collection.logger.info("Found aruco");
     currentState = AutonomyState.APPROACHING;
     final arucoOrientation = Orientation(
-      z: collection.imu.heading - detectedAruco.yaw,
+      z: collection.imu.heading - detectedAruco!.yaw,
     );
     await collection.drive.faceOrientation(arucoOrientation);
     detectedAruco = await collection.video.waitForAruco(
@@ -213,7 +523,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       timeout: const Duration(seconds: 3),
     );
 
-    if (detectedAruco == null || !detectedAruco.hasBestPnpResult()) {
+    if (detectedAruco == null || !detectedAruco!.hasBestPnpResult()) {
       // TODO: handle this condition properly
       collection.logger.error("Could not find desired Aruco tag after rotating towards it");
       currentState = AutonomyState.NO_SOLUTION;
@@ -223,7 +533,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
     collection.logger.debug(
       "Planning path to Aruco ID ${command.arucoId}",
-      body: "Detection: ${detectedAruco.toProto3Json()}",
+      body: "Detection: ${detectedAruco!.toProto3Json()}",
     );
 
     // In theory we could just find the relative position with the translation x and z,
@@ -231,7 +541,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     // when facing it head on), then it will be extremely innacurate. Since the SolvePnP's
     // distance is always extremely accurate, it is more reliable to use the distance
     // hypotenuse to the camera combined with trig of the tag's angle relative to the camera.
-    final cameraToTag = detectedAruco.bestPnpResult.cameraToTarget;
+    final cameraToTag = detectedAruco!.bestPnpResult.cameraToTarget;
     final distanceToTag =
         sqrt(
           pow(cameraToTag.translation.z, 2) + pow(cameraToTag.translation.x, 2),
@@ -245,8 +555,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       return;
     }
 
-    final relativeX = -distanceToTag * sin((collection.imu.heading - detectedAruco.yaw) * pi / 180);
-    final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco.yaw) * pi / 180);
+    final relativeX = -distanceToTag * sin((collection.imu.heading - detectedAruco!.yaw) * pi / 180);
+    final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco!.yaw) * pi / 180);
 
     final destinationCoordinates =
         (collection.gps.coordinates.toUTM() +
@@ -312,12 +622,12 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   }
 
   @override
-  Future<void> handleHammerTask(AutonomyCommand command) async {
+  void handleHammerTask(AutonomyCommand command) async {
 
   }
 
   @override
-  Future<void> handleBottleTask(AutonomyCommand command) async {
+  void handleBottleTask(AutonomyCommand command) async {
 
   }
 }

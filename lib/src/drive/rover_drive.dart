@@ -1,5 +1,6 @@
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
+import "package:behavior_tree/behavior_tree.dart";
 
 import "sensor_drive.dart";
 import "timed_drive.dart";
@@ -105,4 +106,45 @@ class RoverDrive extends DriveInterface {
       return result;
     }
   }
+
+  @override
+  BaseNode driveForwardNode(GpsCoordinates coordinates) {
+    if (useGps) {
+      return sensorDrive.driveForwardNode(coordinates);
+    } else {
+      return Sequence(
+        children: [
+          timedDrive.driveForwardNode(coordinates),
+          simDrive.driveForwardNode(coordinates),
+        ],
+      );
+    }
+  }
+
+  @override
+  BaseNode turnStateNode(AutonomyAStarState state) {
+    if (useImu) {
+      return sensorDrive.turnStateNode(state);
+    } else {
+      return Sequence(
+        children: [
+          timedDrive.turnStateNode(state),
+          simDrive.turnStateNode(state),
+        ],
+      );
+    }
+  }
+  
+  @override
+  BaseNode faceOrientationNode(Orientation orientation) {
+    if (useImu) {
+      return sensorDrive.faceOrientationNode(orientation);
+    } else {
+      return simDrive.faceOrientationNode(orientation);
+    }
+  }
+
+  @override
+  BaseNode spinForArucoNode(int arucoId, {CameraName? desiredCamera}) =>
+      sensorDrive.spinForArucoNode(arucoId, desiredCamera: desiredCamera);
 }

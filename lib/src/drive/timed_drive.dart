@@ -2,8 +2,36 @@ import "dart:math";
 
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/src/drive/drive_config.dart";
+import "package:behavior_tree/behavior_tree.dart";
 
 import "drive_commands.dart";
+
+class _TimedOperation extends BaseNode {
+  DateTime? _start;
+
+  final Duration time;
+  final void Function() operation;
+
+  _TimedOperation({required this.time, required this.operation});
+
+  @override
+  void tick() {
+    _start ??= DateTime.now();
+    status = NodeStatus.running;
+
+    operation();
+
+    if (DateTime.now().difference(_start!) >= time) {
+      status = NodeStatus.success;
+    }
+  }
+
+  @override
+  void reset() {
+    _start = null;
+    super.reset();
+  }
+}
 
 /// An implementation of [DriveInterface] that drives for a specified amount of time without using sensors
 /// 
@@ -12,6 +40,64 @@ import "drive_commands.dart";
 /// This should only be used if the rover is not using sensors for autonomous driving
 class TimedDrive extends DriveInterface with RoverDriveCommands {
   TimedDrive({required super.collection, super.config});
+
+  @override
+  BaseNode faceOrientationNode(Orientation orientation) {
+    throw UnsupportedError(
+      "Cannot face any arbitrary direction using TimedDrive",
+    );
+  }
+
+  @override
+  BaseNode driveForwardNode(GpsCoordinates coordinates) => _TimedOperation(
+    time:
+        config.oneMeterDelay *
+        (collection.imu.nearest.isPerpendicular ? 1 : sqrt2),
+    operation: () {
+      setThrottle(config.forwardThrottle);
+      moveForward();
+    },
+  );
+
+  @override
+  BaseNode turnStateNode(AutonomyAStarState state) => switch (state
+      .instruction) {
+    DriveDirection.forward => throw UnimplementedError(),
+
+    DriveDirection.left => _TimedOperation(
+      time: config.turnDelay,
+      operation: () {
+        setThrottle(config.turnThrottle);
+        spinLeft();
+      },
+    ),
+
+    DriveDirection.right => _TimedOperation(
+      time: config.turnDelay,
+      operation: () {
+        setThrottle(config.turnThrottle);
+        spinRight();
+      },
+    ),
+
+    DriveDirection.quarterLeft => _TimedOperation(
+      time: config.turnDelay * 0.5,
+      operation: () {
+        setThrottle(config.turnThrottle);
+        spinLeft();
+      },
+    ),
+
+    DriveDirection.quarterRight => _TimedOperation(
+      time: config.turnDelay * 0.5,
+      operation: () {
+        setThrottle(config.turnThrottle);
+        spinRight();
+      },
+    ),
+
+    DriveDirection.stop => throw UnimplementedError(),
+  };
 
   @override
   Future<bool> init() async => true;
