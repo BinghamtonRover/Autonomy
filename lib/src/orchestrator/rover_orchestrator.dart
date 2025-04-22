@@ -47,10 +47,16 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
     if (currentPath == null) return true;
 
-    currentPath!
-        .map((state) => state.position)
-        .where((position) => collection.pathfinder.isObstacle(position))
-        .forEach(collection.pathfinder.lockObstacle);
+    for (final step in currentPath!.map((state) => state.position)) {
+      // Since we're iterating over the obstacles that we also want to lock,
+      // we have to create a copy of the ones we want to lock, otherwise we'll
+      // be modifying the array while iterating over it
+      final toLock = collection.pathfinder.obstacles
+          .where((obstacle) => collection.pathfinder.isObstacle(step))
+          .toSet();
+
+      toLock.forEach(collection.pathfinder.lockObstacle);
+    }
 
     return true;
   }
