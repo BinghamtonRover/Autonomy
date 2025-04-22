@@ -15,6 +15,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   bool replanPath = true;
   int waypointIndex = 0;
   bool hasCheckedWaypointOrientation = false;
+  bool isCorrectingWaypointOrientation = false;
   bool hasCheckedWaypointError = false;
 
   RoverOrchestrator({required super.collection});
@@ -115,6 +116,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           waypointIndex = 0;
           hasCheckedWaypointError = false;
           hasCheckedWaypointOrientation = false;
+          isCorrectingWaypointOrientation = false;
           collection.logger.debug(
             "Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${currentPath!.length} steps",
           );
@@ -145,7 +147,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           currentWaypoint = currentPath![waypointIndex];
           currentState = AutonomyState.DRIVING;
 
-          if (!hasCheckedWaypointOrientation) {
+          if (!hasCheckedWaypointOrientation && !isCorrectingWaypointOrientation) {
             // if it has RTK, point towards the next coordinate
             if (collection.gps.coordinates.hasRTK) {
               final difference =
@@ -165,8 +167,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         Selector(
           children: [
             Condition(() {
+              if (isCorrectingWaypointOrientation) {
+                return true;
+              }
               if (!hasCheckedWaypointOrientation) {
-                hasCheckedWaypointOrientation = true;
                 return currentWaypoint.instruction == DriveDirection.forward &&
                     (collection.imu.heading - targetOrientation.z)
                             .clampHalfAngle()
@@ -175,12 +179,32 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
               }
               return false;
             }).inverted,
+
+            // If the previous one fails, then it has to recorrect, run a
+            // task to set the state of recorrecting, this is inverted so
+            // it will continue with the selection
+            Task(() {
+              isCorrectingWaypointOrientation = true;
+              return NodeStatus.success;
+            }).inverted,
+
+            // Face the desired orientation
             SuppliedNode(
               key: () => targetOrientation,
               () => collection.drive.faceOrientationNode(targetOrientation),
             ),
           ],
         ),
+
+        // If it makes it through here, it either has corrected, or doesn't need to correct.
+        // Either way, assume that it has corrected its orientation
+        Task(() {
+          hasCheckedWaypointOrientation = true;
+          isCorrectingWaypointOrientation = false;
+          return NodeStatus.success;
+        }),
+
+        // If the distance to the start of our waypoint is too large, replan
         replanOnCondition(() {
           if (!hasCheckedWaypointError) {
             hasCheckedWaypointError = true;
@@ -209,14 +233,26 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           key: () => waypointIndex,
           () => collection.drive.driveStateNode(currentWaypoint),
         ),
+
+        // If the waypoint state has been driven, increase our waypoint index,
+        // and reset our correction state
         Task(() {
           traversed.add(currentWaypoint.position);
           waypointIndex++;
           hasCheckedWaypointOrientation = false;
+          isCorrectingWaypointOrientation = false;
           hasCheckedWaypointError = false;
           return NodeStatus.success;
         }),
+
+        // Replan if there are new obstacles or we've traversed 5 waypoints,
+        // we want to periodically replan the path to ensure we're on track
         replanOnCondition(() => findAndLockObstacles() || waypointIndex >= 5),
+
+        // This technically isn't needed for following the path, however, the tree root
+        // relies on the tree not being "success" until we have reached our destination,
+        // adding this here guarantees that this node will only be successful if we are
+        // done following
         Condition(() => collection.gps.isNear(destination, Constants.maxErrorMeters)),
       ],
     );
@@ -226,26 +262,33 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     var resolvedOrientation = false;
     return Sequence(
       children: [
+        // If we haven't initially resolved our orientation, resolve the orientation
         Selector(
           children: [
-            Condition(() {
-              if (!resolvedOrientation) {
-                resolvedOrientation = true;
-                return true;
-              }
-              return false;
-            }).inverted,
+            Condition(() => resolvedOrientation),
             SuppliedNode(() => collection.drive.resolveOrientationNode()),
           ],
         ),
+        Task(() {
+          resolvedOrientation = true;
+          return NodeStatus.success;
+        }),
         Selector(
           children: [
+            // Success if we are near the destination
             Condition(
               () =>
                   collection.gps.isNear(destination, Constants.maxErrorMeters),
             ),
+
+            // Plan the path, if there is already a path,
+            // this will fail and the selection will continue
             planPath(destination),
+
+            // Follow the path, this will fail if it hasn't reached the destination,
+            // this failure scenario is "caught" in the next step
             followPath(destination),
+
             // Only runs if plan path failed, and follow path failed, indicating 2 scenarios:
             // 1. Couldn't find a path at all
             // 2. Couldn't follow a specific step of the path
@@ -371,6 +414,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     waypointIndex = 0;
     hasCheckedWaypointError = false;
     hasCheckedWaypointOrientation = false;
+    isCorrectingWaypointOrientation = false;
     replanPath = true;
     behaviorRoot = pathToDestination(destination);
     behaviorTreeTimer = Timer.periodic(const Duration(milliseconds: 10), (
