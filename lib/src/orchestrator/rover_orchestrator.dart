@@ -9,13 +9,25 @@ import "dart:async";
 import "package:coordinate_converter/coordinate_converter.dart";
 
 class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
+  /// The GPS coordinates that the rover has traversed during the task
   final List<GpsCoordinates> traversed = [];
+
+  /// The current path that the rover is following
   List<AutonomyAStarState>? currentPath;
 
+  /// Whether or not the rover should replan the path, this is managed by the behavior tree
   bool replanPath = true;
+
+  /// The current waypoint index of the path that the rover is following
   int waypointIndex = 0;
+
+  /// Whether or not the rover has checked the waypoint orientation of the current path step
   bool hasCheckedWaypointOrientation = false;
+
+  /// Whether or not the rover is currently correction waypoint orientation
   bool isCorrectingWaypointOrientation = false;
+
+  /// Whether or not the rover has checked the waypoint error for the current step in the path
   bool hasCheckedWaypointError = false;
 
   RoverOrchestrator({required super.collection});
@@ -55,6 +67,11 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   @override
   Message getMessage() => statusMessage;
 
+  /// Finds new obstacles and locks them if any intersect with the current path
+  ///
+  /// If the implementation of the obstacle detector has detected any obstacles,
+  /// it will "lock" any obstacles that intersect with the current path, to prevent
+  /// future paths from being planned in that area.
   bool findAndLockObstacles() {
     if (!collection.detector.findObstacles()) {
       return false;
@@ -62,20 +79,28 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
     if (currentPath == null) return true;
 
+    final toLock = <GpsCoordinates>{};
+
     for (final step in currentPath!.map((state) => state.position)) {
       // Since we're iterating over the obstacles that we also want to lock,
       // we have to create a copy of the ones we want to lock, otherwise we'll
       // be modifying the array while iterating over it
-      final toLock = collection.pathfinder.obstacles
-          .where((obstacle) => collection.pathfinder.isObstacle(step))
-          .toSet();
-
-      toLock.forEach(collection.pathfinder.lockObstacle);
+      toLock.addAll(
+        collection.pathfinder.obstacles.where(
+          (obstacle) => collection.pathfinder.isObstacle(step),
+        ),
+      );
     }
+
+    toLock.forEach(collection.pathfinder.lockObstacle);
 
     return true;
   }
 
+  /// A node that will trigger a path replan when [condition] is true
+  ///
+  /// If [condition] is true, [replanPath] will be set to true, and the
+  /// node will fail. Otherwise, it will be successful.
   BaseNode replanOnCondition(bool Function() condition) => Task(() {
     if (condition()) {
       replanPath = true;
@@ -84,6 +109,21 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     return NodeStatus.success;
   });
 
+  /// A node to plan a path towards [destination]
+  ///
+  /// This node will only create a new path towards [destination], and not follow it.
+  ///
+  /// This node will fail if either:
+  /// 1. There is a current path already planned
+  /// 2. There is no command currently running
+  /// 3. The GPS hasn't received a value
+  /// 4. The IMU hasn't received a value
+  /// 5. A path could not be planned
+  /// Otherwise, this node will be successful
+  ///
+  /// Since this node will fail if a path is already planned,
+  /// this should be wrapped in a decorator such as a selector
+  /// to prevent the entire tree from failing.
   BaseNode planPath(GpsCoordinates destination) => Sequence(
     children: [
       Condition(
@@ -136,6 +176,23 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     ],
   );
 
+  /// Creates a node to follow a path towards [destination]
+  ///
+  /// This node will handle the logic of driving through the individual steps
+  /// of [currentPath], handling obstacle detection, replanning logic, and recorrection.
+  ///
+  /// This node will not plan a new path, see [planPath]
+  ///
+  /// This node will fail if either:
+  /// 1. There is no path planned
+  /// 2. The node for following the current path step failed
+  /// 3. A new obstacle was detected
+  /// 4. 5 steps of the path have been followed
+  /// 5. A step of the path was completed but the rover has not reached [destination]
+  ///
+  /// Since this node will fail if the rover isn't near [destination], this
+  /// should be wrapped in a decorator such as a selector or inverter to prevent
+  /// the entire tree from failing.
   BaseNode followPath(GpsCoordinates destination) {
     late AutonomyAStarState currentWaypoint;
     // Orientation the rover should be facing before driving forward
@@ -264,6 +321,14 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     );
   }
 
+  /// Creates a node to plan and follow a path towards [destination]
+  ///
+  /// This node combines [planPath] and [followPath] to dynamically plan
+  /// and follow a path to drive the rover towards [destination].
+  ///
+  /// If a path could not be planned towards [destination], the node will
+  /// fail. If the rover has reached [destination], it will succeed, otherwise,
+  /// it will return running.
   BaseNode pathToDestination(GpsCoordinates destination) {
     var resolvedOrientation = false;
     return Sequence(
