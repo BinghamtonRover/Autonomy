@@ -147,6 +147,7 @@ class NavigationState extends RoverState {
   void update() {
     if (currentPathState == null) {
       controller.popState();
+      return;
     }
     if (!hasCorrected) {
       hasCorrected = true;
