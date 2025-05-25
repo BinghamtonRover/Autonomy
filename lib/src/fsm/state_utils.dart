@@ -70,6 +70,7 @@ class SequenceState extends RoverState {
 
   @override
   void enter() {
+    _stepIndex = 0;
     if (steps.isNotEmpty) {
       controller.pushState(steps[_stepIndex]);
     }

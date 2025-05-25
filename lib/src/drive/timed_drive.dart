@@ -12,11 +12,13 @@ class _TimedOperationState extends RoverState {
 
   final Duration time;
   final void Function() operation;
+  final void Function()? onDone;
 
   _TimedOperationState(
     super.controller, {
     required this.time,
     required this.operation,
+    this.onDone,
   });
 
   @override
@@ -32,6 +34,9 @@ class _TimedOperationState extends RoverState {
     }
     operation();
   }
+
+  @override
+  void exit() => onDone?.call();
 }
 
 class _TimedOperationNode extends BaseNode {
@@ -94,6 +99,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
           setThrottle(config.forwardThrottle);
           moveForward();
         },
+        onDone: stopMotors,
       );
 
   @override
@@ -108,6 +114,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
         setThrottle(config.turnThrottle);
         spinLeft();
       },
+      onDone: stopMotors,
     ),
 
     DriveDirection.right => _TimedOperationState(
@@ -117,6 +124,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
         setThrottle(config.turnThrottle);
         spinRight();
       },
+      onDone: stopMotors,
     ),
 
     DriveDirection.quarterLeft => _TimedOperationState(
@@ -126,6 +134,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
         setThrottle(config.turnThrottle);
         spinLeft();
       },
+      onDone: stopMotors,
     ),
 
     DriveDirection.quarterRight => _TimedOperationState(
@@ -135,6 +144,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
         setThrottle(config.turnThrottle);
         spinRight();
       },
+      onDone: stopMotors,
     ),
 
     DriveDirection.stop => throw UnimplementedError(),

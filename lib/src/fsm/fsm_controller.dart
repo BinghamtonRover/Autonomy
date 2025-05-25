@@ -16,15 +16,15 @@ class FSMController {
 
   /// Pushes a new state to the top of the stack, and enters it
   void pushState(StateInterface state) {
-    state.enter();
     _stateStack.add(state);
+    state.enter();
   }
 
   /// Pops and exits the latest state from the top of the stack and replaces it with [state]
   void transitionTo(StateInterface state) {
     _stateStack.removeLast().exit();
-    state.enter();
     _stateStack.add(state);
+    state.enter();
   }
 
   /// Pops the latest state from the top of the stack
