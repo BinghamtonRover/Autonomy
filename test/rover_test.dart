@@ -1,6 +1,5 @@
 import "package:test/test.dart";
 
-import "package:burt_network/protobuf.dart";
 import "package:burt_network/logging.dart";
 
 import "package:autonomy/interfaces.dart";

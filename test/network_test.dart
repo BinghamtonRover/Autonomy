@@ -4,6 +4,7 @@ import "dart:io";
 import "package:autonomy/autonomy.dart";
 import "package:autonomy/src/drive/drive_config.dart";
 import "package:burt_network/burt_network.dart";
+import "package:coordinate_converter/coordinate_converter.dart";
 import "package:test/test.dart";
 
 class MockSubsystems extends Service {
@@ -120,30 +121,57 @@ void main() => group("[Network]", tags: ["network"], () {
     );
     await simulator.init();
 
-    final origin = GpsCoordinates(latitude: 0, longitude: 0);
-    final oneMeter = (lat: 1, long: 0).toGps();
+    final origin = UTMCoordinates(x: 5, y: 5, zoneNumber: 31);
+    final oneMeter =
+        (origin + UTMCoordinates(x: 0, y: 1, zoneNumber: 1)).toGps();
+    simulator.gps.update(origin.toGps());
     expect(subsystems.throttle, 0);
     expect(subsystems.left, 0);
     expect(subsystems.right, 0);
-    expect(simulator.gps.isNear(origin), isTrue);
+    expect(simulator.gps.isNear(origin.toGps()), isTrue);
     expect(simulator.gps.isNear(oneMeter), isFalse);
 
     expect(subsystems.throttleFlag, isFalse);
-    final forwardFuture = simulator.drive.driveForward(oneMeter);
+    final forwardFuture = Future<void>.delayed(
+      simulator.drive.config.oneMeterDelay,
+    );
+    final forwardState = simulator.drive.driveForwardState(oneMeter);
+    simulator.orchestrator.controller.pushState(forwardState);
+    simulator.orchestrator.controller.update();
+    simulator.orchestrator.controller.update();
+    simulator.orchestrator.controller.update();
+
     await Future<void>.delayed(simulator.drive.config.oneMeterDelay * 0.5);
+
     expect(subsystems.throttleFlag, isTrue);
     expect(subsystems.throttle, isNot(0));
     expect(subsystems.left, isNot(0));
     expect(subsystems.right, isNot(0));
-    expect(simulator.gps.isNear(origin), isTrue);
+    expect(simulator.gps.isNear(origin.toGps()), isTrue);
     expect(simulator.gps.isNear(oneMeter), isFalse);
+
+    simulator.orchestrator.controller.update();
+    simulator.orchestrator.controller.update();
+    simulator.orchestrator.controller.update();
+
     await forwardFuture;
-    await Future<void>.delayed(simulator.drive.config.oneMeterDelay * 0.5);
+
+    simulator.orchestrator.controller.update();
+    simulator.orchestrator.controller.update();
+    simulator.orchestrator.controller.update();
+
+    await Future<void>.delayed(Duration.zero);
+
     expect(subsystems.throttleFlag, isFalse);
     expect(subsystems.throttle, 0);
     expect(subsystems.left, 0);
     expect(subsystems.right, 0);
-    expect(simulator.gps.isNear(origin), isFalse);
+
+    simulator.orchestrator.controller.update();
+    simulator.orchestrator.controller.update();
+    simulator.orchestrator.controller.update();
+
+    expect(simulator.gps.isNear(origin.toGps(), 0.5), isFalse);
     expect(simulator.gps.isNear(oneMeter), isTrue);
 
     subsystems.enabled = false;
