@@ -9,12 +9,22 @@ import "dart:async";
 
 import "package:coordinate_converter/coordinate_converter.dart";
 
+/// State for when the rover is finding a path
+///
+/// When ran the state will attempt to plan a path to its given [destination],
+/// if successful, it will transition to [NavigationState], if unsuccessful,
+/// it will be popped from the stack.
 class PathingState extends RoverState {
+  /// The autonomy collection for the state
   final AutonomyInterface collection;
+
+  /// The orchestrator for the state
   final RoverOrchestrator orchestrator;
 
+  /// The destination to plan a path to
   final GpsCoordinates destination;
 
+  /// Default constructor for [PathingState]
   PathingState(
     super.controller, {
     required this.collection,
@@ -61,18 +71,38 @@ class PathingState extends RoverState {
   }
 }
 
+/// State to manage the navigation of the rover
+///
+/// This state should be pushed after [PathingState], as it depends
+/// on having a path already made for the rover to follow.
+///
+/// This state will manage following each individual step of the path as well
+/// as performing necessary corrections and replanning.
+///
+/// When the path has to be replanned, this state will transition to [PathingState]
 class NavigationState extends RoverState {
+  /// The collection for the state
   final AutonomyInterface collection;
+
+  /// The orchestrator for the state
   final RoverOrchestrator orchestrator;
 
+  /// The final destination to navigate to
   final GpsCoordinates destination;
 
+  /// Whether or not the state has performed pre-step correction
   bool hasCorrected = false;
+
+  /// Whether or not the state has just completed following a path step
   bool hasFollowed = false;
+
+  /// The index of the waypoint being followed
   int waypointIndex = 0;
 
+  /// The current step of the path being followed
   AutonomyAStarState? currentPathState;
 
+  /// Default constructor for [NavigationState]
   NavigationState(
     super.controller, {
     required this.collection,
@@ -90,6 +120,12 @@ class NavigationState extends RoverState {
     orchestrator.currentState = AutonomyState.DRIVING;
   }
 
+  /// Checks if the rover is oriented properly before driving the [state]
+  ///
+  /// This is assuming that the step's instruction is to drive forward.
+  ///
+  /// If the rover is not facing the proper direction, a new state will be pushed
+  /// to re-correct the rover's orientation
   void checkOrientation(AutonomyAStarState state) {
     Orientation targetOrientation;
     // if it has RTK, point towards the next coordinate
@@ -115,6 +151,10 @@ class NavigationState extends RoverState {
     }
   }
 
+  /// Checks if the rover is within a certain distance of [state]'s starting position
+  ///
+  /// If the rover is not within [Constants.replanErrorMeters] of the state's starting
+  /// position, the path will be replanned
   void checkPosition(AutonomyAStarState state) {
     final distanceError = collection.gps.coordinates.distanceTo(
       state.startPostition,
@@ -135,6 +175,11 @@ class NavigationState extends RoverState {
     }
   }
 
+  /// Check's the position and orientation of [state] before following it
+  ///
+  /// If the instruction of [state] is to move forward, it will check if the
+  /// orientation is correct using [checkOrientation], otherwise, it will check
+  /// the position using [checkPosition]
   void checkCurrentPosition(AutonomyAStarState state) {
     if (state.instruction == DriveDirection.forward) {
       checkOrientation(state);
