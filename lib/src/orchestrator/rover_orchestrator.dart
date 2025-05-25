@@ -150,7 +150,7 @@ class NavigationState extends RoverState {
     }
     if (!hasCorrected) {
       hasCorrected = true;
-      checkCurrentPosition(orchestrator.currentPath![waypointIndex]);
+      checkCurrentPosition(currentPathState!);
       return;
     }
     if (!hasFollowed) {
@@ -237,11 +237,11 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       ...collection.pathfinder.obstacles,
       ...collection.pathfinder.lockedObstacles,
     ],
-    path: [
+    path: {
       for (final transition in currentPath ?? <AutonomyAStarState>[])
         transition.position,
       ...traversed,
-    ],
+    },
     task: currentCommand?.task,
     crash: false,  // TODO: Investigate if this is used and how to use it better
   );
