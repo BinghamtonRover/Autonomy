@@ -1,4 +1,5 @@
 import "package:autonomy/interfaces.dart";
+import "package:autonomy/src/fsm/rover_fsm.dart";
 import "package:autonomy/src/utils/behavior_util.dart";
 import "package:behavior_tree/behavior_tree.dart";
 
@@ -18,10 +19,44 @@ class DriveSimulator extends DriveInterface {
   /// Constructor for DriveSimulator, initializing the default fields, and whether or not it should delay
   DriveSimulator({required super.collection, this.shouldDelay = false, super.config});
 
-  BaseNode _delayAndExecute({
+  BaseNode _delayAndExecuteNode({
     required Duration delay,
     required BaseNode child,
   }) => Sequence(children: [DelayedNode(delay), child]);
+
+  RoverState _delayAndExecuteState({
+    required Duration delay,
+    required StateInterface child,
+  }) => SequenceState(
+    child.controller,
+    steps: [DelayedState(child.controller, delayTime: delay), child],
+  );
+
+  @override
+  StateInterface driveForwardState(GpsCoordinates coordinates) =>
+      _delayAndExecuteState(
+        delay: shouldDelay ? delay : Duration.zero,
+        child: FunctionalState(
+          controller,
+          onUpdate: (controller) {
+            collection.gps.update(coordinates);
+            controller.popState();
+          },
+        ),
+      );
+
+  @override
+  StateInterface faceOrientationState(Orientation orientation) =>
+      _delayAndExecuteState(
+        delay: shouldDelay ? delay : Duration.zero,
+        child: FunctionalState(
+          controller,
+          onUpdate: (controller) {
+            collection.imu.update(orientation);
+            controller.popState();
+          },
+        ),
+      );
 
   @override
   BaseNode driveForwardNode(GpsCoordinates coordinates) {
@@ -31,7 +66,7 @@ class DriveSimulator extends DriveInterface {
     });
     return ConditionalNode(
       condition: () => shouldDelay,
-      onTrue: _delayAndExecute(delay: delay, child: updateGps),
+      onTrue: _delayAndExecuteNode(delay: delay, child: updateGps),
       onFalse: updateGps,
     );
   }
@@ -44,7 +79,7 @@ class DriveSimulator extends DriveInterface {
     });
     return ConditionalNode(
       condition: () => shouldDelay,
-      onTrue: _delayAndExecute(delay: delay, child: updateImu),
+      onTrue: _delayAndExecuteNode(delay: delay, child: updateImu),
       onFalse: updateImu,
     );
   }

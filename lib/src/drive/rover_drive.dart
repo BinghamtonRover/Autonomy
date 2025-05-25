@@ -1,5 +1,7 @@
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
+import "package:autonomy/src/fsm/rover_fsm.dart";
+import "package:autonomy/src/fsm/rover_state.dart";
 import "package:behavior_tree/behavior_tree.dart";
 
 import "sensor_drive.dart";
@@ -147,4 +149,43 @@ class RoverDrive extends DriveInterface {
   @override
   BaseNode spinForArucoNode(int arucoId, {CameraName? desiredCamera}) =>
       sensorDrive.spinForArucoNode(arucoId, desiredCamera: desiredCamera);
+
+  @override
+  StateInterface driveForwardState(GpsCoordinates coordinates) {
+    if (useGps) {
+      return sensorDrive.driveForwardState(coordinates);
+    } else {
+      return SequenceState(
+        controller,
+        steps: [
+          timedDrive.driveForwardState(coordinates),
+          simDrive.driveForwardState(coordinates),
+        ],
+      );
+    }
+  }
+
+  @override
+  StateInterface turnStateState(AutonomyAStarState state) {
+    if (useImu) {
+      return sensorDrive.turnStateState(state);
+    } else {
+      return SequenceState(
+        controller,
+        steps: [
+          timedDrive.turnStateState(state),
+          simDrive.turnStateState(state),
+        ],
+      );
+    }
+  }
+
+  @override
+  StateInterface faceOrientationState(Orientation orientation) {
+    if (useImu) {
+      return sensorDrive.faceOrientationState(orientation);
+    } else {
+      return simDrive.faceOrientationState(orientation);
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:autonomy/interfaces.dart";
+import "package:autonomy/src/fsm/rover_fsm.dart";
 import "package:behavior_tree/behavior_tree.dart";
 import "package:meta/meta.dart";
 
@@ -11,6 +12,8 @@ abstract class OrchestratorInterface extends Service {
   AutonomyCommand? currentCommand;
   AutonomyState currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
   Timer? behaviorTreeTimer;
+
+  FSMController controller = FSMController();
 
   BaseNode behaviorRoot = Condition(() => true);
 

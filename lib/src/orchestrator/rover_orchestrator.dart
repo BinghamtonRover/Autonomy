@@ -2,11 +2,193 @@ import "dart:math";
 
 import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
+import "package:autonomy/src/fsm/rover_fsm.dart";
 import "package:autonomy/src/utils/behavior_util.dart";
 import "package:behavior_tree/behavior_tree.dart";
 import "dart:async";
 
 import "package:coordinate_converter/coordinate_converter.dart";
+
+class PathingState extends RoverState {
+  final AutonomyInterface collection;
+  final RoverOrchestrator orchestrator;
+
+  final GpsCoordinates destination;
+
+  PathingState(
+    super.controller, {
+    required this.collection,
+    required this.orchestrator,
+    required this.destination,
+  });
+
+  @override
+  void enter() {
+    orchestrator.currentState = AutonomyState.PATHING;
+    orchestrator.findAndLockObstacles();
+  }
+
+  @override
+  void update() {
+    final current = collection.gps.coordinates;
+    orchestrator.currentPath = collection.pathfinder.getPath(
+      orchestrator.currentCommand!.destination,
+    );
+    if (orchestrator.currentPath == null) {
+      collection.logger.error(
+        "Could not find a path",
+        body:
+            "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}",
+      );
+      controller.popState();
+    } else {
+      collection.logger.debug(
+        "Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${orchestrator.currentPath!.length} steps",
+      );
+      collection.logger.debug("Here is a summary of the path");
+      for (final step in orchestrator.currentPath!) {
+        collection.logger.debug(step.toString());
+      }
+      controller.transitionTo(
+        NavigationState(
+          controller,
+          collection: collection,
+          orchestrator: orchestrator,
+          destination: destination,
+        ),
+      );
+    }
+  }
+}
+
+class NavigationState extends RoverState {
+  final AutonomyInterface collection;
+  final RoverOrchestrator orchestrator;
+
+  final GpsCoordinates destination;
+
+  bool hasCorrected = false;
+  bool hasFollowed = false;
+  int waypointIndex = 0;
+
+  AutonomyAStarState? currentPathState;
+
+  NavigationState(
+    super.controller, {
+    required this.collection,
+    required this.orchestrator,
+    required this.destination,
+  });
+
+  @override
+  void enter() {
+    waypointIndex = 0;
+    hasCorrected = false;
+    hasFollowed = false;
+
+    currentPathState = orchestrator.currentPath?[waypointIndex];
+    orchestrator.currentState = AutonomyState.DRIVING;
+  }
+
+  void checkOrientation(AutonomyAStarState state) {
+    Orientation targetOrientation;
+    // if it has RTK, point towards the next coordinate
+    if (collection.gps.coordinates.hasRTK) {
+      final difference =
+          state.position.toUTM() - collection.gps.coordinates.toUTM();
+
+      final angle = atan2(difference.y, difference.x) * 180 / pi;
+
+      targetOrientation = Orientation(z: angle);
+    } else {
+      targetOrientation = state.orientation.orientation;
+    }
+
+    if (!collection.imu.isNear(
+      targetOrientation,
+      Constants.driveRealignmentEpsilon,
+    )) {
+      collection.logger.info("Re-aligning IMU to correct orientation");
+      controller.pushState(
+        collection.drive.faceOrientationState(targetOrientation),
+      );
+    }
+  }
+
+  void checkPosition(AutonomyAStarState state) {
+    final distanceError = collection.gps.coordinates.distanceTo(
+      state.startPostition,
+    );
+    if (distanceError > Constants.replanErrorMeters) {
+      collection.logger.info(
+        "Replanning Path",
+        body: "Rover is $distanceError meters off the path",
+      );
+      controller.transitionTo(
+        PathingState(
+          controller,
+          collection: collection,
+          orchestrator: orchestrator,
+          destination: destination,
+        ),
+      );
+    }
+  }
+
+  void checkCurrentPosition(AutonomyAStarState state) {
+    if (state.instruction == DriveDirection.forward) {
+      checkOrientation(state);
+    } else {
+      checkPosition(state);
+    }
+  }
+
+  @override
+  void update() {
+    if (currentPathState == null) {
+      controller.popState();
+    }
+    if (!hasCorrected) {
+      hasCorrected = true;
+      checkCurrentPosition(orchestrator.currentPath![waypointIndex]);
+      return;
+    }
+    if (!hasFollowed) {
+      hasFollowed = true;
+      collection.logger.debug(currentPathState!.toString());
+      controller.pushState(
+        collection.drive.driveStateState(
+          currentPathState!,
+        ),
+      );
+      return;
+    }
+    if (waypointIndex >= 5 || orchestrator.findAndLockObstacles()) {
+      collection.drive.stop();
+      controller.transitionTo(
+        PathingState(
+          controller,
+          collection: collection,
+          orchestrator: orchestrator,
+          destination: destination,
+        ),
+      );
+      return;
+    }
+    if (collection.gps.isNear(destination, Constants.maxErrorMeters)) {
+      controller.popState();
+      return;
+    }
+
+
+    orchestrator.traversed.add(currentPathState!.position);
+
+    waypointIndex++;
+    hasCorrected = false;
+    hasFollowed = false;
+    currentPathState = orchestrator.currentPath?[waypointIndex];
+  }
+}
 
 class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   /// The GPS coordinates that the rover has traversed during the task
@@ -488,26 +670,56 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     isCorrectingWaypointOrientation = false;
     replanPath = true;
     behaviorRoot = pathToDestination(destination);
+    controller.pushState(
+      SequenceState(
+        controller,
+        steps: [
+          collection.drive.resolveOrientationState(),
+          PathingState(
+            controller,
+            collection: collection,
+            orchestrator: this,
+            destination: destination,
+          ),
+        ],
+      ),
+    );
     behaviorTreeTimer = Timer.periodic(const Duration(milliseconds: 10), (
       timer,
     ) {
       if (currentCommand == null) {
         return;
       }
-      behaviorRoot.tick();
-      if (behaviorRoot.status == NodeStatus.failure) {
-        behaviorRoot.reset();
+      if (!controller.hasState()) {
         currentState = AutonomyState.NO_SOLUTION;
         currentCommand = null;
         timer.cancel();
-      } else if (behaviorRoot.status == NodeStatus.success) {
-        behaviorRoot.reset();
+        return;
+      }
+      if (collection.gps.isNear(destination, Constants.maxErrorMeters)) {
         timer.cancel();
         collection.logger.info("Task complete");
         currentState = AutonomyState.AT_DESTINATION;
         collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+        collection.drive.stop();
         currentCommand = null;
+        return;
       }
+      controller.update();
+      // behaviorRoot.tick();
+      // if (behaviorRoot.status == NodeStatus.failure) {
+      //   behaviorRoot.reset();
+      //   currentState = AutonomyState.NO_SOLUTION;
+      //   currentCommand = null;
+      //   timer.cancel();
+      // } else if (behaviorRoot.status == NodeStatus.success) {
+      //   behaviorRoot.reset();
+      //   timer.cancel();
+      //   collection.logger.info("Task complete");
+      //   currentState = AutonomyState.AT_DESTINATION;
+      //   collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
+      //   currentCommand = null;
+      // }
     });
     // detect obstacles before and after resolving orientation, as a "scan"
     // collection.detector.findObstacles();

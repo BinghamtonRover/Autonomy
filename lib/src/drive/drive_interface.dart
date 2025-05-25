@@ -1,4 +1,5 @@
 import "package:autonomy/interfaces.dart";
+import "package:autonomy/src/fsm/rover_fsm.dart";
 import "package:behavior_tree/behavior_tree.dart";
 
 import "drive_config.dart";
@@ -35,8 +36,37 @@ abstract class DriveInterface extends Service {
   /// The drive configuration for the rover it is running on
   DriveConfig config;
 
+  /// Getter to access the FSM controller
+  FSMController get controller => collection.orchestrator.controller;
+
   /// Constructor for Drive Interface
   DriveInterface({required this.collection, this.config = roverConfig});
+
+  StateInterface driveStateState(AutonomyAStarState state) {
+    if (state.instruction == DriveDirection.stop) {
+      return FunctionalState(
+        controller,
+        onUpdate: (controller) => controller.popState(),
+      );
+    } else if (state.instruction == DriveDirection.forward) {
+      return driveForwardState(state.position);
+    } else {
+      return turnStateState(state);
+    }
+  }
+
+  StateInterface resolveOrientationState() =>
+      faceDirectionState(collection.imu.nearest);
+
+  StateInterface driveForwardState(GpsCoordinates coordinates);
+
+  StateInterface faceDirectionState(CardinalDirection direction) =>
+      faceOrientationState(direction.orientation);
+
+  StateInterface faceOrientationState(Orientation orientation);
+
+  StateInterface turnStateState(AutonomyAStarState state) =>
+      faceOrientationState(state.orientation.orientation);
 
   BaseNode driveStateNode(AutonomyAStarState state) {
     if (state.instruction == DriveDirection.stop) {

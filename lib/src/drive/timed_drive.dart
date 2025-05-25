@@ -2,17 +2,45 @@ import "dart:math";
 
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/src/drive/drive_config.dart";
+import "package:autonomy/src/fsm/rover_fsm.dart";
 import "package:behavior_tree/behavior_tree.dart";
 
 import "drive_commands.dart";
 
-class _TimedOperation extends BaseNode {
+class _TimedOperationState extends RoverState {
+  DateTime _startTime = DateTime(0);
+
+  final Duration time;
+  final void Function() operation;
+
+  _TimedOperationState(
+    super.controller, {
+    required this.time,
+    required this.operation,
+  });
+
+  @override
+  void enter() {
+    _startTime = DateTime.now();
+  }
+
+  @override
+  void update() {
+    if (DateTime.now().difference(_startTime) >= time) {
+      controller.popState();
+      return;
+    }
+    operation();
+  }
+}
+
+class _TimedOperationNode extends BaseNode {
   DateTime? _start;
 
   final Duration time;
   final void Function() operation;
 
-  _TimedOperation({required this.time, required this.operation});
+  _TimedOperationNode({required this.time, required this.operation});
 
   @override
   void tick() {
@@ -49,7 +77,71 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   @override
-  BaseNode driveForwardNode(GpsCoordinates coordinates) => _TimedOperation(
+  StateInterface faceOrientationState(Orientation orientation) {
+    throw UnsupportedError(
+      "Cannot face any arbitrary direction using TimedDrive",
+    );
+  }
+
+  @override
+  StateInterface driveForwardState(GpsCoordinates coordinates) =>
+      _TimedOperationState(
+        controller,
+        time:
+            config.oneMeterDelay *
+            (collection.imu.nearest.isPerpendicular ? 1 : sqrt2),
+        operation: () {
+          setThrottle(config.forwardThrottle);
+          moveForward();
+        },
+      );
+
+  @override
+  StateInterface turnStateState(AutonomyAStarState state) => switch (state
+      .instruction) {
+    DriveDirection.forward => throw UnimplementedError(),
+
+    DriveDirection.left => _TimedOperationState(
+      controller,
+      time: config.turnDelay,
+      operation: () {
+        setThrottle(config.turnThrottle);
+        spinLeft();
+      },
+    ),
+
+    DriveDirection.right => _TimedOperationState(
+      controller,
+      time: config.turnDelay,
+      operation: () {
+        setThrottle(config.turnThrottle);
+        spinRight();
+      },
+    ),
+
+    DriveDirection.quarterLeft => _TimedOperationState(
+      controller,
+      time: config.turnDelay * 0.5,
+      operation: () {
+        setThrottle(config.turnThrottle);
+        spinLeft();
+      },
+    ),
+
+    DriveDirection.quarterRight => _TimedOperationState(
+      controller,
+      time: config.turnDelay * 0.5,
+      operation: () {
+        setThrottle(config.turnThrottle);
+        spinRight();
+      },
+    ),
+
+    DriveDirection.stop => throw UnimplementedError(),
+  };
+
+  @override
+  BaseNode driveForwardNode(GpsCoordinates coordinates) => _TimedOperationNode(
     time:
         config.oneMeterDelay *
         (collection.imu.nearest.isPerpendicular ? 1 : sqrt2),
@@ -64,7 +156,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
       .instruction) {
     DriveDirection.forward => throw UnimplementedError(),
 
-    DriveDirection.left => _TimedOperation(
+    DriveDirection.left => _TimedOperationNode(
       time: config.turnDelay,
       operation: () {
         setThrottle(config.turnThrottle);
@@ -72,7 +164,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
       },
     ),
 
-    DriveDirection.right => _TimedOperation(
+    DriveDirection.right => _TimedOperationNode(
       time: config.turnDelay,
       operation: () {
         setThrottle(config.turnThrottle);
@@ -80,7 +172,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
       },
     ),
 
-    DriveDirection.quarterLeft => _TimedOperation(
+    DriveDirection.quarterLeft => _TimedOperationNode(
       time: config.turnDelay * 0.5,
       operation: () {
         setThrottle(config.turnThrottle);
@@ -88,7 +180,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
       },
     ),
 
-    DriveDirection.quarterRight => _TimedOperation(
+    DriveDirection.quarterRight => _TimedOperationNode(
       time: config.turnDelay * 0.5,
       operation: () {
         setThrottle(config.turnThrottle);
