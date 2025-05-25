@@ -9,7 +9,7 @@ mixin RoverDriveCommands on DriveInterface {
   /// throttle, as a percentage of the rover's top speed.
   void setThrottle(double throttle) {
     collection.logger.trace("Setting throttle to $throttle");
-    sendCommand(DriveCommand(throttle: throttle, setThrottle: true));
+    sendCommand(DriveCommand(setThrottle: true, throttle: throttle));
   }
 
   /// Sets the speeds of the left and right wheels, using differential steering.
@@ -18,8 +18,9 @@ mixin RoverDriveCommands on DriveInterface {
   void _setSpeeds({required double left, required double right}) {
     right *= -1;
     collection.logger.trace("Setting speeds to $left and $right");
-    sendCommand(DriveCommand(left: left, setLeft: true));
-    sendCommand(DriveCommand(right: right, setRight: true));
+    sendCommand(
+      DriveCommand(setLeft: true, setRight: true, left: left, right: right),
+    );
   }
 
   /// Stops the motors, setting the throttle and speeds to 0
