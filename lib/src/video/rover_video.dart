@@ -50,7 +50,9 @@ class RoverVideo extends VideoInterface {
       constructor: VideoData.fromBuffer,
       callback: (result) async {
         if (result.hasFrame() && result.frame.isNotEmpty) return;
-        if (result.details.name != (desiredCamera ?? result.details.name)) return;
+        if (result.details.name != (desiredCamera ?? result.details.name)) {
+          return;
+        }
         final object = result.detectedObjects.firstWhereOrNull(
           (e) => e.objectType == DetectedObjectType.ARUCO && e.arucoTagId == id,
         );
@@ -60,7 +62,7 @@ class RoverVideo extends VideoInterface {
         }
       },
     );
-    
+
     try {
       return await completer.future.timeout(timeout);
     } on TimeoutException {

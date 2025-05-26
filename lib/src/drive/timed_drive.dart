@@ -67,9 +67,9 @@ class _TimedOperationNode extends BaseNode {
 }
 
 /// An implementation of [DriveInterface] that drives for a specified amount of time without using sensors
-/// 
+///
 /// The time to drive/turn for is defined by [DriveConfig.oneMeterDelay] and [DriveConfig.turnDelay]
-/// 
+///
 /// This should only be used if the rover is not using sensors for autonomous driving
 class TimedDrive extends DriveInterface with RoverDriveCommands {
   TimedDrive({required super.collection, super.config});
@@ -205,7 +205,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   Future<bool> init() async => true;
 
   @override
-  Future<void> dispose() async { }
+  Future<void> dispose() async {}
 
   @override
   Future<bool> driveForward(GpsCoordinates position) async {
@@ -237,7 +237,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   /// Moves forward for the amount of time it will take to drive the specified [distance]
-  /// 
+  ///
   /// This will set the speeds to move forward, and wait for the amount of
   /// time specified by the [DriveConfig.oneMeterDelay]
   Future<bool> goForward([double distance = 1]) async {
@@ -250,7 +250,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   /// Turns left for the amount of time it will take to spin left 90 degrees
-  /// 
+  ///
   /// This will set the speeds to turn left, and wait for the amount of
   /// time specified by the [DriveConfig.turnDelay]
   Future<void> turnLeft() async {
@@ -261,7 +261,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   /// Turns right for the amount of time it will take to spin right 90 degrees
-  /// 
+  ///
   /// This will set the speeds to turn right, and wait for the amount of
   /// time defined by the [DriveConfig.turnDelay]
   Future<void> turnRight() async {
@@ -272,7 +272,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   /// Turns left for the amount of time it will take to spin left 45 degrees
-  /// 
+  ///
   /// This will set the speeds to turn left, and wait for the amount of
   /// time defined by the [DriveConfig.turnDelay] / 2
   Future<void> turnQuarterLeft() async {
@@ -283,7 +283,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   }
 
   /// Turns right for the amount of time it will take to spin right 45 degrees
-  /// 
+  ///
   /// This will set the speeds to turn right, and wait for the amount of
   /// time defined by the [DriveConfig.turnDelay] / 2
   Future<void> turnQuarterRight() async {
@@ -295,5 +295,7 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
 
   @override
   Future<bool> faceOrientation(Orientation orientation) =>
-    throw UnsupportedError("Cannot face any arbitrary direction using TimedDrive");
+      throw UnsupportedError(
+        "Cannot face any arbitrary direction using TimedDrive",
+      );
 }

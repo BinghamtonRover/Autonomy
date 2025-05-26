@@ -20,9 +20,10 @@ class RoverPathfinder extends PathfindingInterface {
           position: previous.position,
           goal: previous.goal,
           collection: collection,
-          instruction: step.instruction == DriveDirection.quarterLeft
-              ? DriveDirection.left
-              : DriveDirection.right,
+          instruction:
+              step.instruction == DriveDirection.quarterLeft
+                  ? DriveDirection.left
+                  : DriveDirection.right,
           orientation: step.orientation,
           depth: step.depth,
         );
@@ -36,9 +37,15 @@ class RoverPathfinder extends PathfindingInterface {
   }
 
   @override
-  List<AutonomyAStarState>? getPath(GpsCoordinates destination, {bool verbose = false}) {
+  List<AutonomyAStarState>? getPath(
+    GpsCoordinates destination, {
+    bool verbose = false,
+  }) {
     if (isObstacle(destination)) return null;
-    final state = AutonomyAStarState.start(collection: collection, goal: destination);
+    final state = AutonomyAStarState.start(
+      collection: collection,
+      goal: destination,
+    );
     final result = aStar(state, verbose: verbose, limit: 50000);
     if (result == null) return null;
     final transitions = result.reconstructPath();

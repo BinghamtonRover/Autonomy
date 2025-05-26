@@ -13,12 +13,16 @@ import "package:burt_network/burt_network.dart";
 class DriveConfig {
   /// The throttle to set the drive to when moving forward
   final double forwardThrottle;
+
   /// The throttle to set the drive to when turning
   final double turnThrottle;
+
   /// The time it takes to turn 90 degrees
   final Duration turnDelay;
+
   /// The time it takes to move one meter forward
   final Duration oneMeterDelay;
+
   /// The IP address for the subsystems program
   final String subsystemsAddress;
 
@@ -32,10 +36,8 @@ class DriveConfig {
   });
 
   /// The [SocketInfo] for Subsystems, created using [subsystemsAddress] and port 8001
-  SocketInfo get subsystems => SocketInfo(
-    address: InternetAddress(subsystemsAddress),
-    port: 8001,
-  );
+  SocketInfo get subsystems =>
+      SocketInfo(address: InternetAddress(subsystemsAddress), port: 8001);
 }
 
 /// The [DriveConfig] for the rover

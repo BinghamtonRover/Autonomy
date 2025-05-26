@@ -5,7 +5,10 @@ abstract class PathfindingInterface extends Service {
   final AutonomyInterface collection;
   PathfindingInterface({required this.collection});
 
-  List<AutonomyAStarState>? getPath(GpsCoordinates destination, {bool verbose = false});
+  List<AutonomyAStarState>? getPath(
+    GpsCoordinates destination, {
+    bool verbose = false,
+  });
 
   Set<GpsCoordinates> obstacles = {};
   final Set<GpsCoordinates> _lockedObstacles = {};

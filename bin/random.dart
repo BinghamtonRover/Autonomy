@@ -4,7 +4,8 @@ import "package:autonomy/interfaces.dart";
 
 const maxError = GpsInterface.gpsError;
 const maxSamples = 10;
-final epsilon = GpsUtils.epsilonLatitude;  // we need to be accurate within 1 meter
+final epsilon =
+    GpsUtils.epsilonLatitude; // we need to be accurate within 1 meter
 const n = 1000;
 bool verbose = false;
 
@@ -17,7 +18,9 @@ bool test() {
     if (verbose) {
       final calibrated = corrector.calibratedValue;
       print("Current value: $value, Corrected value: $calibrated");
-      print("  Difference: ${calibrated.toStringAsFixed(7)} < ${epsilon.toStringAsFixed(7)}");
+      print(
+        "  Difference: ${calibrated.toStringAsFixed(7)} < ${epsilon.toStringAsFixed(7)}",
+      );
     }
   }
   return corrector.calibratedValue.abs() <= epsilon;

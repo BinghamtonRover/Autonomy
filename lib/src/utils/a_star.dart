@@ -12,7 +12,8 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
     }
     if (direction == DriveDirection.forward) {
       return 1;
-    } else if (direction == DriveDirection.quarterLeft || direction == DriveDirection.quarterRight) {
+    } else if (direction == DriveDirection.quarterLeft ||
+        direction == DriveDirection.quarterRight) {
       return sqrt2;
     } else {
       return 2 * sqrt2;
@@ -68,7 +69,7 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   );
 
   @override
-  String toString() => switch(instruction) {
+  String toString() => switch (instruction) {
     DriveDirection.forward => "Go forward to ${position.prettyPrint()}",
     DriveDirection.left => "Turn left to face $instruction",
     DriveDirection.right => "Turn right to face $instruction",
@@ -84,7 +85,10 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
   String hash() => "${position.prettyPrint()} ($orientation) ($instruction)";
 
   @override
-  bool isGoal() => position.isNear(goal, min(Constants.moveLengthMeters, Constants.maxErrorMeters));
+  bool isGoal() => position.isNear(
+    goal,
+    min(Constants.moveLengthMeters, Constants.maxErrorMeters),
+  );
 
   /// Returns whether or not the rover will drive between or right next to an obstacle diagonally<br/>
   /// <br/>
@@ -118,8 +122,8 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
 
   bool isValidState(AutonomyAStarState state) =>
       !(state.instruction == DriveDirection.forward &&
-          collection.pathfinder.isObstacle(state.position))
-    && !willDriveThroughObstacle(state);
+          collection.pathfinder.isObstacle(state.position)) &&
+      !willDriveThroughObstacle(state);
 
   Iterable<AutonomyAStarState> _allNeighbors() => [
     copyWith(

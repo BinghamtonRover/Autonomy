@@ -1,7 +1,6 @@
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
 import "package:autonomy/src/fsm/rover_fsm.dart";
-import "package:autonomy/src/fsm/rover_state.dart";
 import "package:behavior_tree/behavior_tree.dart";
 
 import "sensor_drive.dart";
@@ -27,7 +26,7 @@ class RoverDrive extends DriveInterface {
   late final simDrive = DriveSimulator(collection: collection, config: config);
 
   /// Constructor for RoverDrive
-  /// 
+  ///
   /// Takes in parameters for whether or not to use the GPS and imu
   /// These will determine when to use [sensorDrive] or [timedDrive]
   RoverDrive({
@@ -80,10 +79,8 @@ class RoverDrive extends DriveInterface {
   }
 
   @override
-  Future<bool> spinForAruco(
-    int arucoId, {
-    CameraName? desiredCamera,
-  }) => sensorDrive.spinForAruco(arucoId, desiredCamera: desiredCamera);
+  Future<bool> spinForAruco(int arucoId, {CameraName? desiredCamera}) =>
+      sensorDrive.spinForAruco(arucoId, desiredCamera: desiredCamera);
 
   @override
   Future<void> approachAruco() => sensorDrive.approachAruco();
@@ -136,7 +133,7 @@ class RoverDrive extends DriveInterface {
       );
     }
   }
-  
+
   @override
   BaseNode faceOrientationNode(Orientation orientation) {
     if (useImu) {

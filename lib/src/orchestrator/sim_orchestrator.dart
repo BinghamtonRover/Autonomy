@@ -4,28 +4,20 @@ class OrchestratorSimulator extends OrchestratorInterface {
   OrchestratorSimulator({required super.collection});
 
   @override
-  Future<void> dispose() async { }
+  Future<void> dispose() async {}
 
   @override
   AutonomyData get statusMessage => AutonomyData();
 
   @override
-  Future<void> handleGpsTask(AutonomyCommand command) async {
-
-  }
+  Future<void> handleGpsTask(AutonomyCommand command) async {}
 
   @override
-  Future<void> handleArucoTask(AutonomyCommand command) async {
-
-  }
+  Future<void> handleArucoTask(AutonomyCommand command) async {}
 
   @override
-  Future<void> handleHammerTask(AutonomyCommand command) async {
-
-  }
+  Future<void> handleHammerTask(AutonomyCommand command) async {}
 
   @override
-  Future<void> handleBottleTask(AutonomyCommand command) async {
-
-  }
+  Future<void> handleBottleTask(AutonomyCommand command) async {}
 }

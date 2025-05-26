@@ -1,4 +1,3 @@
-
 import "package:autonomy/interfaces.dart";
 
 enum CardinalDirection {

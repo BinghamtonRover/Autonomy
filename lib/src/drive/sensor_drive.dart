@@ -16,7 +16,8 @@ class SensorForwardState extends RoverState {
 
   DriveConfig get config => collection.drive.config;
 
-  SensorForwardState(super.controller, {
+  SensorForwardState(
+    super.controller, {
     required this.collection,
     required this.position,
     required this.drive,
@@ -27,10 +28,7 @@ class SensorForwardState extends RoverState {
     drive.setThrottle(config.forwardThrottle);
     drive.moveForward();
 
-    if (collection.gps.isNear(
-      position,
-      Constants.intermediateStepTolerance,
-    )) {
+    if (collection.gps.isNear(position, Constants.intermediateStepTolerance)) {
       controller.popState();
     }
   }
@@ -49,7 +47,8 @@ class SensorTurnState extends RoverState {
 
   DriveConfig get config => collection.drive.config;
 
-  SensorTurnState(super.controller, {
+  SensorTurnState(
+    super.controller, {
     required this.collection,
     required this.orientation,
     required this.drive,
@@ -147,7 +146,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
       }),
     ],
   );
-  
+
   @override
   BaseNode spinForArucoNode(int arucoId, {CameraName? desiredCamera}) =>
       Selector(
@@ -177,12 +176,12 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   /// Will periodically check for a condition to become true. This can be
   /// thought of as a "wait until", where the rover will periodically check
   /// if it has reached its desired position or orientation.
-  /// 
+  ///
   /// The [predicate] method is intended to manuever the rover until its condition
   /// becomes true. To prevent infinite driving, this will return false if either
   /// the command is canceled, or [stopNearObstacle] is true and the rover becomes
   /// too close to an obstacle.
-  /// 
+  ///
   /// Returns whether or not the feedback loop reached its desired state.
   Future<bool> runFeedback(
     bool Function() predicate, {
@@ -209,7 +208,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   Future<bool> init() async => true;
 
   @override
-  Future<void> dispose() async { }
+  Future<void> dispose() async {}
 
   @override
   Future<bool> driveForward(GpsCoordinates position) async {
@@ -223,13 +222,14 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
         position,
         Constants.intermediateStepTolerance,
       );
-    // ignore: require_trailing_commas
+      // ignore: require_trailing_commas
     }, stopNearObstacle: true).timeout(
       Constants.driveGPSTimeout,
       onTimeout: () {
         collection.logger.warning(
           "GPS Drive timed out",
-          body: "Failed to reach ${position.prettyPrint()} after ${Constants.driveGPSTimeout}",
+          body:
+              "Failed to reach ${position.prettyPrint()} after ${Constants.driveGPSTimeout}",
         );
         return false;
       },
@@ -274,10 +274,7 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   }
 
   @override
-  Future<bool> spinForAruco(
-    int arucoId, {
-    CameraName? desiredCamera,
-  }) async {
+  Future<bool> spinForAruco(int arucoId, {CameraName? desiredCamera}) async {
     setThrottle(config.turnThrottle);
     var foundAruco = true;
     foundAruco = await runFeedback(() {
@@ -288,7 +285,8 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
       return collection.video.getArucoDetection(
             arucoId,
             desiredCamera: desiredCamera,
-          ) != null;
+          ) !=
+          null;
     }).timeout(
       Constants.arucoSearchTimeout,
       onTimeout: () {

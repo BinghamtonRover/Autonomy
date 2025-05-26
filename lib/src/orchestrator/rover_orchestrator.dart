@@ -202,11 +202,7 @@ class NavigationState extends RoverState {
     if (!hasFollowed) {
       hasFollowed = true;
       collection.logger.debug(currentPathState!.toString());
-      controller.pushState(
-        collection.drive.driveStateState(
-          currentPathState!,
-        ),
-      );
+      controller.pushState(collection.drive.driveStateState(currentPathState!));
       return;
     }
     if (waypointIndex >= 5 || orchestrator.findAndLockObstacles()) {
@@ -225,7 +221,6 @@ class NavigationState extends RoverState {
       controller.popState();
       return;
     }
-
 
     orchestrator.traversed.add(currentPathState!.position);
 
@@ -295,7 +290,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       ...traversed,
     },
     task: currentCommand?.task,
-    crash: false,  // TODO: Investigate if this is used and how to use it better
+    crash: false, // TODO: Investigate if this is used and how to use it better
   );
 
   @override
@@ -444,7 +439,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           currentWaypoint = currentPath![waypointIndex];
           currentState = AutonomyState.DRIVING;
 
-          if (!hasCheckedWaypointOrientation && !isCorrectingWaypointOrientation) {
+          if (!hasCheckedWaypointOrientation &&
+              !isCorrectingWaypointOrientation) {
             // if it has RTK, point towards the next coordinate
             if (collection.gps.coordinates.hasRTK) {
               final difference =
@@ -550,7 +546,9 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         // relies on the tree not being "success" until we have reached our destination,
         // adding this here guarantees that this node will only be successful if we are
         // done following
-        Condition(() => collection.gps.isNear(destination, Constants.maxErrorMeters)),
+        Condition(
+          () => collection.gps.isNear(destination, Constants.maxErrorMeters),
+        ),
       ],
     );
   }
@@ -625,15 +623,20 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   }) async {
     await collection.drive.resolveOrientation();
     collection.detector.findObstacles();
-    while (!collection.gps.coordinates.isNear(goal) && !(alternateEndCondition?.call() ?? false)) {
+    while (!collection.gps.coordinates.isNear(goal) &&
+        !(alternateEndCondition?.call() ?? false)) {
       // Calculate a path
       collection.logger.debug("Finding a path");
       currentState = AutonomyState.PATHING;
       final path = collection.pathfinder.getPath(goal);
-      currentPath = path;  // also use local variable path for promotion
+      currentPath = path; // also use local variable path for promotion
       if (path == null) {
         final current = collection.gps.coordinates;
-        collection.logger.error("Could not find a path", body: "No path found from ${current.prettyPrint()} to ${goal.prettyPrint()}");
+        collection.logger.error(
+          "Could not find a path",
+          body:
+              "No path found from ${current.prettyPrint()} to ${goal.prettyPrint()}",
+        );
         if (abortOnError) {
           currentState = AutonomyState.NO_SOLUTION;
           currentCommand = null;
@@ -642,7 +645,9 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       }
       // Try to take that path
       final current = collection.gps.coordinates;
-      collection.logger.debug("Found a path from ${current.prettyPrint()} to ${goal.prettyPrint()}: ${path.length} steps");
+      collection.logger.debug(
+        "Found a path from ${current.prettyPrint()} to ${goal.prettyPrint()}: ${path.length} steps",
+      );
       collection.logger.debug("Here is a summary of the path");
       for (final step in path) {
         collection.logger.debug(step.toString());
@@ -656,9 +661,14 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           break;
         }
         // Replan if too far from start point
-        final distanceError = collection.gps.coordinates.distanceTo(state.startPostition);
+        final distanceError = collection.gps.coordinates.distanceTo(
+          state.startPostition,
+        );
         if (distanceError >= Constants.replanErrorMeters) {
-          collection.logger.info("Replanning Path", body: "Rover is $distanceError meters off the path");
+          collection.logger.info(
+            "Replanning Path",
+            body: "Rover is $distanceError meters off the path",
+          );
           findAndLockObstacles();
           break;
         }
@@ -667,7 +677,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           Orientation targetOrientation;
           // if it has RTK, point towards the next coordinate
           if (collection.gps.coordinates.hasRTK) {
-            final difference = state.position.toUTM() - collection.gps.coordinates.toUTM();
+            final difference =
+                state.position.toUTM() - collection.gps.coordinates.toUTM();
 
             final angle = atan2(difference.y, difference.x) * 180 / pi;
 
@@ -702,7 +713,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         final foundObstacle = findAndLockObstacles();
         if (foundObstacle) {
           collection.logger.debug("Found an obstacle. Recalculating path...");
-          break;  // calculate a new path
+          break; // calculate a new path
         }
       }
     }
@@ -712,8 +723,13 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   @override
   void handleGpsTask(AutonomyCommand command) {
     final destination = command.destination;
-    collection.logger.info("Received GPS Task", body: "Go to ${destination.prettyPrint()}");
-    collection.logger.debug("Currently at ${collection.gps.coordinates.prettyPrint()}");
+    collection.logger.info(
+      "Received GPS Task",
+      body: "Go to ${destination.prettyPrint()}",
+    );
+    collection.logger.debug(
+      "Currently at ${collection.gps.coordinates.prettyPrint()}",
+    );
     traversed.clear();
     collection.drive.setLedStrip(ProtoColor.RED);
     waypointIndex = 0;
@@ -787,7 +803,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   }
 
   @override
-  void handleArucoTask(AutonomyCommand command) async {
+  Future<void> handleArucoTask(AutonomyCommand command) async {
     collection.drive.setLedStrip(ProtoColor.RED);
 
     // Go to GPS coordinates
@@ -867,8 +883,13 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     );
 
     if (command.destination != GpsCoordinates(latitude: 0, longitude: 0)) {
-      if (!await calculateAndFollowPath(command.destination, abortOnError: false)) {
-        collection.logger.error("Failed to follow path towards initial destination");
+      if (!await calculateAndFollowPath(
+        command.destination,
+        abortOnError: false,
+      )) {
+        collection.logger.error(
+          "Failed to follow path towards initial destination",
+        );
         currentState = AutonomyState.NO_SOLUTION;
         currentCommand = null;
         return;
@@ -907,7 +928,9 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
     if (detectedAruco == null || !detectedAruco!.hasBestPnpResult()) {
       // TODO: handle this condition properly
-      collection.logger.error("Could not find desired Aruco tag after rotating towards it");
+      collection.logger.error(
+        "Could not find desired Aruco tag after rotating towards it",
+      );
       currentState = AutonomyState.NO_SOLUTION;
       currentCommand = null;
       return;
@@ -927,7 +950,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     final distanceToTag =
         sqrt(
           pow(cameraToTag.translation.z, 2) + pow(cameraToTag.translation.x, 2),
-        ) - 1; // don't drive *into* the tag
+        ) -
+        1; // don't drive *into* the tag
 
     if (distanceToTag < 1) {
       // well that was easy
@@ -937,8 +961,12 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       return;
     }
 
-    final relativeX = -distanceToTag * sin((collection.imu.heading - detectedAruco!.yaw) * pi / 180);
-    final relativeY = distanceToTag * cos((collection.imu.heading - detectedAruco!.yaw) * pi / 180);
+    final relativeX =
+        -distanceToTag *
+        sin((collection.imu.heading - detectedAruco!.yaw) * pi / 180);
+    final relativeY =
+        distanceToTag *
+        cos((collection.imu.heading - detectedAruco!.yaw) * pi / 180);
 
     final destinationCoordinates =
         (collection.gps.coordinates.toUTM() +
@@ -1004,12 +1032,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   }
 
   @override
-  void handleHammerTask(AutonomyCommand command) async {
-
-  }
+  Future<void> handleHammerTask(AutonomyCommand command) async {}
 
   @override
-  void handleBottleTask(AutonomyCommand command) async {
-
-  }
+  Future<void> handleBottleTask(AutonomyCommand command) async {}
 }

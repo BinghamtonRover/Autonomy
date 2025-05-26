@@ -27,7 +27,8 @@ abstract class VideoInterface extends Service with Receiver {
 
   void updateFrame(VideoData result);
 
-  DetectedObject? getArucoDetection(int id, {CameraName? desiredCamera}) => null;
+  DetectedObject? getArucoDetection(int id, {CameraName? desiredCamera}) =>
+      null;
 
   Future<DetectedObject?> waitForAruco(
     int id, {

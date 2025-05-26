@@ -8,14 +8,19 @@ import "drive_config.dart";
 enum DriveDirection {
   /// Move forward
   forward,
+
   /// Turn 90 degrees left
   left,
+
   /// Turn 90 degrees right
   right,
+
   /// Turn 45 degrees left
   quarterLeft,
+
   /// Turn 45 degrees right
   quarterRight,
+
   /// Stop moving
   stop;
 
@@ -27,7 +32,7 @@ enum DriveDirection {
 }
 
 /// An abstract class for driving.
-/// 
+///
 /// This allows for easy stubbing to simulate drive if certain sensors are not used.
 abstract class DriveInterface extends Service {
   /// The autonomy collection of the rover's sensors, pathfinders, loggers, and UDP sockets
@@ -107,13 +112,15 @@ abstract class DriveInterface extends Service {
   Future<bool> faceOrientation(Orientation orientation);
 
   /// Turn to face the orientation of [direction], returns whether or not it was able to turn
-  Future<bool> faceDirection(CardinalDirection direction) => faceOrientation(direction.orientation);
+  Future<bool> faceDirection(CardinalDirection direction) =>
+      faceOrientation(direction.orientation);
 
   /// Utility method to send a command to subsystems
-  void sendCommand(Message message) => collection.server.sendMessage(message, destination: config.subsystems);
+  void sendCommand(Message message) =>
+      collection.server.sendMessage(message, destination: config.subsystems);
 
   /// Spins the rover to the nearest IMU rotation
-  /// 
+  ///
   /// This exists so the rover can generate a path based on a known
   /// orientation that aligns to the possible orientations defined by [CardinalDirection]
   Future<bool> resolveOrientation() => faceDirection(collection.imu.nearest);
@@ -121,14 +128,15 @@ abstract class DriveInterface extends Service {
   /// Turns to face the state's [AutonomyAStarState.orientation].
   ///
   /// Exists so that the TimedDrive can implement this in terms of [AutonomyAStarState.instruction].
-  /// 
+  ///
   /// Returns whether or not the turn was successful
-  Future<bool> turnState(AutonomyAStarState state) => faceDirection(state.orientation);
+  Future<bool> turnState(AutonomyAStarState state) =>
+      faceDirection(state.orientation);
 
   /// Drives the rover based on the instruction and desired positions in [state]
-  /// 
+  ///
   /// This determines based on the [state] whether it should move forward, turn, or stop
-  /// 
+  ///
   /// Returns whether or not the drive was successful
   Future<bool> driveState(AutonomyAStarState state) {
     if (state.instruction == DriveDirection.stop) {
@@ -141,16 +149,20 @@ abstract class DriveInterface extends Service {
   }
 
   /// Utility method to send a command to change the color of the LED strip
-  /// 
+  ///
   /// This is used to signal the state of the autonomous driving outside of the rover
   void setLedStrip(ProtoColor color, {bool blink = false}) {
-    final command = DriveCommand(color: color, blink: blink ? BoolState.YES : BoolState.NO);
+    final command = DriveCommand(
+      color: color,
+      blink: blink ? BoolState.YES : BoolState.NO,
+    );
     sendCommand(command);
   }
 
   /// Spin to face an Aruco tag, returns whether or not it was able to face the tag
-  Future<bool> spinForAruco(int arucoId, {CameraName? desiredCamera}) async => false;
+  Future<bool> spinForAruco(int arucoId, {CameraName? desiredCamera}) async =>
+      false;
 
   /// Drive forward to approach an Aruco tag
-  Future<void> approachAruco() async { }
+  Future<void> approachAruco() async {}
 }

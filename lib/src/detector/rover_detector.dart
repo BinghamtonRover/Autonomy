@@ -74,8 +74,7 @@ class RoverDetector extends DetectorInterface {
       );
 
       queuedObstacles.add(
-        (collection.gps.coordinates.toUTM() + roverToPoint)
-            .toGps(),
+        (collection.gps.coordinates.toUTM() + roverToPoint).toGps(),
       );
     }
 
@@ -95,7 +94,8 @@ class RoverDetector extends DetectorInterface {
     final toRemove = temporaryObstacles.where((coordinates) {
       final delta = coordinates.toUTM() - roverUtm;
       final roverToPoint = (atan2(delta.y, delta.x) - pi / 2) * 180 / pi;
-      final relativeAngle = (collection.imu.heading + roverToPoint).clampHalfAngle();
+      final relativeAngle =
+          (collection.imu.heading + roverToPoint).clampHalfAngle();
 
       return relativeAngle > -135 && relativeAngle < 135;
     });

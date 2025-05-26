@@ -31,14 +31,18 @@ mixin RoverDriveCommands on DriveInterface {
 
   /// Sets the speeds of the wheels to spin the rover left
   void spinLeft() => _setSpeeds(left: -1, right: 1);
+
   /// Sets the speeds of the wheels to spin the rover right
   void spinRight() => _setSpeeds(left: 1, right: -1);
+
   /// Sets the speeds of the wheels to move the rover in a straight line
   void moveForward() => _setSpeeds(left: 1, right: 1);
 
   /// Sets the angle of the front camera.
   void setCameraAngle({required double swivel, required double tilt}) {
-    collection.logger.trace("Setting camera angles to $swivel (swivel) and $tilt (tilt)");
+    collection.logger.trace(
+      "Setting camera angles to $swivel (swivel) and $tilt (tilt)",
+    );
     final command = DriveCommand(frontSwivel: swivel, frontTilt: tilt);
     sendCommand(command);
   }

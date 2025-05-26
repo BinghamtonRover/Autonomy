@@ -3,7 +3,10 @@ import "dart:collection";
 class ErrorCorrector {
   final int maxSamples;
   final double maxDeviation;
-  ErrorCorrector({required this.maxSamples, this.maxDeviation = double.infinity});
+  ErrorCorrector({
+    required this.maxSamples,
+    this.maxDeviation = double.infinity,
+  });
   factory ErrorCorrector.disabled() => ErrorCorrector(maxSamples: 1);
 
   double calibratedValue = 0;

@@ -5,8 +5,7 @@ class SimulatedObstacle {
   final int radius;
   SimulatedObstacle({required this.coordinates, required this.radius});
 
-  bool isNear(GpsCoordinates other) =>
-    coordinates.distanceTo(other) <= radius;
+  bool isNear(GpsCoordinates other) => coordinates.distanceTo(other) <= radius;
 }
 
 class DetectorSimulator extends DetectorInterface {
@@ -29,7 +28,9 @@ class DetectorSimulator extends DetectorInterface {
     final coordinates = collection.gps.coordinates;
     var result = false;
     for (final obstacle in obstacles) {
-      if (!obstacle.isNear(coordinates) || found.contains(obstacle.coordinates)) continue;
+      if (!obstacle.isNear(coordinates) || found.contains(obstacle.coordinates)) {
+        continue;
+      }
       result = true;
       found.add(obstacle.coordinates);
       collection.pathfinder.recordObstacle(obstacle.coordinates);
@@ -38,5 +39,5 @@ class DetectorSimulator extends DetectorInterface {
   }
 
   @override
-  bool isOnSlope() => false;  // if on [slopedLatitude]
+  bool isOnSlope() => false; // if on [slopedLatitude]
 }

@@ -18,7 +18,9 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
   test("Simple path from (0, 0) to (5, 5) exists", () {
     final simulator = AutonomySimulator();
     final destination = origin.plus(x: 5, y: 5);
-    simulator.logger.info("Each step is ${GpsUtils.northMeters.toGps().latitude.toStringAsFixed(5)}");
+    simulator.logger.info(
+      "Each step is ${GpsUtils.northMeters.toGps().latitude.toStringAsFixed(5)}",
+    );
     simulator.logger.info("Going to ${destination.prettyPrint()}");
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.gps.update(origin);
@@ -30,7 +32,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     final simulator = AutonomySimulator();
 
     // Plan a path from (0, 0) to (5, 5)
-    simulator.pathfinder = RoverPathfinder(collection: simulator);  
+    simulator.pathfinder = RoverPathfinder(collection: simulator);
     final destination = origin.plus(x: 5, y: 5);
     simulator.logger.info("Going to ${destination.prettyPrint()}");
     simulator.gps.update(origin);
@@ -71,14 +73,24 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       simulator.logger.trace(step.toString());
       expect(simulator.pathfinder.isObstacle(step.position), isFalse);
     }
-    expect(path.length, 9, reason: "1 turn + 1 forward + 1 turn + 5 forward + 1 stop = 9 steps total");
-    expect(path.last.position.distanceTo(destination), lessThan(Constants.maxErrorMeters));
+    expect(
+      path.length,
+      9,
+      reason:
+          "1 turn + 1 forward + 1 turn + 5 forward + 1 stop = 9 steps total",
+    );
+    expect(
+      path.last.position.distanceTo(destination),
+      lessThan(Constants.maxErrorMeters),
+    );
   });
 
   test("Stress test", () async {
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
-    simulator.logger.trace("Starting from ${simulator.gps.coordinates.prettyPrint()}");
+    simulator.logger.trace(
+      "Starting from ${simulator.gps.coordinates.prettyPrint()}",
+    );
     final destination = origin.plus(x: 1000, y: 1000);
     simulator.logger.info("Going to ${destination.prettyPrint()}");
     simulator.gps.update(origin);
@@ -115,7 +127,12 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       simulator.gps.update(origin);
       final path = simulator.pathfinder.getPath(destination);
       expect(path, isNotNull);
-      expect(path!.where((state) => state.instruction == DriveDirection.forward).length, 5);
+      expect(
+        path!
+            .where((state) => state.instruction == DriveDirection.forward)
+            .length,
+        5,
+      );
       expect(path[1].instruction, DriveDirection.quarterRight);
       await simulator.dispose();
     });
@@ -136,7 +153,12 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       simulator.gps.update(origin);
       final path = simulator.pathfinder.getPath(destination);
       expect(path, isNotNull);
-      expect(path!.where((state) => state.instruction == DriveDirection.forward).length, greaterThan(2));
+      expect(
+        path!
+            .where((state) => state.instruction == DriveDirection.forward)
+            .length,
+        greaterThan(2),
+      );
       await simulator.dispose();
     });
 
@@ -145,7 +167,7 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       simulator.pathfinder = RoverPathfinder(collection: simulator);
       final destination = UTMCoordinates(x: 10, y: 10, zoneNumber: 31).toGps();
       final obstacles = {
-        origin,   /* Destination */
+        origin /* Destination */,
         /* Rover */
       };
       for (final obstacle in obstacles) {
@@ -154,7 +176,12 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       simulator.gps.update(origin);
       final path = simulator.pathfinder.getPath(destination);
       expect(path, isNotNull);
-      expect(path!.where((state) => state.instruction == DriveDirection.forward).length, greaterThan(1));
+      expect(
+        path!
+            .where((state) => state.instruction == DriveDirection.forward)
+            .length,
+        greaterThan(1),
+      );
       await simulator.dispose();
     });
   });

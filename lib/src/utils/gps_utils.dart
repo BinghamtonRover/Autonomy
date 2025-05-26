@@ -1,4 +1,3 @@
-
 import "dart:math";
 
 import "package:autonomy/constants.dart";
@@ -12,29 +11,46 @@ typedef GpsMeters = ({num lat, num long});
 extension GpsMetersUtil on GpsMeters {
   /// Add 2 [GpsMeters] together
   GpsMeters operator +(GpsMeters other) => (
-        lat: lat + other.lat,
-        long: long + other.long,
-      );
+    lat: lat + other.lat,
+    long: long + other.long,
+  );
 
   /// Subtract 2 [GpsMeters] from each other
   GpsMeters operator -(GpsMeters other) => (
-        lat: lat - other.lat,
-        long: long - other.long,
-      );
+    lat: lat - other.lat,
+    long: long - other.long,
+  );
 }
 
 extension GpsUtils on GpsCoordinates {
-  static UTMCoordinates eastMeters = UTMCoordinates(y: 0, x: Constants.moveLengthMeters, zoneNumber: 1);
-  static UTMCoordinates westMeters = UTMCoordinates(y: 0, x: -Constants.moveLengthMeters, zoneNumber: 1);
-  static UTMCoordinates northMeters = UTMCoordinates(y: Constants.moveLengthMeters, x: 0, zoneNumber: 1);
-  static UTMCoordinates southMeters = UTMCoordinates(y: -Constants.moveLengthMeters, x: 0, zoneNumber: 1);
+  static UTMCoordinates eastMeters = UTMCoordinates(
+    y: 0,
+    x: Constants.moveLengthMeters,
+    zoneNumber: 1,
+  );
+  static UTMCoordinates westMeters = UTMCoordinates(
+    y: 0,
+    x: -Constants.moveLengthMeters,
+    zoneNumber: 1,
+  );
+  static UTMCoordinates northMeters = UTMCoordinates(
+    y: Constants.moveLengthMeters,
+    x: 0,
+    zoneNumber: 1,
+  );
+  static UTMCoordinates southMeters = UTMCoordinates(
+    y: -Constants.moveLengthMeters,
+    x: 0,
+    zoneNumber: 1,
+  );
   static final UTMCoordinates northEastMeters = northMeters + eastMeters;
   static final UTMCoordinates northWestMeters = northMeters + westMeters;
   static final UTMCoordinates southEastMeters = southMeters + eastMeters;
   static final UTMCoordinates southWestMeters = southMeters + westMeters;
 
   /// Whether or not the coordinates is fused with the RTK algorithm
-  bool get hasRTK => rtkMode == RTKMode.RTK_FIXED || rtkMode == RTKMode.RTK_FLOAT;
+  bool get hasRTK =>
+      rtkMode == RTKMode.RTK_FIXED || rtkMode == RTKMode.RTK_FLOAT;
 
   /// The distance to [other] using the haversine formula
   double distanceTo(GpsCoordinates other) {
@@ -45,7 +61,8 @@ extension GpsUtils on GpsCoordinates {
     final deltaLong = (longitude - other.longitude) * pi / 180;
 
     // Apply the Haversine formula
-    final a = pow(sin(deltaLat / 2), 2) +
+    final a =
+        pow(sin(deltaLat / 2), 2) +
         cos(other.latitude * pi / 180) *
             cos(latitude * pi / 180) *
             pow(sin(deltaLong / 2), 2);
@@ -93,7 +110,8 @@ extension GpsUtils on GpsCoordinates {
     return distanceTo(other) < tolerance;
   }
 
-  GpsCoordinates operator +(GpsCoordinates other) => (toUTM() + other.toUTM()).toGps();
+  GpsCoordinates operator +(GpsCoordinates other) =>
+      (toUTM() + other.toUTM()).toGps();
 
   GpsCoordinates operator -(GpsCoordinates other) => GpsCoordinates(
     latitude: latitude - other.latitude,
@@ -102,15 +120,17 @@ extension GpsUtils on GpsCoordinates {
 
   String prettyPrint() => toProto3Json().toString();
 
-  GpsCoordinates goForward(CardinalDirection orientation) => (toUTM() +
-    switch (orientation) {
-      CardinalDirection.north => GpsUtils.northMeters,
-      CardinalDirection.south => GpsUtils.southMeters,
-      CardinalDirection.west => GpsUtils.westMeters,
-      CardinalDirection.east => GpsUtils.eastMeters,
-      CardinalDirection.northEast => GpsUtils.northEastMeters,
-      CardinalDirection.northWest => GpsUtils.northWestMeters,
-      CardinalDirection.southEast => GpsUtils.southEastMeters,
-      CardinalDirection.southWest => GpsUtils.southWestMeters,
-    }).toGps();
+  GpsCoordinates goForward(CardinalDirection orientation) =>
+      (toUTM() +
+              switch (orientation) {
+                CardinalDirection.north => GpsUtils.northMeters,
+                CardinalDirection.south => GpsUtils.southMeters,
+                CardinalDirection.west => GpsUtils.westMeters,
+                CardinalDirection.east => GpsUtils.eastMeters,
+                CardinalDirection.northEast => GpsUtils.northEastMeters,
+                CardinalDirection.northWest => GpsUtils.northWestMeters,
+                CardinalDirection.southEast => GpsUtils.southEastMeters,
+                CardinalDirection.southWest => GpsUtils.southWestMeters,
+              })
+          .toGps();
 }

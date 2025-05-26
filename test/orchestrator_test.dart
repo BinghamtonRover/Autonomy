@@ -10,14 +10,17 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
   tearDown(() => Logger.level = LogLevel.off);
 
   test("Fails for invalid destinations", () async {
-    Logger.level = LogLevel.off;  // this test can log critical messages
+    Logger.level = LogLevel.off; // this test can log critical messages
     final simulator = AutonomySimulator();
     await simulator.init();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.orchestrator = RoverOrchestrator(collection: simulator);
     simulator.pathfinder.recordObstacle((lat: 2, long: 0).toGps());
     // Test blocked command:
-    final command = AutonomyCommand(destination: (lat: 2, long: 0).toGps(), task: AutonomyTask.GPS_ONLY);
+    final command = AutonomyCommand(
+      destination: (lat: 2, long: 0).toGps(),
+      task: AutonomyTask.GPS_ONLY,
+    );
     expect(simulator.gps.latitude, 0);
     expect(simulator.gps.longitude, 0);
     expect(simulator.imu.heading, 0);
@@ -34,7 +37,7 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
   });
 
   test("Works for GPS task", () async {
-    Logger.level = LogLevel.off;  // this test can log critical messages
+    Logger.level = LogLevel.off; // this test can log critical messages
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.orchestrator = RoverOrchestrator(collection: simulator);
@@ -46,7 +49,10 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
     await simulator.init();
     // Test normal command:
     final destination = (lat: 4, long: 0).toGps();
-    final command = AutonomyCommand(destination: destination, task: AutonomyTask.GPS_ONLY);
+    final command = AutonomyCommand(
+      destination: destination,
+      task: AutonomyTask.GPS_ONLY,
+    );
     expect(simulator.gps.latitude, 0);
     expect(simulator.gps.longitude, 0);
     expect(simulator.imu.heading, 0);
@@ -74,7 +80,10 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
       SimulatedObstacle(coordinates: (lat: 6, long: -1).toGps(), radius: 1),
       SimulatedObstacle(coordinates: (lat: 6, long: 1).toGps(), radius: 1),
     ];
-    simulator.detector = DetectorSimulator(collection: simulator, obstacles: obstacles);
+    simulator.detector = DetectorSimulator(
+      collection: simulator,
+      obstacles: obstacles,
+    );
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.orchestrator = RoverOrchestrator(collection: simulator);
     simulator.drive = DriveSimulator(collection: simulator);
@@ -83,7 +92,10 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
     final destination = (lat: 0, long: 7).toGps();
     expect(simulator.gps.isNear(origin), isTrue);
     expect(simulator.imu.heading, 0);
-    final command = AutonomyCommand(destination: destination, task: AutonomyTask.GPS_ONLY);
+    final command = AutonomyCommand(
+      destination: destination,
+      task: AutonomyTask.GPS_ONLY,
+    );
     await simulator.orchestrator.onCommand(command);
     expect(simulator.gps.isNear(destination), isTrue);
     await simulator.dispose();
@@ -93,11 +105,18 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
     final simulator = AutonomySimulator();
     final start = (lat: 5, long: 0).toGps();
     final destination = (lat: 5, long: 5).toGps();
-    final command = AutonomyCommand(destination: destination, task: AutonomyTask.GPS_ONLY);
+    final command = AutonomyCommand(
+      destination: destination,
+      task: AutonomyTask.GPS_ONLY,
+    );
     simulator.orchestrator = RoverOrchestrator(collection: simulator);
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.gps = RoverGps(collection: simulator);
-    simulator.drive = RoverDrive(collection: simulator, useGps: true, useImu: false, config: tankConfig);
+    simulator.drive = RoverDrive(
+      collection: simulator,
+      useImu: false,
+      config: tankConfig,
+    );
     await simulator.init();
 
     expect(simulator.gps.hasValue, isFalse);
@@ -105,7 +124,10 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
     await simulator.orchestrator.onCommand(command);
     expect(simulator.gps.hasValue, isFalse);
     expect(GpsInterface.currentLatitude, 0);
-    expect(simulator.orchestrator.statusMessage.state, AutonomyState.NO_SOLUTION);
+    expect(
+      simulator.orchestrator.statusMessage.state,
+      AutonomyState.NO_SOLUTION,
+    );
 
     simulator.gps.forceUpdate(start);
     await simulator.init();
