@@ -148,7 +148,6 @@ class NavigationState extends RoverState {
       controller.pushState(
         collection.drive.faceOrientationState(targetOrientation),
       );
-      return;
     }
   }
 
@@ -187,6 +186,8 @@ class NavigationState extends RoverState {
     } else {
       checkPosition(state);
     }
+    return;
+
   }
 
   @override
