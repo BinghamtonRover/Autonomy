@@ -9,6 +9,9 @@ class Constants {
   /// Private internal constructor for constants
   Constants._();
 
+  /// The maximum error (in degrees) of our GPS
+  static const gpsError = 0.00003;
+
   /// The maximum error or "tolerance" for reaching the end goal
   static const double maxErrorMeters = 1;
 

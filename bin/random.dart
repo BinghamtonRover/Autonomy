@@ -3,7 +3,7 @@
 import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
 
-const maxError = GpsInterface.gpsError;
+const maxError = Constants.gpsError;
 const maxSamples = 10;
 const epsilon =
     Constants.maxErrorMeters /

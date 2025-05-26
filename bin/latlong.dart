@@ -7,7 +7,6 @@ const binghamtonLatitude = 42.0877327;
 const utahLatitude = 38.406683;
 
 void printInfo(String name, double latitude) {
-  GpsInterface.currentLatitude = latitude;
   final metersPerLongitude = GpsToMeters.metersPerLongitude(latitude);
   print("At $name:");
   print(
@@ -17,9 +16,9 @@ void printInfo(String name, double latitude) {
     "  Our max error in longitude would be ${(Constants.maxErrorMeters / metersPerLongitude).toStringAsFixed(20)} degrees",
   );
   final isWithinRange =
-      GpsInterface.gpsError <= Constants.maxErrorMeters / metersPerLongitude;
+      Constants.gpsError <= Constants.maxErrorMeters / metersPerLongitude;
   print(
-    "  Our GPS has ${GpsInterface.gpsError} degrees of error, so this would ${isWithinRange ? 'work' : 'not work'}",
+    "  Our GPS has ${Constants.gpsError} degrees of error, so this would ${isWithinRange ? 'work' : 'not work'}",
   );
 }
 
