@@ -1,11 +1,13 @@
 // ignore_for_file: avoid_print
 
+import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
 
 const maxError = GpsInterface.gpsError;
 const maxSamples = 10;
-final epsilon =
-    GpsUtils.epsilonLatitude; // we need to be accurate within 1 meter
+const epsilon =
+    Constants.maxErrorMeters /
+    GpsToMeters.metersPerLatitude; // we need to be accurate within 1 meter
 const n = 1000;
 bool verbose = false;
 
@@ -33,5 +35,5 @@ void main(List<String> args) {
     if (test()) count++;
   }
   final percentage = (count / n * 100).toStringAsFixed(2);
-  print("Average performance: %$percentage");
+  print("Average performance: $percentage%");
 }
