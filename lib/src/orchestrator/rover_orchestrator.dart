@@ -730,10 +730,13 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         ],
       ),
     );
-    behaviorTreeTimer = Timer.periodic(const Duration(milliseconds: 10), (
-      timer,
-    ) {
+    executionTimer = PeriodicTimer(const Duration(milliseconds: 10), (timer) {
       if (currentCommand == null) {
+        collection.logger.warning(
+          "Execution timer running while command is null",
+          body: "Canceling timer",
+        );
+        timer.cancel();
         return;
       }
       if (!controller.hasState()) {

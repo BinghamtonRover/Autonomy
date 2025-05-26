@@ -11,7 +11,7 @@ abstract class OrchestratorInterface extends Service {
 
   AutonomyCommand? currentCommand;
   AutonomyState currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
-  Timer? behaviorTreeTimer;
+  PeriodicTimer? executionTimer;
 
   FSMController controller = FSMController();
 
@@ -64,7 +64,7 @@ abstract class OrchestratorInterface extends Service {
   Future<void> abort() async {
     currentCommand = null;
     collection.logger.warning("Aborting task!");
-    behaviorTreeTimer?.cancel();
+    executionTimer?.cancel();
     behaviorRoot.reset();
     currentState = AutonomyState.ABORTING;
     await collection.drive.stop();
