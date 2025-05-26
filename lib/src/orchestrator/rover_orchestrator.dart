@@ -100,7 +100,13 @@ class NavigationState extends RoverState {
   int waypointIndex = 0;
 
   /// The current step of the path being followed
-  AutonomyAStarState? currentPathState;
+  AutonomyAStarState? get currentPathState {
+    if (orchestrator.currentPath == null ||
+        waypointIndex >= orchestrator.currentPath!.length) {
+      return null;
+    }
+    return orchestrator.currentPath![waypointIndex];
+  }
 
   /// Default constructor for [NavigationState]
   NavigationState(
@@ -116,7 +122,6 @@ class NavigationState extends RoverState {
     hasCorrected = false;
     hasFollowed = false;
 
-    currentPathState = orchestrator.currentPath?[waypointIndex];
     orchestrator.currentState = AutonomyState.DRIVING;
   }
 
@@ -197,10 +202,12 @@ class NavigationState extends RoverState {
       controller.popState();
       return;
     }
+
     if (!hasCorrected) {
       hasCorrected = true;
       if (checkCurrentPosition(currentPathState!)) return;
     }
+
     if (!hasFollowed) {
       hasFollowed = true;
       collection.logger.debug(currentPathState!.toString());
@@ -210,7 +217,7 @@ class NavigationState extends RoverState {
 
     orchestrator.traversed.add(currentPathState!.position);
 
-    if (waypointIndex >= orchestrator.currentPath!.length ||
+    if (waypointIndex >= orchestrator.currentPath!.length - 1 ||
         waypointIndex >= 5 ||
         orchestrator.findAndLockObstacles()) {
       collection.drive.stop();
@@ -224,15 +231,10 @@ class NavigationState extends RoverState {
       );
       return;
     }
-    if (collection.gps.isNear(destination, Constants.maxErrorMeters)) {
-      controller.popState();
-      return;
-    }
 
     waypointIndex++;
     hasCorrected = false;
     hasFollowed = false;
-    currentPathState = orchestrator.currentPath?[waypointIndex];
   }
 
   @override
@@ -284,8 +286,8 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
   @override
   void onCommandEnd() {
-    currentPath = null;
     super.onCommandEnd();
+    currentPath = null;
   }
 
   @override
@@ -774,12 +776,16 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         timer.cancel();
         return;
       }
+
       if (!controller.hasState()) {
         currentState = AutonomyState.NO_SOLUTION;
         onCommandEnd();
         timer.cancel();
         return;
       }
+
+      controller.update();
+
       if (collection.gps.isNear(destination, Constants.maxErrorMeters)) {
         timer.cancel();
         collection.logger.info("Task complete");
@@ -788,7 +794,6 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
         return;
       }
-      controller.update();
       // behaviorRoot.tick();
       // if (behaviorRoot.status == NodeStatus.failure) {
       //   behaviorRoot.reset();
