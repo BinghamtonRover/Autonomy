@@ -5,6 +5,8 @@ import "package:burt_network/logging.dart";
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
 
+import "test_util.dart";
+
 void main() => group("[Rover]", tags: ["rover"], () {
   test("Can be restarted", () async {
     Logger.level = LogLevel.off;
@@ -16,7 +18,6 @@ void main() => group("[Rover]", tags: ["rover"], () {
 
   test("Waits for sensor data", () async {
     final rover = RoverAutonomy();
-    final position = (lat: 5, long: 5).toGps();
     final orientation = Orientation();
     final data = VideoData();
 
@@ -24,7 +25,7 @@ void main() => group("[Rover]", tags: ["rover"], () {
 
     expect(rover.hasValue, isFalse);
     expect(rover.gps.hasValue, isFalse);
-    rover.gps.forceUpdate(position);
+    rover.gps.forceUpdate(origin);
     expect(rover.gps.hasValue, isTrue);
     expect(rover.hasValue, isFalse);
 

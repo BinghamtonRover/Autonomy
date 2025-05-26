@@ -25,9 +25,6 @@ analyzer:
     # See https://github.com/dart-lang/language/blob/main/resources/type-system/strict-raw-types.md
     strict-raw-types: true
 
-  exclude:
-    - test/*.dart
-
 linter:
   rules:
     # Rules NOT in package:very_good_analysis
