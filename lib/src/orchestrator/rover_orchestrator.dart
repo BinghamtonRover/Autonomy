@@ -207,7 +207,12 @@ class NavigationState extends RoverState {
       controller.pushState(collection.drive.driveStateState(currentPathState!));
       return;
     }
-    if (waypointIndex >= 5 || orchestrator.findAndLockObstacles()) {
+
+    orchestrator.traversed.add(currentPathState!.position);
+
+    if (waypointIndex >= orchestrator.currentPath!.length ||
+        waypointIndex >= 5 ||
+        orchestrator.findAndLockObstacles()) {
       collection.drive.stop();
       controller.transitionTo(
         PathingState(
@@ -224,12 +229,17 @@ class NavigationState extends RoverState {
       return;
     }
 
-    orchestrator.traversed.add(currentPathState!.position);
-
     waypointIndex++;
     hasCorrected = false;
     hasFollowed = false;
     currentPathState = orchestrator.currentPath?[waypointIndex];
+  }
+
+  @override
+  void exit() {
+    if (currentPathState != null) {
+      orchestrator.traversed.add(currentPathState!.position);
+    }
   }
 }
 
