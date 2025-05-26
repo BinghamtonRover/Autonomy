@@ -1,4 +1,5 @@
 import "package:autonomy/src/fsm/rover_fsm.dart";
+import "package:meta/meta.dart";
 
 /// Class to control a Finite State Machine, handling state pushes,
 /// pops, and transitions
@@ -12,6 +13,9 @@ import "package:autonomy/src/fsm/rover_fsm.dart";
 ///
 /// When a state is popped, it is removed from the top of the stack, and will be exited.
 class FSMController {
+  @visibleForTesting
+  List<StateInterface> get stack => _stateStack;
+
   final List<StateInterface> _stateStack = [];
 
   /// Pushes a new state to the top of the stack, and enters it
