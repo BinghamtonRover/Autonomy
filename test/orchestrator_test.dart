@@ -123,7 +123,6 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
 
     await simulator.orchestrator.onCommand(command);
     expect(simulator.gps.hasValue, isFalse);
-    expect(GpsInterface.currentLatitude, 0);
     expect(
       simulator.orchestrator.statusMessage.state,
       AutonomyState.NO_SOLUTION,
@@ -136,10 +135,8 @@ void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
     unawaited(simulator.orchestrator.onCommand(command));
     await Future<void>.delayed(Duration.zero);
     expect(simulator.orchestrator.currentCommand, isNotNull);
-    expect(GpsInterface.currentLatitude, start.latitude);
     expect(simulator.orchestrator.currentState, AutonomyState.DRIVING);
 
-    GpsInterface.currentLatitude = 0;
     await simulator.dispose();
   });
 });
