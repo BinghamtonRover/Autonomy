@@ -185,7 +185,7 @@ class NavigationState extends RoverState {
   /// the position using [checkPosition]
   bool checkCurrentPosition(AutonomyAStarState state) {
     if (state.instruction == DriveDirection.forward) {
-      return checkOrientation(state);;
+      return checkOrientation(state);
     } else {
       return checkPosition(state);
     }
@@ -199,8 +199,7 @@ class NavigationState extends RoverState {
     }
     if (!hasCorrected) {
       hasCorrected = true;
-      if(checkCurrentPosition(currentPathState!)) return;
-
+      if (checkCurrentPosition(currentPathState!)) return;
     }
     if (!hasFollowed) {
       hasFollowed = true;
