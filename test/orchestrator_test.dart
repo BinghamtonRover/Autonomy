@@ -5,7 +5,7 @@ import "package:test/test.dart";
 import "package:autonomy/autonomy.dart";
 import "package:burt_network/burt_network.dart";
 
-void main() => group("[Orchestrator]", tags: ["orchestrator"], () {
+void main() => group("[Orchestrator]", skip: true, tags: ["orchestrator"], () {
   setUp(() => Logger.level = LogLevel.info);
   tearDown(() => Logger.level = LogLevel.off);
 

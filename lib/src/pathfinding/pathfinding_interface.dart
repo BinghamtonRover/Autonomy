@@ -1,3 +1,4 @@
+import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
 
 abstract class PathfindingInterface extends Service {
@@ -19,8 +20,14 @@ abstract class PathfindingInterface extends Service {
   }
 
   bool isObstacle(GpsCoordinates coordinates) =>
-      obstacles.any((obstacle) => obstacle.isNear(coordinates)) ||
-      _lockedObstacles.any((obstacle) => obstacle.isNear(coordinates));
+      obstacles.any(
+        (obstacle) =>
+            obstacle.isNear(coordinates, Constants.obstacleAvoidanceRadius),
+      ) ||
+      _lockedObstacles.any(
+        (obstacle) =>
+            obstacle.isNear(coordinates, Constants.obstacleAvoidanceRadius),
+      );
 
   @override
   Future<void> dispose() async {

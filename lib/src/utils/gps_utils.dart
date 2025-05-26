@@ -93,10 +93,7 @@ extension GpsUtils on GpsCoordinates {
     return distanceTo(other) < tolerance;
   }
 
-  GpsCoordinates operator +(GpsCoordinates other) => GpsCoordinates(
-    latitude: latitude + other.latitude,
-    longitude: longitude + other.longitude,
-  );
+  GpsCoordinates operator +(GpsCoordinates other) => (toUTM() + other.toUTM()).toGps();
 
   GpsCoordinates operator -(GpsCoordinates other) => GpsCoordinates(
     latitude: latitude - other.latitude,

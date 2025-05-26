@@ -1,5 +1,6 @@
 import "dart:math";
 
+import "package:autonomy/constants.dart";
 import "package:burt_network/burt_network.dart";
 import "package:coordinate_converter/coordinate_converter.dart";
 import "package:test/test.dart";
@@ -8,19 +9,19 @@ import "package:autonomy/interfaces.dart";
 import "package:autonomy/rover.dart";
 import "package:autonomy/simulator.dart";
 
-final UTMCoordinates base = UTMCoordinates(x: 5, y: 5, zoneNumber: 31);
+import "test_util.dart";
 
 void main() => group("[Pathfinding]", tags: ["path"], () {
-  setUp(() => Logger.level = LogLevel.info);
+  setUp(() => Logger.level = LogLevel.off);
   tearDown(() => Logger.level = LogLevel.off);
 
   test("Simple path from (0, 0) to (5, 5) exists", () {
     final simulator = AutonomySimulator();
-    final destination = (base + UTMCoordinates(x: 5, y: 5, zoneNumber: 1)).toGps();
+    final destination = origin.plus(x: 5, y: 5);
     simulator.logger.info("Each step is ${GpsUtils.northMeters.toGps().latitude.toStringAsFixed(5)}");
     simulator.logger.info("Going to ${destination.prettyPrint()}");
     simulator.pathfinder = RoverPathfinder(collection: simulator);
-    simulator.gps.update(base.toGps());
+    simulator.gps.update(origin);
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNotNull);
   });
@@ -30,9 +31,9 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
 
     // Plan a path from (0, 0) to (5, 5)
     simulator.pathfinder = RoverPathfinder(collection: simulator);  
-    final destination = (base + UTMCoordinates(x: 5, y: 5, zoneNumber: 1)).toGps();
+    final destination = origin.plus(x: 5, y: 5);
     simulator.logger.info("Going to ${destination.prettyPrint()}");
-    simulator.gps.update(base.toGps());
+    simulator.gps.update(origin);
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNotNull);
 
@@ -55,11 +56,11 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
   test("Avoid obstacles but reach the goal", () async {
     // Logger.level = LogLevel.all;
     final simulator = AutonomySimulator();
-    final destination = (base + UTMCoordinates(y: 5, x: 0, zoneNumber: 1)).toGps();
+    final destination = origin.plus(x: 0, y: 5);
     simulator.pathfinder = RoverPathfinder(collection: simulator);
-    simulator.pathfinder.recordObstacle((base + UTMCoordinates(y: 1, x: 0, zoneNumber: 1)).toGps());
-    simulator.pathfinder.recordObstacle((base + UTMCoordinates(y: 2, x: 0, zoneNumber: 1)).toGps());
-    simulator.gps.update(base.toGps());
+    simulator.pathfinder.recordObstacle(origin.plus(x: 0, y: 1));
+    simulator.pathfinder.recordObstacle(origin.plus(x: 0, y: 2));
+    simulator.gps.update(origin);
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNotNull);
     if (path == null) {
@@ -70,15 +71,17 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       simulator.logger.trace(step.toString());
       expect(simulator.pathfinder.isObstacle(step.position), isFalse);
     }
-    expect(path.length, 10, reason: "1 turn + 1 forward + 1 turn + 4 forward + 1 45 degree turn + 1 forward + 1 stop = 10 steps total");
+    expect(path.length, 9, reason: "1 turn + 1 forward + 1 turn + 5 forward + 1 stop = 9 steps total");
+    expect(path.last.position.distanceTo(destination), lessThan(Constants.maxErrorMeters));
   });
 
   test("Stress test", () async {
     final simulator = AutonomySimulator();
     simulator.pathfinder = RoverPathfinder(collection: simulator);
     simulator.logger.trace("Starting from ${simulator.gps.coordinates.prettyPrint()}");
-    final destination = (lat: 1000, long: 1000).toGps();
+    final destination = origin.plus(x: 1000, y: 1000);
     simulator.logger.info("Going to ${destination.prettyPrint()}");
+    simulator.gps.update(origin);
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNotNull);
     await simulator.dispose();
@@ -90,15 +93,15 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     final destination = UTMCoordinates(x: 10, y: 10, zoneNumber: 31).toGps();
     final obstacles = {
       // dart format off
-      (base + UTMCoordinates(y: 1, x: -1, zoneNumber: 1)).toGps(), (base + UTMCoordinates(y: 1, x: 0, zoneNumber: 1)).toGps(), (base + UTMCoordinates(y: 1, x: 1, zoneNumber: 1)).toGps(),
-      (base + UTMCoordinates(y: 0, x: -1, zoneNumber: 1)).toGps(),                        /* Rover */                          (base + UTMCoordinates(y: 0, x: 1, zoneNumber: 1)).toGps(),
-      (base + UTMCoordinates(y: -1, x: -1, zoneNumber: 1)).toGps(), (base + UTMCoordinates(y: -1, x: 0, zoneNumber: 1)).toGps(), (base + UTMCoordinates(y: -1, x: 1, zoneNumber: 1)).toGps(),
+      origin.plus(x: -1, y: 1), origin.plus(x: 0, y: 1), origin.plus(x: 1, y: 1),
+      origin.plus(x: -1, y: 0),       /* Rover */        origin.plus(x: 1, y: 0),
+      origin.plus(x: -1, y: -1), origin.plus(x: 0, y: -1), origin.plus(x: 1, y: -1),
       // dart format on
     };
     for (final obstacle in obstacles) {
       simulator.pathfinder.recordObstacle(obstacle);
     }
-    simulator.gps.update(base.toGps());
+    simulator.gps.update(origin);
     final path = simulator.pathfinder.getPath(destination);
     expect(path, isNull);
     await simulator.dispose();
@@ -108,8 +111,8 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
     test("path chooses to move diagonally", () async {
       final simulator = AutonomySimulator();
       simulator.pathfinder = RoverPathfinder(collection: simulator);
-      final destination = (base + UTMCoordinates(x: 5, y: 5, zoneNumber: 1)).toGps();
-      simulator.gps.update(base.toGps());
+      final destination = origin.plus(x: 5, y: 5);
+      simulator.gps.update(origin);
       final path = simulator.pathfinder.getPath(destination);
       expect(path, isNotNull);
       expect(path!.where((state) => state.instruction == DriveDirection.forward).length, 5);
@@ -123,14 +126,14 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       final destination = UTMCoordinates(x: 10, y: 10, zoneNumber: 31).toGps();
       final obstacles = {
         // dart format off
-        (base + UTMCoordinates(y: 1, x: 0, zoneNumber: 1)).toGps(),         /* Destination */
-                          /* Rover */                         (base + UTMCoordinates(y: 0, x: 1, zoneNumber: 1)).toGps(),
+        origin.plus(x: 0, y: 1), /* Destination */
+            /* Rover */         origin.plus(x: 1, y: 0),
         // dart format on
       };
       for (final obstacle in obstacles) {
         simulator.pathfinder.recordObstacle(obstacle);
       }
-      simulator.gps.update(base.toGps());
+      simulator.gps.update(origin);
       final path = simulator.pathfinder.getPath(destination);
       expect(path, isNotNull);
       expect(path!.where((state) => state.instruction == DriveDirection.forward).length, greaterThan(2));
@@ -142,13 +145,13 @@ void main() => group("[Pathfinding]", tags: ["path"], () {
       simulator.pathfinder = RoverPathfinder(collection: simulator);
       final destination = UTMCoordinates(x: 10, y: 10, zoneNumber: 31).toGps();
       final obstacles = {
-        base.toGps(),   /* Destination */
+        origin,   /* Destination */
         /* Rover */
       };
       for (final obstacle in obstacles) {
         simulator.pathfinder.recordObstacle(obstacle);
       }
-      simulator.gps.update(base.toGps());
+      simulator.gps.update(origin);
       final path = simulator.pathfinder.getPath(destination);
       expect(path, isNotNull);
       expect(path!.where((state) => state.instruction == DriveDirection.forward).length, greaterThan(1));

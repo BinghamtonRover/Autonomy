@@ -1,11 +1,6 @@
 import "package:autonomy/autonomy.dart";
+import "package:burt_network/burt_network.dart";
 import "package:test/test.dart";
-
-import "package:burt_network/protobuf.dart";
-
-import "package:autonomy/interfaces.dart";
-import "package:autonomy/simulator.dart";
-import "package:autonomy/src/rover/gps.dart";
 
 const imuError = 2.5;
 const gpsPrecision = 7;
@@ -243,5 +238,5 @@ void main() => group("[Sensors]", tags: ["sensors"], () {
   //   simulator.logger.info("Unaffected orientation: ${realImu.heading}");
   //   expect(realImu.isNear(orientation.heading), isTrue);
   //   await simulator.dispose();
-  // });
+  });
 });

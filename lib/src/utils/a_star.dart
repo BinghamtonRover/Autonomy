@@ -88,70 +88,32 @@ class AutonomyAStarState extends AStarState<AutonomyAStarState> {
 
   /// Returns whether or not the rover will drive between or right next to an obstacle diagonally<br/>
   /// <br/>
-  /// Case 1:<br/>
+  /// Example 1:<br/>
   /// 0 X<br/>
   /// X R<br/>
   /// Assuming the rover is facing 0 and trying to drive forward, will return false<br/>
   /// <br/>
-  /// Case 2:<br/>
-  /// 0 X<br/>
+  /// Example 2:<br/>
+  /// 0 0<br/>
   /// X R<br/>
-  /// Assuming the rover is facing north and trying to turn 45 degrees left, will return false<br/>
+  /// Assuming the rover is facing 0 and trying to drive forward, will return false<br/>
   /// <br/>
-  /// Case 3:<br/>
-  /// 0 X<br/>
-  /// 0 R<br/>
-  /// If the rover is facing left but trying to turn 45 degrees right, will return false<br/>
-  /// <br/>
-  /// Case 4:<br/>
-  /// 0 X 0<br/>
-  /// 0 R 0<br/>
-  /// If the rover is facing northeast to 0 and trying to turn left, will return false
   bool willDriveThroughObstacle(AutonomyAStarState state) {
+    // Can't hit an obstacle while turning
     final isTurn = state.instruction != DriveDirection.forward;
-    final isQuarterTurn = state.instruction == DriveDirection.quarterLeft || state.instruction == DriveDirection.quarterRight;
-
-    if (
-      // Can't hit an obstacle while turning
-      state.instruction != DriveDirection.forward
-
-      // Forward drive across the perpendicular axis
-      || (!isTurn && state.orientation.isPerpendicular)
-
-      // Not encountering any sort of diagonal angle
-      || (isTurn && isQuarterTurn && state.orientation.isPerpendicular)
-
-      // No diagonal movement, won't drive between obstacles
-      || (!isQuarterTurn && orientation.isPerpendicular)
-    ) {
+    // Forward drive across the perpendicular axis
+    final isPerpendicular = state.orientation.isPerpendicular;
+    if (isTurn || isPerpendicular) {
       return false;
     }
 
-    final CardinalDirection orientation1;
-    final CardinalDirection orientation2;
-
-    // Case 1, trying to drive while facing a 45 degree angle
-    if (!isTurn) {
-      orientation1 = state.orientation.turnQuarterLeft();
-      orientation2 = state.orientation.turnQuarterRight();
-    } else if (isQuarterTurn) { // Case 2 and Case 3
-      orientation1 = orientation;
-      orientation2 = (state.instruction == DriveDirection.quarterLeft)
-        ? orientation1.turnLeft()
-        : orientation1.turnRight();
-    } else { // Case 4
-      orientation1 = (state.instruction == DriveDirection.left)
-        ? orientation.turnQuarterLeft()
-        : orientation.turnQuarterRight();
-      orientation2 = (state.instruction == DriveDirection.left)
-        ? state.orientation.turnQuarterLeft()
-        : state.orientation.turnQuarterRight();
-    }
+    final orientation1 = state.orientation.turnQuarterLeft();
+    final orientation2 = state.orientation.turnQuarterRight();
 
     // Since the state being passed has a position of moving after the
-    // turn, we have to check the position of where it started
-    return collection.pathfinder.isObstacle(position.goForward(orientation1))
-      || collection.pathfinder.isObstacle(position.goForward(orientation2));
+    // turn, we have to check the position of where it started (our current position)
+    return collection.pathfinder.isObstacle(position.goForward(orientation1)) ||
+        collection.pathfinder.isObstacle(position.goForward(orientation2));
   }
 
   bool isValidState(AutonomyAStarState state) =>

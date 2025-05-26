@@ -4,8 +4,9 @@ import "dart:io";
 import "package:autonomy/autonomy.dart";
 import "package:autonomy/src/drive/drive_config.dart";
 import "package:burt_network/burt_network.dart";
-import "package:coordinate_converter/coordinate_converter.dart";
 import "package:test/test.dart";
+
+import "test_util.dart";
 
 class MockSubsystems extends Service {
   final socket = RoverSocket(
@@ -121,14 +122,12 @@ void main() => group("[Network]", tags: ["network"], () {
     );
     await simulator.init();
 
-    final origin = UTMCoordinates(x: 5, y: 5, zoneNumber: 31);
-    final oneMeter =
-        (origin + UTMCoordinates(x: 0, y: 1, zoneNumber: 1)).toGps();
-    simulator.gps.update(origin.toGps());
+    final oneMeter = origin.plus(x: 0, y: 1);
+    simulator.gps.update(origin);
     expect(subsystems.throttle, 0);
     expect(subsystems.left, 0);
     expect(subsystems.right, 0);
-    expect(simulator.gps.isNear(origin.toGps()), isTrue);
+    expect(simulator.gps.isNear(origin), isTrue);
     expect(simulator.gps.isNear(oneMeter), isFalse);
 
     expect(subsystems.throttleFlag, isFalse);
@@ -147,7 +146,7 @@ void main() => group("[Network]", tags: ["network"], () {
     expect(subsystems.throttle, isNot(0));
     expect(subsystems.left, isNot(0));
     expect(subsystems.right, isNot(0));
-    expect(simulator.gps.isNear(origin.toGps()), isTrue);
+    expect(simulator.gps.isNear(origin), isTrue);
     expect(simulator.gps.isNear(oneMeter), isFalse);
 
     simulator.orchestrator.controller.update();
@@ -171,7 +170,7 @@ void main() => group("[Network]", tags: ["network"], () {
     simulator.orchestrator.controller.update();
     simulator.orchestrator.controller.update();
 
-    expect(simulator.gps.isNear(origin.toGps(), 0.5), isFalse);
+    expect(simulator.gps.isNear(origin, 0.5), isFalse);
     expect(simulator.gps.isNear(oneMeter), isTrue);
 
     subsystems.enabled = false;
