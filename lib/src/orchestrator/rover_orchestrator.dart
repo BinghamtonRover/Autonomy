@@ -126,7 +126,7 @@ class NavigationState extends RoverState {
   ///
   /// If the rover is not facing the proper direction, a new state will be pushed
   /// to re-correct the rover's orientation
-  void checkOrientation(AutonomyAStarState state) {
+  bool checkOrientation(AutonomyAStarState state) {
     Orientation targetOrientation;
     // if it has RTK, point towards the next coordinate
     if (collection.gps.coordinates.hasRTK) {
@@ -148,14 +148,16 @@ class NavigationState extends RoverState {
       controller.pushState(
         collection.drive.faceOrientationState(targetOrientation),
       );
+      return true;
     }
+    return false;
   }
 
   /// Checks if the rover is within a certain distance of [state]'s starting position
   ///
   /// If the rover is not within [Constants.replanErrorMeters] of the state's starting
   /// position, the path will be replanned
-  void checkPosition(AutonomyAStarState state) {
+  bool checkPosition(AutonomyAStarState state) {
     final distanceError = collection.gps.coordinates.distanceTo(
       state.startPostition,
     );
@@ -173,6 +175,7 @@ class NavigationState extends RoverState {
         ),
       );
     }
+    return false;
   }
 
   /// Check's the position and orientation of [state] before following it
@@ -180,14 +183,12 @@ class NavigationState extends RoverState {
   /// If the instruction of [state] is to move forward, it will check if the
   /// orientation is correct using [checkOrientation], otherwise, it will check
   /// the position using [checkPosition]
-  void checkCurrentPosition(AutonomyAStarState state) {
+  bool checkCurrentPosition(AutonomyAStarState state) {
     if (state.instruction == DriveDirection.forward) {
-      checkOrientation(state);
+      return checkOrientation(state);;
     } else {
-      checkPosition(state);
+      return checkPosition(state);
     }
-    return;
-
   }
 
   @override
@@ -198,7 +199,8 @@ class NavigationState extends RoverState {
     }
     if (!hasCorrected) {
       hasCorrected = true;
-      checkCurrentPosition(currentPathState!);
+      if(checkCurrentPosition(currentPathState!)) return;
+
     }
     if (!hasFollowed) {
       hasFollowed = true;
