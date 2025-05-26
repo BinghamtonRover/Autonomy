@@ -61,13 +61,19 @@ abstract class OrchestratorInterface extends Service {
   }
 
   @mustCallSuper
-  Future<void> abort() async {
+  void onCommandEnd() {
     currentCommand = null;
-    collection.logger.warning("Aborting task!");
     executionTimer?.cancel();
-    behaviorRoot.reset();
+    executionTimer = null;
+    controller.clearStates();
+    collection.drive.stop();
+  }
+
+  @mustCallSuper
+  Future<void> abort() async {
+    collection.logger.warning("Aborting task!");
+    onCommandEnd();
     currentState = AutonomyState.ABORTING;
-    await collection.drive.stop();
     // await collection.dispose();
     // await collection.init();
     // exit(1);
@@ -77,5 +83,6 @@ abstract class OrchestratorInterface extends Service {
   void handleArucoTask(AutonomyCommand command);
   void handleHammerTask(AutonomyCommand command);
   void handleBottleTask(AutonomyCommand command);
+
   AutonomyData get statusMessage;
 }

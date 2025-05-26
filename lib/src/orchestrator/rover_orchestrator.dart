@@ -276,6 +276,12 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   }
 
   @override
+  void onCommandEnd() {
+    currentPath = null;
+    super.onCommandEnd();
+  }
+
+  @override
   AutonomyData get statusMessage => AutonomyData(
     destination: currentCommand?.destination,
     state: currentState,
@@ -736,22 +742,22 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
           "Execution timer running while command is null",
           body: "Canceling timer",
         );
+        onCommandEnd();
         timer.cancel();
         return;
       }
       if (!controller.hasState()) {
         currentState = AutonomyState.NO_SOLUTION;
-        currentCommand = null;
+        onCommandEnd();
         timer.cancel();
         return;
       }
       if (collection.gps.isNear(destination, Constants.maxErrorMeters)) {
         timer.cancel();
         collection.logger.info("Task complete");
+        onCommandEnd();
         currentState = AutonomyState.AT_DESTINATION;
         collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
-        collection.drive.stop();
-        currentCommand = null;
         return;
       }
       controller.update();

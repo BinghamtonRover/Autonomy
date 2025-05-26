@@ -31,6 +31,13 @@ class FSMController {
     state.enter();
   }
 
+  /// Clears all states from the stack
+  void clearStates() {
+    for (var i = 0; i < _stateStack.length; i++) {
+      popState();
+    }
+  }
+
   /// Pops the latest state from the top of the stack
   void popState() {
     _stateStack.removeLast().exit();
