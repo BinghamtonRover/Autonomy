@@ -2,6 +2,7 @@ import "package:autonomy/interfaces.dart";
 
 class ImuSimulator extends ImuInterface with ValueReporter {
   final RandomError _error;
+
   ImuSimulator({required super.collection, double maxError = 0})
     : _error = RandomError(maxError);
 

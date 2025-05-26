@@ -11,6 +11,7 @@ abstract class ImuInterface extends Service with Receiver {
   CardinalDirection get nearest => CardinalDirection.nearest(raw);
 
   void update(Orientation newValue);
+
   @visibleForTesting
   void forceUpdate(Orientation newValue) {}
 

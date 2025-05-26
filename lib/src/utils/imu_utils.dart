@@ -1,5 +1,4 @@
 import "package:autonomy/autonomy.dart";
-import "package:autonomy/constants.dart";
 
 extension OrientationUtils on Orientation {
   /// North orientation

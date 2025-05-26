@@ -4,6 +4,7 @@ class RoverImu extends ImuInterface {
   final _xCorrector = ErrorCorrector.disabled();
   final _yCorrector = ErrorCorrector.disabled();
   final _zCorrector = ErrorCorrector.disabled();
+
   RoverImu({required super.collection});
 
   @override

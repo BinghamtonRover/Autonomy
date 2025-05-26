@@ -2,7 +2,6 @@ import "dart:math";
 
 import "package:autonomy/interfaces.dart";
 import "package:autonomy/src/drive/drive_config.dart";
-import "package:autonomy/src/fsm/rover_fsm.dart";
 import "package:behavior_tree/behavior_tree.dart";
 
 import "drive_commands.dart";
