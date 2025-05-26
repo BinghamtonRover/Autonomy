@@ -175,7 +175,7 @@ class NavigationState extends RoverState {
         ),
       );
     }
-    return false;
+    return true;
   }
 
   /// Check's the position and orientation of [state] before following it
