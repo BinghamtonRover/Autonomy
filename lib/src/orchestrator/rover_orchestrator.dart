@@ -148,6 +148,7 @@ class NavigationState extends RoverState {
       controller.pushState(
         collection.drive.faceOrientationState(targetOrientation),
       );
+      return;
     }
   }
 
@@ -197,7 +198,6 @@ class NavigationState extends RoverState {
     if (!hasCorrected) {
       hasCorrected = true;
       checkCurrentPosition(currentPathState!);
-      return;
     }
     if (!hasFollowed) {
       hasFollowed = true;
