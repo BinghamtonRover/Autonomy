@@ -28,7 +28,8 @@ class DetectorSimulator extends DetectorInterface {
     final coordinates = collection.gps.coordinates;
     var result = false;
     for (final obstacle in obstacles) {
-      if (!obstacle.isNear(coordinates) || found.contains(obstacle.coordinates)) {
+      if (!obstacle.isNear(coordinates) ||
+          found.contains(obstacle.coordinates)) {
         continue;
       }
       result = true;

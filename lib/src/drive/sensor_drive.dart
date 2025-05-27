@@ -212,25 +212,26 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
     collection.logger.info("Driving forward one meter");
     setThrottle(config.forwardThrottle);
     var succeeded = true;
-    succeeded = await runFeedback(() {
-      if (!succeeded) return true;
-      moveForward();
-      return collection.gps.isNear(
-        position,
-        Constants.intermediateStepTolerance,
-      );
-      // ignore: require_trailing_commas
-    }, stopNearObstacle: true).timeout(
-      Constants.driveGPSTimeout,
-      onTimeout: () {
-        collection.logger.warning(
-          "GPS Drive timed out",
-          body:
-              "Failed to reach ${position.prettyPrint()} after ${Constants.driveGPSTimeout}",
+    succeeded =
+        await runFeedback(() {
+          if (!succeeded) return true;
+          moveForward();
+          return collection.gps.isNear(
+            position,
+            Constants.intermediateStepTolerance,
+          );
+          // ignore: require_trailing_commas
+        }, stopNearObstacle: true).timeout(
+          Constants.driveGPSTimeout,
+          onTimeout: () {
+            collection.logger.warning(
+              "GPS Drive timed out",
+              body:
+                  "Failed to reach ${position.prettyPrint()} after ${Constants.driveGPSTimeout}",
+            );
+            return false;
+          },
         );
-        return false;
-      },
-    );
     await stop();
     return succeeded;
   }
@@ -274,23 +275,24 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
   Future<bool> spinForAruco(int arucoId, {CameraName? desiredCamera}) async {
     setThrottle(config.turnThrottle);
     var foundAruco = true;
-    foundAruco = await runFeedback(() {
-      if (!foundAruco) {
-        return true;
-      }
-      spinLeft();
-      return collection.video.getArucoDetection(
-            arucoId,
-            desiredCamera: desiredCamera,
-          ) !=
-          null;
-    }).timeout(
-      Constants.arucoSearchTimeout,
-      onTimeout: () {
-        foundAruco = false;
-        return false;
-      },
-    );
+    foundAruco =
+        await runFeedback(() {
+          if (!foundAruco) {
+            return true;
+          }
+          spinLeft();
+          return collection.video.getArucoDetection(
+                arucoId,
+                desiredCamera: desiredCamera,
+              ) !=
+              null;
+        }).timeout(
+          Constants.arucoSearchTimeout,
+          onTimeout: () {
+            foundAruco = false;
+            return false;
+          },
+        );
     await stop();
     return foundAruco;
   }

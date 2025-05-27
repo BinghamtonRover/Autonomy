@@ -127,7 +127,11 @@ void main() => group("[State Machine]", tags: ["fsm"], () {
     final state2 = TrackingState(controller);
     final sequence = SequenceState(
       controller,
-      steps: [state1, DelayedState(controller, delayTime: delayTime), state2],
+      steps: [
+        state1,
+        DelayedState(controller, delayTime: delayTime),
+        state2,
+      ],
     );
 
     controller.pushState(sequence);

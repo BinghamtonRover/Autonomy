@@ -10,12 +10,13 @@ final obstacles = <SimulatedObstacle>[
 // Enter in the Dashboard: Destination = (lat=7, long=0);
 
 void main() async {
-  Logger.level = LogLevel.debug;
+  Logger.level = LogLevel.trace;
   final simulator = RoverAutonomy();
   simulator.detector = NetworkDetector(collection: simulator);
   simulator.pathfinder = RoverPathfinder(collection: simulator);
   simulator.orchestrator = RoverOrchestrator(collection: simulator);
-  simulator.drive = RoverDrive(collection: simulator, useGps: false, useImu: false);
+  // simulator.drive = RoverDrive(collection: simulator, useGps: false, useImu: false);
+  simulator.drive = DriveSimulator(collection: simulator, shouldDelay: true);
   simulator.gps = GpsSimulator(collection: simulator);
   simulator.imu = ImuSimulator(collection: simulator);
   simulator.video = VideoSimulator(collection: simulator);
@@ -23,5 +24,4 @@ void main() async {
   await simulator.init();
   await simulator.imu.waitForValue();
   await simulator.server.waitForConnection();
-
 }

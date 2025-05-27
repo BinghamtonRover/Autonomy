@@ -20,10 +20,9 @@ class RoverPathfinder extends PathfindingInterface {
           position: previous.position,
           goal: previous.goal,
           collection: collection,
-          instruction:
-              step.instruction == DriveDirection.quarterLeft
-                  ? DriveDirection.left
-                  : DriveDirection.right,
+          instruction: step.instruction == DriveDirection.quarterLeft
+              ? DriveDirection.left
+              : DriveDirection.right,
           orientation: step.orientation,
           depth: step.depth,
         );

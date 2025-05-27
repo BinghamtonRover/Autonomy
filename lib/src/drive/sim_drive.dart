@@ -32,7 +32,10 @@ class DriveSimulator extends DriveInterface {
     required StateInterface child,
   }) => SequenceState(
     child.controller,
-    steps: [DelayedState(child.controller, delayTime: delay), child],
+    steps: [
+      DelayedState(child.controller, delayTime: delay),
+      child,
+    ],
   );
 
   @override

@@ -102,52 +102,52 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
       );
 
   @override
-  StateInterface turnStateState(AutonomyAStarState state) => switch (state
-      .instruction) {
-    DriveDirection.forward => throw UnimplementedError(),
+  StateInterface turnStateState(AutonomyAStarState state) =>
+      switch (state.instruction) {
+        DriveDirection.forward => throw UnimplementedError(),
 
-    DriveDirection.left => _TimedOperationState(
-      controller,
-      time: config.turnDelay,
-      operation: () {
-        setThrottle(config.turnThrottle);
-        spinLeft();
-      },
-      onDone: stopMotors,
-    ),
+        DriveDirection.left => _TimedOperationState(
+          controller,
+          time: config.turnDelay,
+          operation: () {
+            setThrottle(config.turnThrottle);
+            spinLeft();
+          },
+          onDone: stopMotors,
+        ),
 
-    DriveDirection.right => _TimedOperationState(
-      controller,
-      time: config.turnDelay,
-      operation: () {
-        setThrottle(config.turnThrottle);
-        spinRight();
-      },
-      onDone: stopMotors,
-    ),
+        DriveDirection.right => _TimedOperationState(
+          controller,
+          time: config.turnDelay,
+          operation: () {
+            setThrottle(config.turnThrottle);
+            spinRight();
+          },
+          onDone: stopMotors,
+        ),
 
-    DriveDirection.quarterLeft => _TimedOperationState(
-      controller,
-      time: config.turnDelay * 0.5,
-      operation: () {
-        setThrottle(config.turnThrottle);
-        spinLeft();
-      },
-      onDone: stopMotors,
-    ),
+        DriveDirection.quarterLeft => _TimedOperationState(
+          controller,
+          time: config.turnDelay * 0.5,
+          operation: () {
+            setThrottle(config.turnThrottle);
+            spinLeft();
+          },
+          onDone: stopMotors,
+        ),
 
-    DriveDirection.quarterRight => _TimedOperationState(
-      controller,
-      time: config.turnDelay * 0.5,
-      operation: () {
-        setThrottle(config.turnThrottle);
-        spinRight();
-      },
-      onDone: stopMotors,
-    ),
+        DriveDirection.quarterRight => _TimedOperationState(
+          controller,
+          time: config.turnDelay * 0.5,
+          operation: () {
+            setThrottle(config.turnThrottle);
+            spinRight();
+          },
+          onDone: stopMotors,
+        ),
 
-    DriveDirection.stop => throw UnimplementedError(),
-  };
+        DriveDirection.stop => throw UnimplementedError(),
+      };
 
   @override
   BaseNode driveForwardNode(GpsCoordinates coordinates) => _TimedOperationNode(
@@ -161,44 +161,44 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
   );
 
   @override
-  BaseNode turnStateNode(AutonomyAStarState state) => switch (state
-      .instruction) {
-    DriveDirection.forward => throw UnimplementedError(),
+  BaseNode turnStateNode(AutonomyAStarState state) =>
+      switch (state.instruction) {
+        DriveDirection.forward => throw UnimplementedError(),
 
-    DriveDirection.left => _TimedOperationNode(
-      time: config.turnDelay,
-      operation: () {
-        setThrottle(config.turnThrottle);
-        spinLeft();
-      },
-    ),
+        DriveDirection.left => _TimedOperationNode(
+          time: config.turnDelay,
+          operation: () {
+            setThrottle(config.turnThrottle);
+            spinLeft();
+          },
+        ),
 
-    DriveDirection.right => _TimedOperationNode(
-      time: config.turnDelay,
-      operation: () {
-        setThrottle(config.turnThrottle);
-        spinRight();
-      },
-    ),
+        DriveDirection.right => _TimedOperationNode(
+          time: config.turnDelay,
+          operation: () {
+            setThrottle(config.turnThrottle);
+            spinRight();
+          },
+        ),
 
-    DriveDirection.quarterLeft => _TimedOperationNode(
-      time: config.turnDelay * 0.5,
-      operation: () {
-        setThrottle(config.turnThrottle);
-        spinLeft();
-      },
-    ),
+        DriveDirection.quarterLeft => _TimedOperationNode(
+          time: config.turnDelay * 0.5,
+          operation: () {
+            setThrottle(config.turnThrottle);
+            spinLeft();
+          },
+        ),
 
-    DriveDirection.quarterRight => _TimedOperationNode(
-      time: config.turnDelay * 0.5,
-      operation: () {
-        setThrottle(config.turnThrottle);
-        spinRight();
-      },
-    ),
+        DriveDirection.quarterRight => _TimedOperationNode(
+          time: config.turnDelay * 0.5,
+          operation: () {
+            setThrottle(config.turnThrottle);
+            spinRight();
+          },
+        ),
 
-    DriveDirection.stop => throw UnimplementedError(),
-  };
+        DriveDirection.stop => throw UnimplementedError(),
+      };
 
   @override
   Future<bool> init() async => true;

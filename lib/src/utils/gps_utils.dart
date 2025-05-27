@@ -10,16 +10,12 @@ typedef GpsMeters = ({num lat, num long});
 /// Utility math methods for GpsMeters
 extension GpsMetersUtil on GpsMeters {
   /// Add 2 [GpsMeters] together
-  GpsMeters operator +(GpsMeters other) => (
-    lat: lat + other.lat,
-    long: long + other.long,
-  );
+  GpsMeters operator +(GpsMeters other) =>
+      (lat: lat + other.lat, long: long + other.long);
 
   /// Subtract 2 [GpsMeters] from each other
-  GpsMeters operator -(GpsMeters other) => (
-    lat: lat - other.lat,
-    long: long - other.long,
-  );
+  GpsMeters operator -(GpsMeters other) =>
+      (lat: lat - other.lat, long: long - other.long);
 }
 
 extension GpsUtils on GpsCoordinates {
