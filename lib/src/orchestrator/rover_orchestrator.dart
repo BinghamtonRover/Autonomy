@@ -178,8 +178,9 @@ class NavigationState extends RoverState {
           destination: destination,
         ),
       );
+      return true;
     }
-    return true;
+    return false;
   }
 
   /// Check's the position and orientation of [state] before following it
