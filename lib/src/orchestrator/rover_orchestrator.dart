@@ -2,8 +2,6 @@ import "dart:math";
 
 import "package:autonomy/constants.dart";
 import "package:autonomy/interfaces.dart";
-import "package:autonomy/src/utils/behavior_util.dart";
-import "package:behavior_tree/behavior_tree.dart";
 import "dart:async";
 
 import "package:coordinate_converter/coordinate_converter.dart";
@@ -17,18 +15,6 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
   /// Whether or not the rover should replan the path, this is managed by the behavior tree
   bool replanPath = true;
-
-  /// The current waypoint index of the path that the rover is following
-  int waypointIndex = 0;
-
-  /// Whether or not the rover has checked the waypoint orientation of the current path step
-  bool hasCheckedWaypointOrientation = false;
-
-  /// Whether or not the rover is currently correction waypoint orientation
-  bool isCorrectingWaypointOrientation = false;
-
-  /// Whether or not the rover has checked the waypoint error for the current step in the path
-  bool hasCheckedWaypointError = false;
 
   RoverOrchestrator({required super.collection});
 
@@ -101,296 +87,6 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     toLock.forEach(collection.pathfinder.lockObstacle);
 
     return true;
-  }
-
-  /// A node that will trigger a path replan when [condition] is true
-  ///
-  /// If [condition] is true, [replanPath] will be set to true, and the
-  /// node will fail. Otherwise, it will be successful.
-  BaseNode replanOnCondition(bool Function() condition) => Task(() {
-    if (condition()) {
-      replanPath = true;
-      return NodeStatus.failure;
-    }
-    return NodeStatus.success;
-  });
-
-  /// A node to plan a path towards [destination]
-  ///
-  /// This node will only create a new path towards [destination], and not follow it.
-  ///
-  /// This node will fail if either:
-  /// 1. There is a current path already planned
-  /// 2. There is no command currently running
-  /// 3. The GPS hasn't received a value
-  /// 4. The IMU hasn't received a value
-  /// 5. A path could not be planned
-  /// Otherwise, this node will be successful
-  ///
-  /// Since this node will fail if a path is already planned,
-  /// this should be wrapped in a decorator such as a selector
-  /// to prevent the entire tree from failing.
-  BaseNode planPath(GpsCoordinates destination) => Sequence(
-    children: [
-      Condition(
-        () =>
-            replanPath &&
-            currentCommand != null &&
-            collection.gps.hasValue &&
-            collection.imu.hasValue,
-      ),
-      Task(() {
-        collection.logger.debug("Finding any new obstacles");
-        findAndLockObstacles();
-        return NodeStatus.success;
-      }),
-      Task(() {
-        collection.logger.debug("Finding a path");
-        currentState = AutonomyState.PATHING;
-        replanPath = false;
-        return NodeStatus.success;
-      }),
-      Condition(() {
-        if (currentCommand == null) {
-          return false;
-        }
-        final current = collection.gps.coordinates;
-        currentPath = collection.pathfinder.getPath(
-          currentCommand!.destination,
-        );
-        if (currentPath == null) {
-          collection.logger.error(
-            "Could not find a path",
-            body:
-                "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}",
-          );
-        } else {
-          waypointIndex = 0;
-          hasCheckedWaypointError = false;
-          hasCheckedWaypointOrientation = false;
-          isCorrectingWaypointOrientation = false;
-          collection.logger.debug(
-            "Found a path from ${current.prettyPrint()} to ${destination.prettyPrint()}: ${currentPath!.length} steps",
-          );
-          collection.logger.debug("Here is a summary of the path");
-          for (final step in currentPath!) {
-            collection.logger.debug(step.toString());
-          }
-        }
-        return currentPath != null;
-      }),
-    ],
-  );
-
-  /// Creates a node to follow a path towards [destination]
-  ///
-  /// This node will handle the logic of driving through the individual steps
-  /// of [currentPath], handling obstacle detection, replanning logic, and recorrection.
-  ///
-  /// This node will not plan a new path, see [planPath]
-  ///
-  /// This node will fail if either:
-  /// 1. There is no path planned
-  /// 2. The node for following the current path step failed
-  /// 3. A new obstacle was detected
-  /// 4. 5 steps of the path have been followed
-  /// 5. A step of the path was completed but the rover has not reached [destination]
-  ///
-  /// Since this node will fail if the rover isn't near [destination], this
-  /// should be wrapped in a decorator such as a selector or inverter to prevent
-  /// the entire tree from failing.
-  BaseNode followPath(GpsCoordinates destination) {
-    late AutonomyAStarState currentWaypoint;
-    // Orientation the rover should be facing before driving forward
-    var targetOrientation = collection.imu.nearest.orientation;
-
-    return Sequence(
-      children: [
-        Task(() {
-          if (currentPath == null) {
-            return NodeStatus.failure;
-          }
-          if (waypointIndex >= currentPath!.length) {
-            return NodeStatus.failure;
-          }
-          currentWaypoint = currentPath![waypointIndex];
-          currentState = AutonomyState.DRIVING;
-
-          if (!hasCheckedWaypointOrientation &&
-              !isCorrectingWaypointOrientation) {
-            // if it has RTK, point towards the next coordinate
-            if (collection.gps.coordinates.hasRTK) {
-              final difference =
-                  currentWaypoint.position.toUTM() -
-                  collection.gps.coordinates.toUTM();
-
-              final angle = atan2(difference.y, difference.x) * 180 / pi;
-
-              targetOrientation = Orientation(z: angle);
-            } else {
-              targetOrientation = currentWaypoint.orientation.orientation;
-            }
-          }
-
-          return NodeStatus.success;
-        }),
-        Selector(
-          children: [
-            Condition(() {
-              if (isCorrectingWaypointOrientation) {
-                return true;
-              }
-              if (!hasCheckedWaypointOrientation) {
-                return currentWaypoint.instruction == DriveDirection.forward &&
-                    (collection.imu.heading - targetOrientation.z)
-                            .clampHalfAngle()
-                            .abs() >=
-                        Constants.driveRealignmentEpsilon;
-              }
-              return false;
-            }).inverted,
-
-            // If the previous one fails, then it has to recorrect, run a
-            // task to set the state of recorrecting, this is inverted so
-            // it will continue with the selection
-            Task(() {
-              isCorrectingWaypointOrientation = true;
-              return NodeStatus.success;
-            }).inverted,
-
-            // Face the desired orientation
-            SuppliedNode(
-              key: () => targetOrientation,
-              () => collection.drive.faceOrientationNode(targetOrientation),
-            ),
-          ],
-        ),
-
-        // If it makes it through here, it either has corrected, or doesn't need to correct.
-        // Either way, assume that it has corrected its orientation
-        Task(() {
-          hasCheckedWaypointOrientation = true;
-          isCorrectingWaypointOrientation = false;
-          return NodeStatus.success;
-        }),
-
-        // If the distance to the start of our waypoint is too large, replan
-        replanOnCondition(() {
-          if (!hasCheckedWaypointError) {
-            hasCheckedWaypointError = true;
-            return collection.gps.coordinates.distanceTo(
-                  currentWaypoint.startPostition,
-                ) >=
-                Constants.replanErrorMeters;
-          }
-          return false;
-        }),
-        // ConditionalNode(
-        //   condition: () {
-        //     if (currentWaypoint.instruction != DriveDirection.forward) {
-        //       return false;
-        //     }
-        //     return (collection.imu.heading - targetOrientation.z)
-        //             .clampHalfAngle() >
-        //         Constants.driveRealignmentEpsilon;
-        //   },
-        //   onTrue: SuppliedNode(
-        //     key: () => targetOrientation,
-        //     () => collection.drive.faceOrientationNode(targetOrientation),
-        //   ),
-        // ),
-        SuppliedNode(
-          key: () => waypointIndex,
-          () => collection.drive.driveStateNode(currentWaypoint),
-        ),
-
-        // If the waypoint state has been driven, increase our waypoint index,
-        // and reset our correction state
-        Task(() {
-          traversed.add(currentWaypoint.position);
-          waypointIndex++;
-          hasCheckedWaypointOrientation = false;
-          isCorrectingWaypointOrientation = false;
-          hasCheckedWaypointError = false;
-          return NodeStatus.success;
-        }),
-
-        // Replan if there are new obstacles or we've traversed 5 waypoints,
-        // we want to periodically replan the path to ensure we're on track
-        replanOnCondition(() => findAndLockObstacles() || waypointIndex >= 5),
-
-        // This technically isn't needed for following the path, however, the tree root
-        // relies on the tree not being "success" until we have reached our destination,
-        // adding this here guarantees that this node will only be successful if we are
-        // done following
-        Condition(
-          () => collection.gps.isNear(destination, Constants.maxErrorMeters),
-        ),
-      ],
-    );
-  }
-
-  /// Creates a node to plan and follow a path towards [destination]
-  ///
-  /// This node combines [planPath] and [followPath] to dynamically plan
-  /// and follow a path to drive the rover towards [destination].
-  ///
-  /// If a path could not be planned towards [destination], the node will
-  /// fail. If the rover has reached [destination], it will succeed, otherwise,
-  /// it will return running.
-  BaseNode pathToDestination(GpsCoordinates destination) {
-    var resolvedOrientation = false;
-    return Sequence(
-      children: [
-        // If we haven't initially resolved our orientation, resolve the orientation
-        Selector(
-          children: [
-            Condition(() => resolvedOrientation),
-            SuppliedNode(() => collection.drive.resolveOrientationNode()),
-          ],
-        ),
-        Task(() {
-          resolvedOrientation = true;
-          return NodeStatus.success;
-        }),
-        Selector(
-          children: [
-            // Success if we are near the destination
-            Condition(
-              () =>
-                  collection.gps.isNear(destination, Constants.maxErrorMeters),
-            ),
-
-            // Plan the path, if there is already a path,
-            // this will fail and the selection will continue
-            planPath(destination),
-
-            // Follow the path, this will fail if it hasn't reached the destination,
-            // this failure scenario is "caught" in the next step
-            followPath(destination),
-
-            // Only runs if plan path failed, and follow path failed, indicating 2 scenarios:
-            // 1. Couldn't find a path at all
-            // 2. Couldn't follow a specific step of the path
-            Task(() {
-              // Failed to find a path (Scenario 1)
-              if (!replanPath && currentPath == null) {
-                return NodeStatus.failure;
-              } else {
-                // Either a timeout or new obstacle was found, replan path and continue (Scenario 2)
-                return NodeStatus.running;
-              }
-            }),
-          ],
-        ),
-        Task(() {
-          if (collection.gps.isNear(destination, Constants.maxErrorMeters)) {
-            return NodeStatus.success;
-          }
-          return NodeStatus.running;
-        }),
-      ],
-    );
   }
 
   Future<bool> calculateAndFollowPath(
@@ -509,12 +205,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     );
     traversed.clear();
     collection.drive.setLedStrip(ProtoColor.RED);
-    waypointIndex = 0;
-    hasCheckedWaypointError = false;
-    hasCheckedWaypointOrientation = false;
-    isCorrectingWaypointOrientation = false;
-    replanPath = true;
-    behaviorRoot = pathToDestination(destination);
+    replanPath = false;
     controller.pushState(
       SequenceState(
         controller,
@@ -557,20 +248,6 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
         return;
       }
-      // behaviorRoot.tick();
-      // if (behaviorRoot.status == NodeStatus.failure) {
-      //   behaviorRoot.reset();
-      //   currentState = AutonomyState.NO_SOLUTION;
-      //   currentCommand = null;
-      //   timer.cancel();
-      // } else if (behaviorRoot.status == NodeStatus.success) {
-      //   behaviorRoot.reset();
-      //   timer.cancel();
-      //   collection.logger.info("Task complete");
-      //   currentState = AutonomyState.AT_DESTINATION;
-      //   collection.drive.setLedStrip(ProtoColor.GREEN, blink: true);
-      //   currentCommand = null;
-      // }
     });
     // detect obstacles before and after resolving orientation, as a "scan"
     // collection.detector.findObstacles();
@@ -590,77 +267,6 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     collection.logger.info("Got ArUco Task");
 
     DetectedObject? detectedAruco;
-
-    behaviorRoot = Sequence(
-      children: [
-        // Go to initial coordinates given
-        Selector(
-          children: [
-            Condition(
-              () =>
-                  command.destination !=
-                  GpsCoordinates(latitude: 0, longitude: 0),
-            ).inverted,
-            pathToDestination(command.destination),
-            // If failed to reach
-            Task(() {
-              collection.logger.error(
-                "Failed to follow path towards initial destination",
-              );
-              currentState = AutonomyState.NO_SOLUTION;
-              currentCommand = null;
-              return NodeStatus.failure;
-            }),
-          ],
-        ),
-        Task(() {
-          currentState = AutonomyState.SEARCHING;
-          collection.logger.info("Searching for ArUco tag");
-          return NodeStatus.success;
-        }),
-        // Try to spin and find a tag
-        Selector(
-          children: [
-            collection.drive.spinForArucoNode(
-              command.arucoId,
-              desiredCamera: Constants.arucoDetectionCamera,
-            ),
-            Task(() {
-              collection.logger.error("Could not find desired Aruco tag");
-              currentState = AutonomyState.NO_SOLUTION;
-              currentCommand = null;
-              return NodeStatus.failure;
-            }),
-          ],
-        ),
-        Condition(() {
-          detectedAruco = collection.video.getArucoDetection(
-            command.arucoId,
-            desiredCamera: Constants.arucoDetectionCamera,
-          );
-          return detectedAruco != null;
-        }),
-        // Face towards aruco tag
-        SuppliedNode(
-          () => collection.drive.faceOrientationNode(
-            Orientation(z: collection.imu.heading - detectedAruco!.yaw),
-          ),
-        ),
-        Selector(
-          children: [
-            Condition(
-              () =>
-                  collection.video.getArucoDetection(
-                    command.arucoId,
-                    desiredCamera: Constants.arucoDetectionCamera,
-                  ) !=
-                  null,
-            ),
-            Task(() => NodeStatus.running),
-          ],
-        ).withTimeout(const Duration(seconds: 3)),
-      ],
-    );
 
     if (command.destination != GpsCoordinates(latitude: 0, longitude: 0)) {
       if (!await calculateAndFollowPath(
@@ -697,7 +303,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     collection.logger.info("Found aruco");
     currentState = AutonomyState.APPROACHING;
     final arucoOrientation = Orientation(
-      z: collection.imu.heading - detectedAruco!.yaw,
+      z: collection.imu.heading - detectedAruco.yaw,
     );
     await collection.drive.faceOrientation(arucoOrientation);
     detectedAruco = await collection.video.waitForAruco(
@@ -706,7 +312,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       timeout: const Duration(seconds: 3),
     );
 
-    if (detectedAruco == null || !detectedAruco!.hasBestPnpResult()) {
+    if (detectedAruco == null || !detectedAruco.hasBestPnpResult()) {
       // TODO: handle this condition properly
       collection.logger.error(
         "Could not find desired Aruco tag after rotating towards it",
@@ -718,7 +324,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
     collection.logger.debug(
       "Planning path to Aruco ID ${command.arucoId}",
-      body: "Detection: ${detectedAruco!.toProto3Json()}",
+      body: "Detection: ${detectedAruco.toProto3Json()}",
     );
 
     // In theory we could just find the relative position with the translation x and z,
@@ -726,7 +332,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
     // when facing it head on), then it will be extremely innacurate. Since the SolvePnP's
     // distance is always extremely accurate, it is more reliable to use the distance
     // hypotenuse to the camera combined with trig of the tag's angle relative to the camera.
-    final cameraToTag = detectedAruco!.bestPnpResult.cameraToTarget;
+    final cameraToTag = detectedAruco.bestPnpResult.cameraToTarget;
     final distanceToTag =
         sqrt(
           pow(cameraToTag.translation.z, 2) + pow(cameraToTag.translation.x, 2),
@@ -743,10 +349,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
     final relativeX =
         -distanceToTag *
-        sin((collection.imu.heading - detectedAruco!.yaw) * pi / 180);
+        sin((collection.imu.heading - detectedAruco.yaw) * pi / 180);
     final relativeY =
         distanceToTag *
-        cos((collection.imu.heading - detectedAruco!.yaw) * pi / 180);
+        cos((collection.imu.heading - detectedAruco.yaw) * pi / 180);
 
     final destinationCoordinates =
         (collection.gps.coordinates.toUTM() +

@@ -1,5 +1,4 @@
 import "package:autonomy/interfaces.dart";
-import "package:behavior_tree/behavior_tree.dart";
 
 import "drive_config.dart";
 
@@ -71,35 +70,6 @@ abstract class DriveInterface extends Service {
 
   StateInterface turnStateState(AutonomyAStarState state) =>
       faceOrientationState(state.orientation.orientation);
-
-  BaseNode driveStateNode(AutonomyAStarState state) {
-    if (state.instruction == DriveDirection.stop) {
-      return Task(() {
-        stop();
-        return NodeStatus.success;
-      });
-    } else if (state.instruction == DriveDirection.forward) {
-      return driveForwardNode(state.position);
-    } else {
-      return turnStateNode(state);
-    }
-  }
-
-  BaseNode resolveOrientationNode() =>
-      faceDirectionNode(collection.imu.nearest);
-
-  BaseNode driveForwardNode(GpsCoordinates coordinates);
-
-  BaseNode faceDirectionNode(CardinalDirection direction) =>
-      faceOrientationNode(direction.orientation);
-
-  BaseNode faceOrientationNode(Orientation orientation);
-
-  BaseNode turnStateNode(AutonomyAStarState state) =>
-      faceOrientationNode(state.orientation.orientation);
-
-  BaseNode spinForArucoNode(int arucoId, {CameraName? desiredCamera}) =>
-      Condition(() => false);
 
   /// Stop the rover
   Future<bool> stop();

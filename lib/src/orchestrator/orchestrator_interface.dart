@@ -1,7 +1,6 @@
 import "dart:async";
 
 import "package:autonomy/interfaces.dart";
-import "package:behavior_tree/behavior_tree.dart";
 import "package:meta/meta.dart";
 
 abstract class OrchestratorInterface extends Service {
@@ -14,8 +13,6 @@ abstract class OrchestratorInterface extends Service {
   StateController controller = StateController();
 
   OrchestratorInterface({required this.collection});
-
-  BaseNode behaviorRoot = Condition(() => true);
 
   Future<void> onCommand(AutonomyCommand command) async {
     collection.server.sendMessage(command);

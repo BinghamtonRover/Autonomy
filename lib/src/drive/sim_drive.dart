@@ -1,6 +1,4 @@
 import "package:autonomy/interfaces.dart";
-import "package:autonomy/src/utils/behavior_util.dart";
-import "package:behavior_tree/behavior_tree.dart";
 
 /// An implementation of [DriveInterface] that will not move the rover,
 /// and only update its sensor readings based on the desired values
@@ -21,11 +19,6 @@ class DriveSimulator extends DriveInterface {
     this.shouldDelay = false,
     super.config,
   });
-
-  BaseNode _delayAndExecuteNode({
-    required Duration delay,
-    required BaseNode child,
-  }) => Sequence(children: [DelayedNode(delay), child]);
 
   RoverState _delayAndExecuteState({
     required Duration delay,
@@ -63,32 +56,6 @@ class DriveSimulator extends DriveInterface {
           },
         ),
       );
-
-  @override
-  BaseNode driveForwardNode(GpsCoordinates coordinates) {
-    final updateGps = Task(() {
-      collection.gps.update(coordinates);
-      return NodeStatus.success;
-    });
-    return ConditionalNode(
-      condition: () => shouldDelay,
-      onTrue: _delayAndExecuteNode(delay: delay, child: updateGps),
-      onFalse: updateGps,
-    );
-  }
-
-  @override
-  BaseNode faceOrientationNode(Orientation orientation) {
-    final updateImu = Task(() {
-      collection.imu.update(orientation);
-      return NodeStatus.success;
-    });
-    return ConditionalNode(
-      condition: () => shouldDelay,
-      onTrue: _delayAndExecuteNode(delay: delay, child: updateImu),
-      onFalse: updateImu,
-    );
-  }
 
   @override
   Future<bool> init() async => true;

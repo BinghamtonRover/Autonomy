@@ -1,6 +1,4 @@
 import "package:autonomy/autonomy.dart";
-import "package:autonomy/src/utils/behavior_util.dart";
-import "package:behavior_tree/behavior_tree.dart";
 
 import "drive_commands.dart";
 
@@ -38,60 +36,6 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
         orientation: orientation,
         drive: this,
       );
-
-  @override
-  BaseNode driveForwardNode(GpsCoordinates coordinates) => Selector(
-    children: [
-      Condition(
-        () => collection.gps.isNear(
-          coordinates,
-          Constants.intermediateStepTolerance,
-        ),
-      ),
-      Task(() {
-        if (collection.pathfinder.isObstacle(collection.gps.coordinates)) {
-          return NodeStatus.failure;
-        }
-        setThrottle(config.forwardThrottle);
-        moveForward();
-        return NodeStatus.running;
-      }),
-    ],
-  ).withTimeout(Constants.driveGPSTimeout);
-
-  @override
-  BaseNode faceOrientationNode(Orientation orientation) => Selector(
-    children: [
-      Condition(
-        () => collection.imu.isNear(orientation, Constants.turnEpsilon),
-      ),
-      Task(() {
-        setThrottle(config.turnThrottle);
-        _tryToFace(orientation);
-        return NodeStatus.running;
-      }),
-    ],
-  );
-
-  @override
-  BaseNode spinForArucoNode(int arucoId, {CameraName? desiredCamera}) =>
-      Selector(
-        children: [
-          Condition(
-            () =>
-                collection.video.getArucoDetection(
-                  arucoId,
-                  desiredCamera: desiredCamera,
-                ) !=
-                null,
-          ),
-          Task(() {
-            setThrottle(config.turnThrottle);
-            spinLeft();
-            return NodeStatus.running;
-          }),
-        ],
-      ).withTimeout(Constants.arucoSearchTimeout);
 
   @override
   Future<bool> stop() async {
