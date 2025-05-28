@@ -1,5 +1,18 @@
 import "package:autonomy/interfaces.dart";
 
+/// Enum to represent the method to use for drive simulation
+enum SimulationMethod {
+  /// Will instantly simulate moving to a location with no delay
+  instant,
+
+  /// Will wait a period of time before updating
+  constantDelay,
+
+  /// Will continuously update with intermediate states during its
+  /// delay, as if the rover was actually moving
+  intermediate,
+}
+
 /// An implementation of [DriveInterface] that will not move the rover,
 /// and only update its sensor readings based on the desired values
 ///
@@ -9,52 +22,36 @@ class DriveSimulator extends DriveInterface {
   /// The amount of time to wait before updating the virtual sensor readings
   static const delay = Duration(milliseconds: 500);
 
+  /// The method to use for the drive simulation
+  final SimulationMethod method;
+
   /// Whether or not to wait before updating virtual sensor readings,
   /// this can be useful when simulating the individual steps of a path
-  final bool shouldDelay;
+  bool get shouldDelay => method != SimulationMethod.instant;
 
   /// Constructor for DriveSimulator, initializing the default fields, and whether or not it should delay
   DriveSimulator({
     required super.collection,
-    this.shouldDelay = false,
+    this.method = SimulationMethod.instant,
     super.config,
   });
 
-  RoverState _delayAndExecuteState({
-    required Duration delay,
-    required StateInterface child,
-  }) => SequenceState(
-    child.controller,
-    steps: [
-      DelayedState(child.controller, delayTime: delay),
-      child,
-    ],
-  );
-
   @override
   StateInterface driveForwardState(GpsCoordinates coordinates) =>
-      _delayAndExecuteState(
-        delay: shouldDelay ? delay : Duration.zero,
-        child: FunctionalState(
-          controller,
-          onUpdate: (controller) {
-            collection.gps.update(coordinates);
-            controller.popState();
-          },
-        ),
+      SimulationDriveForward(
+        controller,
+        collection: collection,
+        method: method,
+        destination: coordinates,
       );
 
   @override
   StateInterface faceOrientationState(Orientation orientation) =>
-      _delayAndExecuteState(
-        delay: shouldDelay ? delay : Duration.zero,
-        child: FunctionalState(
-          controller,
-          onUpdate: (controller) {
-            collection.imu.update(orientation);
-            controller.popState();
-          },
-        ),
+      SimulationDriveTurn(
+        controller,
+        collection: collection,
+        method: method,
+        goalOrientation: orientation,
       );
 
   @override

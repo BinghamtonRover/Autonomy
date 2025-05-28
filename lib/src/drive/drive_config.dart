@@ -35,6 +35,21 @@ class DriveConfig {
     required this.subsystemsAddress,
   });
 
+  /// Creates a copy of this drive config with the provided fields replaced
+  DriveConfig copyWith({
+    double? forwardThrottle,
+    double? turnThrottle,
+    Duration? oneMeterDelay,
+    Duration? turnDelay,
+    String? subsystemsAddress,
+  }) => DriveConfig(
+    forwardThrottle: forwardThrottle ?? this.forwardThrottle,
+    turnThrottle: turnThrottle ?? this.turnThrottle,
+    turnDelay: turnDelay ?? this.turnDelay,
+    oneMeterDelay: oneMeterDelay ?? this.oneMeterDelay,
+    subsystemsAddress: subsystemsAddress ?? this.subsystemsAddress,
+  );
+
   /// The [SocketInfo] for Subsystems, created using [subsystemsAddress] and port 8001
   SocketInfo get subsystems =>
       SocketInfo(address: InternetAddress(subsystemsAddress), port: 8001);

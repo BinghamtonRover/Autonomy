@@ -58,16 +58,21 @@ abstract class DriveInterface extends Service {
     }
   }
 
+  /// State to turn the rover towards the nearest orientation
   StateInterface resolveOrientationState() =>
       faceDirectionState(collection.imu.nearest);
 
+  /// State to drive the rover forward towards [coordinates]
   StateInterface driveForwardState(GpsCoordinates coordinates);
 
+  /// State to turn the rover to face towards [direction]
   StateInterface faceDirectionState(CardinalDirection direction) =>
       faceOrientationState(direction.orientation);
 
+  /// State to face the rover towards [orientation]
   StateInterface faceOrientationState(Orientation orientation);
 
+  /// State to execute actions relating to the turning of an [AutonomyAStarState]
   StateInterface turnStateState(AutonomyAStarState state) =>
       faceOrientationState(state.orientation.orientation);
 

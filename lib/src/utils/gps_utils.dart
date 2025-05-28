@@ -103,16 +103,14 @@ extension GpsUtils on GpsCoordinates {
   bool isNear(GpsCoordinates other, [double? tolerance]) {
     tolerance ??= Constants.maxErrorMeters;
 
-    return distanceTo(other) < tolerance;
+    return distanceTo(other) <= tolerance;
   }
 
   GpsCoordinates operator +(GpsCoordinates other) =>
       (toUTM() + other.toUTM()).toGps();
 
-  GpsCoordinates operator -(GpsCoordinates other) => GpsCoordinates(
-    latitude: latitude - other.latitude,
-    longitude: longitude - other.longitude,
-  );
+  GpsCoordinates operator -(GpsCoordinates other) =>
+      (toUTM() - other.toUTM()).toGps();
 
   String prettyPrint() => toProto3Json().toString();
 

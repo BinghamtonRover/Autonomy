@@ -15,8 +15,11 @@ void main() async {
   simulator.detector = NetworkDetector(collection: simulator);
   simulator.pathfinder = RoverPathfinder(collection: simulator);
   simulator.orchestrator = RoverOrchestrator(collection: simulator);
-  // simulator.drive = RoverDrive(collection: simulator, useGps: false, useImu: false);
-  simulator.drive = DriveSimulator(collection: simulator, shouldDelay: true);
+  simulator.drive = RoverDrive(
+    collection: simulator,
+    useGps: false,
+    useImu: false,
+  );
   simulator.gps = GpsSimulator(collection: simulator);
   simulator.imu = ImuSimulator(collection: simulator);
   simulator.video = VideoSimulator(collection: simulator);
