@@ -1,4 +1,4 @@
-export "src/fsm/rover_fsm.dart";
+export "src/state_machine/rover_state_machine.dart";
 export "src/utils/a_star.dart";
 export "src/utils/corrector.dart";
 export "src/utils/error.dart";

@@ -1,4 +1,4 @@
-import "package:autonomy/src/fsm/rover_fsm.dart";
+import "package:autonomy/src/state_machine/rover_state_machine.dart";
 import "package:test/test.dart";
 
 class TrackingState extends RoverState {
@@ -18,8 +18,8 @@ class TrackingState extends RoverState {
   void exit() => exitCount++;
 }
 
-void main() => group("[State Machine]", tags: ["fsm"], () {
-  final controller = FSMController();
+void main() => group("[State Machine]", tags: ["state_machine"], () {
+  final controller = StateController();
 
   test("Pushing and popping", () {
     final state = TrackingState(controller);

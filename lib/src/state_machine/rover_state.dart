@@ -1,9 +1,9 @@
-import "package:autonomy/src/fsm/rover_fsm.dart";
+import "package:autonomy/src/state_machine/rover_state_machine.dart";
 
 /// Abstracted version of a state
 abstract class StateInterface {
   /// The controller for the state machine
-  FSMController get controller;
+  StateController get controller;
 
   /// Called when the state is initially entered
   void enter();
@@ -17,10 +17,10 @@ abstract class StateInterface {
 
 /// An implementation of [StateInterface] to be used for the rover
 ///
-/// Stores an own internal [FSMController]
+/// Stores an own internal [StateController]
 class RoverState implements StateInterface {
   @override
-  final FSMController controller;
+  final StateController controller;
 
   /// Constructor for [RoverState] initializing its controller
   RoverState(this.controller);

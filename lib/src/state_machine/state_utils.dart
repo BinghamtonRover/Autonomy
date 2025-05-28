@@ -1,4 +1,4 @@
-import "package:autonomy/src/fsm/rover_fsm.dart";
+import "package:autonomy/src/state_machine/rover_state_machine.dart";
 
 /// State that can only be ran for [delayTime] amount of time
 /// after entering before it automatically pops itself from the

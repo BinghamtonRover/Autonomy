@@ -6,13 +6,14 @@ import "package:meta/meta.dart";
 
 abstract class OrchestratorInterface extends Service {
   final AutonomyInterface collection;
-  OrchestratorInterface({required this.collection});
 
   AutonomyCommand? currentCommand;
   AutonomyState currentState = AutonomyState.AUTONOMY_STATE_UNDEFINED;
   PeriodicTimer? executionTimer;
 
-  FSMController controller = FSMController();
+  StateController controller = StateController();
+
+  OrchestratorInterface({required this.collection});
 
   BaseNode behaviorRoot = Condition(() => true);
 

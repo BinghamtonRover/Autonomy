@@ -1,4 +1,4 @@
-import "package:autonomy/src/fsm/rover_fsm.dart";
+import "package:autonomy/src/state_machine/rover_state_machine.dart";
 
 /// State to add a timeout to a state
 ///

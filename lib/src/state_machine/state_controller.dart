@@ -1,7 +1,7 @@
-import "package:autonomy/src/fsm/rover_fsm.dart";
+import "package:autonomy/src/state_machine/rover_state_machine.dart";
 import "package:meta/meta.dart";
 
-/// Class to control a Finite State Machine, handling state pushes,
+/// Class to control a Stack based State Machine, handling state pushes,
 /// pops, and transitions
 ///
 /// The class maintains a stack of [StateInterface], where the most recent
@@ -12,7 +12,7 @@ import "package:meta/meta.dart";
 /// states underneath will no longer be updated.
 ///
 /// When a state is popped, it is removed from the top of the stack, and will be exited.
-class FSMController {
+class StateController {
   @visibleForTesting
   List<StateInterface> get stack => _stateStack;
 

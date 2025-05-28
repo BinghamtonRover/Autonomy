@@ -5,4 +5,4 @@ tags:
   simulator:
   orchestrator:
   network:
-  fsm:
+  state_machine:

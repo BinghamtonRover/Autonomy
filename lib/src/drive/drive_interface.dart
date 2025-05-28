@@ -40,8 +40,8 @@ abstract class DriveInterface extends Service {
   /// The drive configuration for the rover it is running on
   DriveConfig config;
 
-  /// Getter to access the FSM controller
-  FSMController get controller => collection.orchestrator.controller;
+  /// Getter to access the state controller
+  StateController get controller => collection.orchestrator.controller;
 
   /// Constructor for Drive Interface
   DriveInterface({required this.collection, this.config = roverConfig});
