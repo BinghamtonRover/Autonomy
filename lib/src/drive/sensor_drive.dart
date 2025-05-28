@@ -1,79 +1,8 @@
 import "package:autonomy/autonomy.dart";
-import "package:autonomy/src/drive/drive_config.dart";
 import "package:autonomy/src/utils/behavior_util.dart";
 import "package:behavior_tree/behavior_tree.dart";
 
 import "drive_commands.dart";
-
-class SensorForwardState extends RoverState {
-  final AutonomyInterface collection;
-  final GpsCoordinates position;
-
-  final RoverDriveCommands drive;
-
-  DriveConfig get config => collection.drive.config;
-
-  SensorForwardState(
-    super.controller, {
-    required this.collection,
-    required this.position,
-    required this.drive,
-  });
-
-  @override
-  void update() {
-    drive.setThrottle(config.forwardThrottle);
-    drive.moveForward();
-
-    if (collection.gps.isNear(position, Constants.intermediateStepTolerance)) {
-      controller.popState();
-    }
-  }
-
-  @override
-  void exit() {
-    drive.stopMotors();
-  }
-}
-
-class SensorTurnState extends RoverState {
-  final AutonomyInterface collection;
-  final Orientation orientation;
-
-  final RoverDriveCommands drive;
-
-  DriveConfig get config => collection.drive.config;
-
-  SensorTurnState(
-    super.controller, {
-    required this.collection,
-    required this.orientation,
-    required this.drive,
-  });
-
-  @override
-  void update() {
-    drive.setThrottle(config.turnThrottle);
-
-    final current = collection.imu.heading;
-    final target = orientation.heading;
-    final error = (target - current).clampHalfAngle();
-    if (error < 0) {
-      drive.spinRight();
-    } else {
-      drive.spinLeft();
-    }
-
-    if (collection.imu.isNear(orientation)) {
-      controller.popState();
-    }
-  }
-
-  @override
-  void exit() {
-    drive.stopMotors();
-  }
-}
 
 /// An implementation of [DriveInterface] that uses the rover's sensors to
 /// determine its direction to move in and whether or not it has moved in its
