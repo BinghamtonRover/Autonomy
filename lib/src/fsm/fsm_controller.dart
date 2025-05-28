@@ -33,13 +33,17 @@ class FSMController {
 
   /// Clears all states from the stack
   void clearStates() {
-    for (var i = 0; i < _stateStack.length; i++) {
+    final originalLength = _stateStack.length;
+    for (var i = 0; i < originalLength; i++) {
       popState();
     }
   }
 
   /// Pops the latest state from the top of the stack
   void popState() {
+    if (_stateStack.isEmpty) {
+      return;
+    }
     _stateStack.removeLast().exit();
   }
 
@@ -51,7 +55,8 @@ class FSMController {
       return;
     }
 
-    for (var i = 0; i < _stateStack.length - index - 1; i++) {
+    final amountToRemove = _stateStack.length - index - 1;
+    for (var i = 0; i < amountToRemove; i++) {
       popState();
     }
   }
