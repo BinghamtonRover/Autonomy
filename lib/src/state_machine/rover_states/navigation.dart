@@ -151,6 +151,19 @@ class NavigationState extends RoverState {
 
     orchestrator.traversed.add(currentPathState!.position);
 
+    if (orchestrator.replanPath) {
+      collection.drive.stop();
+      controller.transitionTo(
+        PathingState(
+          controller,
+          collection: collection,
+          orchestrator: orchestrator,
+          destination: destination,
+        ),
+      );
+      return;
+    }
+
     if (waypointIndex >= orchestrator.currentPath!.length - 1 ||
         waypointIndex >= 5 ||
         orchestrator.findAndLockObstacles()) {

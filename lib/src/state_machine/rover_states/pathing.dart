@@ -25,6 +25,7 @@ class PathingState extends RoverState {
 
   @override
   void enter() {
+    orchestrator.replanPath = false;
     orchestrator.currentState = AutonomyState.PATHING;
     orchestrator.findAndLockObstacles();
   }

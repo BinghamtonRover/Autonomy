@@ -24,7 +24,12 @@ class SensorDrive extends DriveInterface with RoverDriveCommands {
           position: coordinates,
           drive: this,
         ),
-        onTimeout: (controller) => controller.popState(),
+        onTimeout: (controller) {
+          if (collection.orchestrator is RoverOrchestrator) {
+            (collection.orchestrator as RoverOrchestrator).triggerPathReplan();
+          }
+          controller.popState();
+        },
         timeout: Constants.driveGPSTimeout,
       );
 

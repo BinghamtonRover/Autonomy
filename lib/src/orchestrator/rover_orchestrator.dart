@@ -37,6 +37,7 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
   void onCommandEnd() {
     super.onCommandEnd();
     currentPath = null;
+    replanPath = false;
   }
 
   @override
@@ -58,6 +59,10 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
 
   @override
   Message getMessage() => statusMessage;
+
+  /// Triggers a path replan, calling this method will signal the
+  /// orchestrator to replan a new path while path following
+  void triggerPathReplan() => replanPath = true;
 
   /// Finds new obstacles and locks them if any intersect with the current path
   ///
