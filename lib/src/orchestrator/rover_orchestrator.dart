@@ -225,7 +225,9 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
         ],
       ),
     );
-    executionTimer = PeriodicTimer(const Duration(milliseconds: 10), (timer) {
+    executionTimer = PeriodicTimer(const Duration(milliseconds: 10), (
+      timer,
+    ) async {
       if (currentCommand == null) {
         collection.logger.warning(
           "Execution timer running while command is null",
