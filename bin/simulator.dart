@@ -1,5 +1,4 @@
-import "package:autonomy/rover.dart";
-import "package:autonomy/simulator.dart";
+import "package:autonomy/autonomy.dart";
 import "package:autonomy/src/drive/drive_config.dart";
 import "package:burt_network/burt_network.dart";
 

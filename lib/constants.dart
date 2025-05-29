@@ -17,7 +17,7 @@ class Constants {
 
   /// The closest distance the pathfinding algorithm will allow
   /// the rover to go near an obstacle
-  static const double obstacleAvoidanceRadius = 0.5;
+  static const double obstacleAvoidanceRadius = 0.75;
 
   /// How close the rover should get to a drive coordinate before
   /// continuing with the path

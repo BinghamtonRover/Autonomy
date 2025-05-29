@@ -49,9 +49,9 @@ class RoverOrchestrator extends OrchestratorInterface with ValueReporter {
       ...collection.pathfinder.lockedObstacles,
     ],
     path: {
+      ...traversed,
       for (final transition in currentPath ?? <AutonomyAStarState>[])
         transition.position,
-      ...traversed,
     },
     task: currentCommand?.task,
     crash: false, // TODO: Investigate if this is used and how to use it better
