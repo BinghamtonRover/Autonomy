@@ -98,7 +98,7 @@ class RoverDetector extends DetectorInterface {
           .clampHalfAngle();
 
       return relativeAngle > -135 && relativeAngle < 135;
-    });
+    }).toList();
     collection.pathfinder.obstacles.removeAll(toRemove);
     temporaryObstacles.removeAll(toRemove);
 

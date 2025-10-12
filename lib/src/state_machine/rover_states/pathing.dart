@@ -42,6 +42,7 @@ class PathingState extends RoverState {
         body:
             "No path found from ${current.prettyPrint()} to ${destination.prettyPrint()}",
       );
+      collection.drive.stop();
       controller.popState();
     } else {
       collection.logger.debug(

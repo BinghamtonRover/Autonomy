@@ -35,9 +35,4 @@ class SensorForwardState extends RoverState {
       controller.popState();
     }
   }
-
-  @override
-  void exit() {
-    drive.stopMotors();
-  }
 }

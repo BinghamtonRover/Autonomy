@@ -152,7 +152,6 @@ class NavigationState extends RoverState {
     orchestrator.traversed.add(currentPathState!.position);
 
     if (orchestrator.replanPath) {
-      collection.drive.stop();
       controller.transitionTo(
         PathingState(
           controller,
@@ -167,7 +166,6 @@ class NavigationState extends RoverState {
     if (waypointIndex >= orchestrator.currentPath!.length - 1 ||
         waypointIndex >= 5 ||
         orchestrator.findAndLockObstacles()) {
-      collection.drive.stop();
       controller.transitionTo(
         PathingState(
           controller,
