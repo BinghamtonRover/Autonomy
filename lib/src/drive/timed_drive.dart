@@ -63,7 +63,6 @@ class TimedDrive extends DriveInterface with RoverDriveCommands {
           setThrottle(config.forwardThrottle);
           moveForward();
         },
-        onDone: stopMotors,
       );
 
   @override

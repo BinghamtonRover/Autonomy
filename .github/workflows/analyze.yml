@@ -19,7 +19,7 @@ jobs:
       - name: Setup dart
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: 3.6.0
+          sdk: 3.9.0
 
       # This package is part of a Pub Workspace. However, CI still needs to
       # run on this repo by itself, so we want to override burt_network to use

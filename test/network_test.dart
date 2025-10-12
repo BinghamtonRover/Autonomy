@@ -54,6 +54,18 @@ class MockSubsystems extends Service {
   }
 }
 
+class StopState extends RoverState {
+  final AutonomyInterface collection;
+
+  StopState(super.controller, {required this.collection});
+
+  @override
+  void update() {
+    collection.drive.stop();
+    controller.popState();
+  }
+}
+
 void main() => group("[Network]", tags: ["network"], () {
   var subsystems = MockSubsystems();
   final rover = RoverAutonomy();
@@ -161,14 +173,25 @@ void main() => group("[Network]", tags: ["network"], () {
 
     await Future<void>.delayed(Duration.zero);
 
-    expect(subsystems.throttleFlag, isFalse);
-    expect(subsystems.throttle, 0);
-    expect(subsystems.left, 0);
-    expect(subsystems.right, 0);
+    expect(subsystems.throttleFlag, isTrue);
+    expect(subsystems.throttle, isNot(0));
+    expect(subsystems.left, isNot(0));
+    expect(subsystems.right, isNot(0));
+
+    simulator.orchestrator.controller.pushState(
+      StopState(simulator.orchestrator.controller, collection: simulator),
+    );
 
     simulator.orchestrator.controller.update();
     simulator.orchestrator.controller.update();
     simulator.orchestrator.controller.update();
+
+    // Future events need to pump for the call to drive.stop() to execute
+    await Future<void>.delayed(Duration.zero);
+
+    expect(subsystems.throttle, 0);
+    expect(subsystems.left, 0);
+    expect(subsystems.right, 0);
 
     expect(simulator.gps.isNear(origin, 0.5), isFalse);
     expect(simulator.gps.isNear(oneMeter), isTrue);
