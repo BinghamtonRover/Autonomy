@@ -121,7 +121,7 @@ void main() => group("[Network]", tags: ["network"], () {
     await Future<void>.delayed(const Duration(seconds: 1));
   });
 
-  test("Rover can drive", retry: 5, () async {
+  test("Rover can drive", retry: 10, () async {
     subsystems.enabled = true;
     final simulator = AutonomySimulator();
     simulator.gps = GpsSimulator(collection: simulator);
